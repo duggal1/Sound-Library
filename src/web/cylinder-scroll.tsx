@@ -1,185 +1,227 @@
-import { useLayoutEffect, useRef, type ReactNode, type RefObject } from "react";
-import { dampSpring, projectCylinder } from "./cylinder-math";
+/**
+ * Drum geometry adapted from @dorianbaffier's Wheel Picker, Kokonut UI (MIT).
+ * https://github.com/kokonut-labs/kokonutui
+ * Native scroll, continuous browsing, focus, rebasing and damping are Verdant adaptations.
+ */
+import { useLayoutEffect, type ReactNode, type RefObject } from "react";
+import { dampSpring, drumGeometry } from "./cylinder-math";
 
+type Geometry = ReturnType<typeof drumGeometry>;
 interface Row {
   node: HTMLElement;
-  center: number;
-  transform: string;
+  index: number;
+  mounted: boolean;
+  edge: boolean;
+  anchor: number;
 }
 
-/** Native scroll is the position authority. Only the curvature is spring-driven. */
-class CylinderController {
-  private scene: HTMLElement | null = null;
+const controllers = new WeakMap<HTMLElement, DrumController>();
+const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
+const DEGREES = 180 / Math.PI;
+
+class DrumController {
+  private list: HTMLElement | null = null;
   private rows: Row[] = [];
-  private observer: ResizeObserver;
-  private mutations: MutationObserver;
-  private reduced = matchMedia("(prefers-reduced-motion: reduce)");
-  private coarse = matchMedia("(pointer: coarse)");
-  private supported = CSS.supports("perspective", "1000px") && CSS.supports("transform-style", "preserve-3d");
+  private geometry: Geometry | null = null;
+  private pitch = 64;
+  private height = 0;
   private frame = 0;
   private lastTime = 0;
   private lastScroll = 0;
   private velocity = 0;
-  private bend = 0;
-  private bendVelocity = 0;
-  private height = 0;
-  private sceneTop = 0;
+  private lag = 0;
+  private lagVelocity = 0;
+  private transform = "";
   private dirty = true;
-  private enabled = false;
   private destroyed = false;
+  private focusedKeyboard = false;
+  private readonly reduced = matchMedia("(prefers-reduced-motion: reduce)");
+  private readonly coarse = matchMedia("(pointer: coarse)");
+  private readonly supported = CSS.supports("perspective", "1000px") && CSS.supports("transform-style", "preserve-3d");
+  private readonly resize: ResizeObserver;
+  private readonly mutation: MutationObserver;
 
-  constructor(private readonly viewport: HTMLElement) {
-    this.lastScroll = viewport.scrollTop;
-    this.observer = new ResizeObserver(this.invalidate);
-    this.observer.observe(viewport);
-    this.mutations = new MutationObserver(records => {
-      if (records.some(record => record.target === viewport || record.target === this.scene)) this.invalidate();
+  constructor(private readonly viewport: HTMLElement, private readonly carrier: HTMLElement, private readonly stage: HTMLElement) {
+    this.resize = new ResizeObserver(this.invalidate);
+    this.resize.observe(viewport);
+    this.mutation = new MutationObserver(records => {
+      if(records.some(r => r.target === stage || r.target === this.list)) this.invalidate();
     });
-    this.mutations.observe(viewport, { childList: true, subtree: true });
-    viewport.addEventListener("scroll", this.schedule, { passive: true });
-    this.reduced.addEventListener("change", this.invalidate);
-    this.coarse.addEventListener("change", this.invalidate);
-    document.addEventListener("visibilitychange", this.visibility);
+    this.mutation.observe(stage,{childList:true,subtree:true});
+    viewport.addEventListener("scroll",this.schedule,{passive:true});
+    viewport.addEventListener("focusin",this.onFocus);
+    this.reduced.addEventListener("change",this.invalidate);
+    this.coarse.addEventListener("change",this.invalidate);
+    document.addEventListener("visibilitychange",this.onVisibility);
     this.measure();
     this.draw(viewport.scrollTop);
   }
 
-  private readonly visibility = () => {
-    if (document.hidden) {
-      cancelAnimationFrame(this.frame);
-      this.frame = 0;
-      this.lastTime = 0;
-    } else {
-      this.lastScroll = this.viewport.scrollTop;
-      this.velocity = this.bend = this.bendVelocity = 0;
-      this.invalidate();
-    }
-  };
-
-  private readonly invalidate = () => {
-    this.dirty = true;
-    this.schedule();
-  };
-
+  private readonly invalidate = () => { this.dirty = true; this.schedule(); };
   private readonly schedule = () => {
-    if (!this.frame && !this.destroyed && !document.hidden) this.frame = requestAnimationFrame(this.tick);
+    if(!this.frame && !this.destroyed && !document.hidden) this.frame=requestAnimationFrame(this.tick);
   };
+  private readonly onVisibility = () => {
+    if(document.hidden){cancelAnimationFrame(this.frame);this.frame=0;this.lastTime=0;}
+    else {this.resetPhysics();this.invalidate();}
+  };
+  private resetPhysics(): void {
+    this.lastTime=0;this.lastScroll=this.viewport.scrollTop;this.velocity=this.lag=this.lagVelocity=0;
+  }
 
   private measure(): void {
-    this.dirty = false;
-    const next = this.viewport.querySelector<HTMLElement>(".sound-list");
-    if (next !== this.scene) {
-      this.clear();
-      if (this.scene) this.observer.unobserve(this.scene);
-      this.scene = next;
-      if (next) this.observer.observe(next);
+    this.dirty=false;
+    const next=this.stage.querySelector<HTMLElement>(".sound-list");
+    const prior=this.geometry;
+    const oldPosition=prior ? this.viewport.scrollTop+prior.offset : this.viewport.scrollTop;
+    const oldPitch=this.pitch;
+    const oldHeight=this.height;
+    if(next!==this.list){this.clear();this.list=next;}
+    this.height=this.viewport.clientHeight;
+    const nodes=next ? Array.from(next.querySelectorAll<HTMLElement>(":scope > .sound-row, :scope > .more")) : [];
+    // Fixed layout pitch is shared with CSS, not inferred from transformed bounds.
+    this.pitch=parseFloat(getComputedStyle(this.viewport).getPropertyValue("--drum-pitch")) || 64;
+    const g=drumGeometry(this.height,this.pitch,nodes.length);
+    const active=!!next && this.supported && !this.reduced.matches && this.height>=160 &&
+      nodes.length*this.pitch>this.height && g.maxScroll>1;
+    if(!active){this.clear();this.geometry=null;this.rows=[];this.resetPhysics();return;}
+    const existing=new Map(this.rows.map(r=>[r.node,r]));
+    this.rows=nodes.map((node,index)=>{
+      const row=existing.get(node);
+      return row && row.index===index ? row : {node,index,mounted:false,edge:false,anchor:NaN};
+    });
+    this.geometry=g;
+    this.viewport.dataset.drum="true";
+    this.carrier.style.height=`${this.height+g.maxScroll}px`;
+    this.stage.style.height=`${this.height}px`;
+    this.stage.style.perspective=`${g.perspective}px`;
+    next!.dataset.cylinder="true";
+    // On a resize, preserve the fractional row at the center. Initial entry
+    // and filter resets keep the natural first row at the top of the viewport.
+    if(prior && (oldPitch!==this.pitch || oldHeight!==this.height)){
+      this.viewport.scrollTop=clamp(oldPosition/oldPitch*this.pitch-g.offset,0,g.maxScroll);
     }
-    const scene = this.scene;
-    this.height = this.viewport.clientHeight;
-    this.sceneTop = scene?.offsetTop ?? 0;
-    this.enabled = !!scene && this.supported && !this.reduced.matches && this.height >= 160 &&
-      this.viewport.scrollHeight > this.height + 2;
-    if (!scene) return;
-    // Layout reads happen only after resize or list mutation, never per row per frame.
-    const previous = new Map(this.rows.map(row => [row.node,row]));
-    this.rows = Array.from(scene.querySelectorAll<HTMLElement>(":scope > .sound-row, :scope > .more")).map(node => ({
-      node, center: node.offsetTop + node.offsetHeight / 2, transform: previous.get(node)?.transform ?? "",
-    }));
-    if (!this.enabled) { this.clear(); this.bend = this.bendVelocity = this.velocity = 0; return; }
-    scene.dataset.cylinder = "true";
-    scene.style.perspective = `${Math.max(1000, this.height * 2.2)}px`;
+    this.transform="";
+    for(const row of this.rows){row.anchor=NaN;row.mounted=false;row.edge=false;delete row.node.dataset.drumAway;delete row.node.dataset.drumEdge;}
+    this.resetPhysics();
   }
 
   private clear(): void {
-    for (const row of this.rows) { row.node.style.removeProperty("transform"); row.transform = ""; }
-    if (this.scene) {
-      delete this.scene.dataset.cylinder;
-      this.scene.style.removeProperty("perspective");
-      this.scene.style.removeProperty("perspective-origin");
+    for(const row of this.rows){
+      row.node.style.removeProperty("transform");
+      delete row.node.dataset.drumAway;
+      delete row.node.dataset.drumEdge;
     }
+    if(this.list){delete this.list.dataset.cylinder;this.list.style.removeProperty("transform");}
+    delete this.viewport.dataset.drum;
+    this.carrier.style.removeProperty("height");
+    this.stage.style.removeProperty("height");
+    this.stage.style.removeProperty("perspective");
+    this.transform="";
   }
 
   private draw(scroll: number): void {
-    if (!this.enabled || !this.scene) return;
-    const half = this.height / 2;
-    const center = scroll + half - this.sceneTop;
-    const base = this.coarse.matches ? .30 : .52;
-    const curve = base + (this.coarse.matches ? .05 : .09) * Math.max(0, Math.min(1, this.bend));
-    const overscan = half + Math.max(160, half * .4 + 80);
-    this.scene.style.perspectiveOrigin = `50% ${center.toFixed(3)}px`;
-    for (const row of this.rows) {
-      const distance = row.center - center;
-      let transform = "";
-      if (Math.abs(distance) < overscan) {
-        const p = projectCylinder(distance, half, curve);
-        transform = `translateY(${p.y.toFixed(3)}px) translateZ(${p.z.toFixed(3)}px) rotateX(${p.rotation.toFixed(3)}deg)`;
+    const g=this.geometry,list=this.list;
+    if(!g || !list)return;
+    const center=(clamp(scroll+this.lag,0,g.maxScroll)+g.offset)/this.pitch;
+    // Rebase every six rows to avoid large angles or a second turn of the drum.
+    // Parent and row angles cancel exactly across a rebase.
+    const anchor=Math.floor(center/6)*6;
+    for(const row of this.rows){
+      const angle=(row.index-center)*g.step;
+      const visible=Math.abs(angle)<=g.visible;
+      // Offscreen controls remain in DOM/tab order. Focusin reveals them.
+      if(row.mounted!==visible || row.anchor!==anchor){
+        row.node.dataset.drumAway=String(!visible);
+        if(visible)row.node.style.transform=`rotateX(${-(row.index-anchor)*g.step*DEGREES}deg) translateZ(${g.radius}px)`;
+        else row.node.style.removeProperty("transform");
+        row.mounted=visible;row.anchor=anchor;
       }
-      if (transform !== row.transform) {
-        row.node.style.transform = transform;
-        row.transform = transform;
-      }
+      // Hysteresis keeps the optional subpixel edge blur from toggling repeatedly.
+      const edge=visible && Math.abs(angle)>(row.edge ? .65 : .72);
+      if(edge!==row.edge){row.node.dataset.drumEdge=String(edge);row.edge=edge;}
+    }
+    const transform=`translateZ(${-g.radius}px) rotateX(${(center-anchor)*g.step*DEGREES}deg)`;
+    if(transform!==this.transform){list.style.transform=transform;this.transform=transform;}
+  }
+
+  private readonly tick = (now:number) => {
+    this.frame=0;
+    if(this.destroyed || document.hidden)return;
+    if(this.dirty)this.measure();
+    const g=this.geometry,scroll=this.viewport.scrollTop;
+    if(!g){this.resetPhysics();return;}
+    const dt=this.lastTime ? clamp((now-this.lastTime)/1000,.001,.05) : 1/60;
+    const delta=scroll-this.lastScroll;
+    this.lastTime=now;this.lastScroll=scroll;
+    this.velocity+=(clamp(delta/dt,-3200,3200)-this.velocity)*(1-Math.exp(-dt*28));
+    // OS inertia is already present. Add only a very small visual compliance,
+    // not another inertial scroll engine. Never let it leave the scroll range.
+    const cap=this.coarse.matches ? 4 : 8;
+    const target=this.focusedKeyboard ? 0 : clamp(-this.velocity*.004,-cap,cap);
+    const next=dampSpring(this.lag,this.lagVelocity,target,dt,30);
+    this.lag=clamp(next.value,-cap,cap);this.lagVelocity=next.velocity;
+    if(scroll<=.5 || scroll>=g.maxScroll-.5){this.lag=0;this.lagVelocity=0;}
+    const moving=Math.abs(delta)>.01 || Math.abs(this.velocity)>.5 || Math.abs(this.lag)>.015 || Math.abs(this.lagVelocity)>.05;
+    if(!moving){this.lag=this.lagVelocity=this.velocity=0;this.lastTime=0;this.focusedKeyboard=false;}
+    this.draw(scroll);
+    if(moving)this.schedule();
+  };
+
+  private readonly onFocus = (event:FocusEvent) => {
+    const target=event.target;
+    if(!(target instanceof HTMLElement) || !target.matches(":focus-visible"))return;
+    const row=target.closest<HTMLElement>(".sound-row,.more");
+    if(row)this.reveal(row);
+  };
+
+  reveal(node:HTMLElement): void {
+    if(this.dirty)this.measure();
+    const g=this.geometry;
+    const row=this.rows.find(r=>r.node===node);
+    if(!g || !row){node.scrollIntoView({block:"nearest",inline:"nearest"});return;}
+    const center=this.viewport.scrollTop+g.offset;
+    const distance=row.index*this.pitch-center;
+    // Keyboard navigation guarantees a readable, fully visible target.
+    if(Math.abs(distance)>g.offset-this.pitch*.55){
+      this.focusedKeyboard=true;
+      this.viewport.scrollTop=clamp(row.index*this.pitch-g.offset,0,g.maxScroll);
+      this.resetPhysics();this.draw(this.viewport.scrollTop);
     }
   }
 
-  private readonly tick = (now: number) => {
-    this.frame = 0;
-    if (this.destroyed || document.hidden) return;
-    if (this.dirty) this.measure();
-    const scroll = this.viewport.scrollTop;
-    if (!this.enabled) { this.lastTime = 0; this.lastScroll = scroll; return; }
-    const dt = this.lastTime ? Math.max(.001, Math.min(.05, (now - this.lastTime) / 1000)) : 1 / 60;
-    this.lastTime = now;
-    const delta = scroll - this.lastScroll;
-    this.lastScroll = scroll;
-    // macOS/Windows/iOS already supply native inertial deltas; do not integrate
-    // them into a second scroll position. Speed only adds a small elastic bend.
-    const speed = Math.min(3600, Math.abs(delta) / dt);
-    this.velocity += (speed - this.velocity) * (1 - Math.exp(-dt * 24));
-    const next = dampSpring(this.bend, this.bendVelocity, Math.min(1, this.velocity / 2200), dt);
-    this.bend = next.value;
-    this.bendVelocity = next.velocity;
-    this.draw(scroll);
-    if (Math.abs(delta) > .01 || this.velocity > .5 || Math.abs(this.bend) > .0005 || Math.abs(this.bendVelocity) > .005) this.schedule();
-    else {
-      this.velocity = this.bend = this.bendVelocity = 0;
-      this.lastTime = 0;
-      this.draw(scroll);
-    }
-  };
-
   destroy(): void {
-    this.destroyed = true;
-    cancelAnimationFrame(this.frame);
-    this.observer.disconnect();
-    this.mutations.disconnect();
-    this.viewport.removeEventListener("scroll", this.schedule);
-    this.reduced.removeEventListener("change", this.invalidate);
-    this.coarse.removeEventListener("change", this.invalidate);
-    document.removeEventListener("visibilitychange", this.visibility);
+    this.destroyed=true;cancelAnimationFrame(this.frame);
+    this.resize.disconnect();this.mutation.disconnect();
+    this.viewport.removeEventListener("scroll",this.schedule);
+    this.viewport.removeEventListener("focusin",this.onFocus);
+    this.reduced.removeEventListener("change",this.invalidate);
+    this.coarse.removeEventListener("change",this.invalidate);
+    document.removeEventListener("visibilitychange",this.onVisibility);
     this.clear();
   }
 }
 
-/** Scroll by untransformed layout coordinates for keyboard browsing. No snap. */
-export function revealCylinderRow(viewport: HTMLElement | null, id: string): void {
-  if (!viewport) return;
-  const row = document.getElementById(`row-${id}`);
-  const scene = row?.parentElement;
-  if (!row || !scene || !viewport.contains(row)) return;
-  const top = scene.offsetTop + row.offsetTop;
-  const bottom = top + row.offsetHeight;
-  const margin = 12;
-  if (top < viewport.scrollTop + margin) viewport.scrollTop = Math.max(0, top - margin);
-  else if (bottom > viewport.scrollTop + viewport.clientHeight - margin) viewport.scrollTop = bottom - viewport.clientHeight + margin;
+export function revealCylinderRow(viewport:HTMLElement|null,id:string):void {
+  if(!viewport)return;
+  const row=document.getElementById(`row-${id}`);
+  if(!row || !viewport.contains(row))return;
+  const controller=controllers.get(viewport);
+  if(controller)controller.reveal(row);
+  else row.scrollIntoView({block:"nearest",inline:"nearest"});
 }
 
-export function CylinderScroll({ children, viewportRef }: { children: ReactNode; viewportRef: RefObject<HTMLDivElement | null> }) {
-  const controller = useRef<CylinderController | null>(null);
-  useLayoutEffect(() => {
-    if (!viewportRef.current) return;
-    const instance = new CylinderController(viewportRef.current);
-    controller.current = instance;
-    return () => { instance.destroy(); controller.current = null; };
-  }, [viewportRef]);
-  return <div className="library-scroll" ref={viewportRef} tabIndex={0} aria-label="Browse sounds, scroll to see more">{children}</div>;
+export function CylinderScroll({children,viewportRef}:{children:ReactNode;viewportRef:RefObject<HTMLDivElement|null>}) {
+  useLayoutEffect(()=>{
+    const viewport=viewportRef.current;
+    const carrier=viewport?.firstElementChild;
+    const stage=carrier?.firstElementChild;
+    if(!viewport || !(carrier instanceof HTMLElement) || !(stage instanceof HTMLElement))return;
+    const controller=new DrumController(viewport,carrier,stage);
+    controllers.set(viewport,controller);
+    return ()=>{controllers.delete(viewport);controller.destroy();};
+  },[viewportRef]);
+  return <div className="library-scroll" ref={viewportRef} tabIndex={0} aria-label="Browse sounds, scroll to see more">
+    <div className="drum-carrier"><div className="drum-stage">{children}</div></div>
+  </div>;
 }
