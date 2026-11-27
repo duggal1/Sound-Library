@@ -113,7 +113,9 @@ export class StageRenderer {
       }
     }
     this.peak = Math.max(peak, 1e-6);
-    this.computeTargets();
+    // Retain previous geometry across a cold load; the UI hides it until PCM is ready.
+    if (pcm) this.computeTargets();
+    this.pointerX = null;
     this.requestFrame();
   }
 
@@ -133,7 +135,8 @@ export class StageRenderer {
   /* ---------------------------------------------------------------- */
 
   private readonly onPointerMove = (e: PointerEvent) => {
-    this.pointerX = e.clientX - this.canvas.getBoundingClientRect().left;
+    const p = this.plot();
+    this.pointerX = Math.max(p.left,Math.min(p.right,e.clientX - this.canvas.getBoundingClientRect().left));
     this.requestFrame();
   };
 
@@ -293,6 +296,7 @@ export class StageRenderer {
 
   private drawWaveform(p: Plot): void {
     const { ctx, palette } = this;
+    if (!this.pcm) return;
     const progress = this.engine.progress();
     const reach = (p.bottom - p.top) * 0.42;
     const peaks = new Path2D(), energy = new Path2D();

@@ -1,6 +1,6 @@
 {
   "framework": "vite",
-  "buildCommand": "bun run build",
+  "buildCommand": "bun run typecheck && bun run build",
   "outputDirectory": "dist",
   "headers": [
     {

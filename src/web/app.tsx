@@ -2,7 +2,7 @@
  * Screen brief (taste.md §13)
  * Purpose   Audition an interface sound pack and export it.
  * Hero      The selected sound: its name, then its waveform on the canvas.
- * Action    Export pack. The only decorated object on the screen.
+ * Action    Audition the selected sound; export the source WAVs.
  * Nouns     sound, library, waveform, scope, peak, RMS, export.
  * Accent    Green. Only on data: waveform, live trace, selected signal,
  *           duration meters, the brand mark. Chrome is black / white / gray.
@@ -35,7 +35,8 @@ import {
   PrevIcon,
   SearchIcon,
 } from "./icons";
-import { StageRenderer, type StageMode } from "./stage";
+import type { StageMode } from "./stage";
+import { SoundStage } from "./sound-stage";
 
 const PAGE_SIZE = 12;
 
@@ -138,7 +139,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
-  useEffect(() => engine.subscribe(setPlayingId), [engine]);
+  useEffect(() => { const unsubscribe = engine.subscribe(setPlayingId); return () => {unsubscribe();engine.stop();}; }, [engine]);
   const auditionVersion = useRef(0);
   const [decoded, setDecoded] = useState<DecodedSound | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -182,6 +183,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
   useEffect(() => {
     if (!selectedId) return;
     const index = filtered.findIndex(sound => sound.id === selectedId);
+    if (index < 0) return;
     prefetchSound(filtered[index + 1]?.id);
     if (index > 0) prefetchSound(filtered[index - 1]?.id);
   }, [selectedId, filtered]);
@@ -194,6 +196,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
       setSelectedId(id);
       setPendingId(id);
       engine.stop();
+      window.dispatchEvent(new Event("verdant:play"));
       setPreviewError("");
       try { engine.unlock(); } catch { setPendingId(null); setPreviewError("Audio is unavailable in this browser."); return; }
       const current = () => version === auditionVersion.current;
@@ -283,8 +286,8 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
   const rows = filtered.slice(0, Math.max(shown, PAGE_SIZE));
   const stageSound = decoded && decoded.id === selectedId ? decoded : null;
 
-  const busy = pendingId === selectedId;
-  const playing = playingId === selectedId;
+  const busy = selectedId !== null && pendingId === selectedId;
+  const playing = selectedId !== null && playingId === selectedId;
   const currentIndex = filtered.findIndex(sound => sound.id === selectedId);
   return (
     <Shell context={`${fmtCount(sounds.length)} sounds · ${SAMPLE_RATE / 1000} kHz · ${catalog.bitDepth}-bit · mono`}
@@ -299,7 +302,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
             </div>
           </div>
           <div className="list-header" aria-hidden="true"><span>Name</span><span>Duration</span><span>Peak</span><span /></div>
-          <div className="library-scroll" tabIndex={0} aria-label="Browse sounds">
+          <div className="library-scroll" tabIndex={0} aria-label="Browse sounds, scroll to see more">
             {filtered.length === 0 ? <StatePanel kind="empty" title="No matching sounds" text="Try a different name or category." action={{label:"Clear filters",onClick:clearFilters}} /> :
               <div className="sound-list">
                 {rows.map(sound => {
@@ -319,7 +322,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
               </div>}
             {rows.length < filtered.length && <button className="pill more" type="button" onClick={() => setShown(n => n + PAGE_SIZE)}>Show more <ArrowIcon /></button>}
           </div>
-          <div className="library-foot"><span>{fmtCount(rows.length)} of {fmtCount(filtered.length)}</span><span>↑ ↓ Browse · Space to play</span></div>
+          <div className="library-foot"><span>{fmtCount(rows.length)} of {fmtCount(filtered.length)}</span><span>↑ ↓ Browse · Space to play / stop</span></div>
         </section>
         <section className="preview" aria-label="Audio inspector" data-expanded={expanded}>
           <div className="preview-top">
@@ -361,40 +364,6 @@ function filterSounds(sounds: readonly SoundSummary[], labels: Map<CategoryId,st
   const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   return sounds.filter(s => (category === "all" || s.category === category) &&
     terms.every(term => `${s.name} ${s.id} ${s.description} ${labels.get(s.category) ?? ""}`.toLowerCase().includes(term)));
-}
-function SoundStage({engine,sound,mode,onSeek}: {engine:AudioEngine;sound:DecodedSound|null;mode:StageMode;onSeek:(fraction:number)=>void}) {
-  const canvas = useRef<HTMLCanvasElement>(null);
-  const renderer = useRef<StageRenderer|null>(null);
-  const drag = useRef<number|null>(null);
-  const [position,setPosition] = useState(0);
-  useEffect(() => {
-    if (!canvas.current) return;
-    const stage = new StageRenderer(canvas.current,engine);
-    renderer.current = stage;
-    const wake = () => stage.refresh();
-    window.addEventListener("verdant:play",wake);
-    return () => {window.removeEventListener("verdant:play",wake);stage.destroy();renderer.current=null;};
-  },[engine]);
-  useEffect(() => {renderer.current?.setSound(sound?.samples ?? null,sound?.sampleRate ?? SAMPLE_RATE);setPosition(0);drag.current=null;},[sound]);
-  useEffect(() => {renderer.current?.setMode(mode);},[mode]);
-  const enabled = mode === "waveform" && !!sound;
-  const fraction = (x:number) => renderer.current?.fractionAt(x) ?? 0;
-  const seek = (value:number) => {
-    const next = Math.max(0,Math.min(.999,value));
-    setPosition(next);renderer.current?.inspect(next);onSeek(next);
-  };
-  return <div className="stage" data-ready={!!sound} data-mode={mode}>
-    <canvas ref={canvas} role={enabled ? "slider" : "img"} tabIndex={enabled ? 0 : undefined}
-      aria-label={enabled ? "Audition from waveform position" : mode === "scope" ? "Live audio oscilloscope" : "Sound amplitude over time"}
-      aria-valuemin={enabled ? 0 : undefined} aria-valuemax={enabled ? 100 : undefined} aria-valuenow={enabled ? Math.round(position*100) : undefined}
-      onPointerDown={e => {if(!enabled || e.button !== 0)return;drag.current=e.pointerId;e.currentTarget.setPointerCapture(e.pointerId);e.currentTarget.dataset.dragging="true";renderer.current?.inspect(fraction(e.clientX));}}
-      onPointerUp={e => {if(drag.current !== e.pointerId)return;drag.current=null;delete e.currentTarget.dataset.dragging;seek(fraction(e.clientX));}}
-      onPointerCancel={e => {drag.current=null;delete e.currentTarget.dataset.dragging;renderer.current?.inspect(null);}}
-      onLostPointerCapture={e => {drag.current=null;delete e.currentTarget.dataset.dragging;}}
-      onKeyDown={e => {if(!enabled)return;const delta=e.key==="ArrowRight"||e.key==="ArrowUp" ? .05 :e.key==="ArrowLeft"||e.key==="ArrowDown"?-.05:0;
-        if(delta || e.key==="Home" || e.key==="End"){e.preventDefault();e.stopPropagation();seek(e.key==="Home"?0:e.key==="End" ? .999 :position+delta);}}}
-    />
-  </div>;
 }
 function Shell({children,context,pack}: {children:ReactNode;context?:string;pack?:ReactNode}) {
   return <div className="shell"><header className="top"><div className="brand"><BrandMark /><span>Verdant</span></div><span className="context">{context ?? "Interface sounds"}</span>{pack}</header><main>{children}</main></div>;
