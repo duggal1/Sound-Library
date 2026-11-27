@@ -3,15 +3,15 @@ import { fmtMs } from "./format";
 
 export type StageMode = "waveform" | "scope";
 
-const PITCH = 2; // waveform sampling interval
-const CELL = 2; // edge clearance
-const GUTTER_L = 56;
+const PITCH = 3.5; // optical spacing, independent of device pixel ratio
+const CELL = 1.5;
+const GUTTER_L = 8;
 const GUTTER_R = 8;
-const PAD_T = 14;
-const GUTTER_B = 30;
+const PAD_T = 22;
+const GUTTER_B = 32;
 const MORPH_TAU = 0.085; // seconds; ~380 ms to settle, no overshoot
 const SCOPE_TAIL = 0.15; // keep drawing after playback so the trace settles to flat
-const LABEL_FONT = '12px "Instrument Sans", -apple-system, sans-serif';
+const LABEL_FONT = '12px "Inter", "Instrument Sans", -apple-system, sans-serif';
 const MINUS = "\u2212";
 
 interface Palette {
@@ -153,7 +153,7 @@ export class StageRenderer {
     this.last = now;
 
     const morphing = this.step(dt);
-    const live = this.engine.isActive(this.mode === "scope" ? SCOPE_TAIL : 0);
+    const live = this.engine.isActive(this.mode === "scope" ? SCOPE_TAIL : 0.12) || this.engine.progress() !== null;
     this.draw();
 
     if (morphing || live) this.requestFrame();
@@ -268,77 +268,53 @@ export class StageRenderer {
 
   private drawGrid(p: Plot): void {
     const { ctx, palette } = this;
-    const reach = p.halfRows * PITCH;
-    const peakText = this.peak.toFixed(2);
-
+    // A quiet zero line, not an oscilloscope graticule.
     ctx.save();
     ctx.strokeStyle = palette.grid;
     ctx.lineWidth = 1;
-    ctx.lineCap = "butt";
-    ctx.setLineDash([1, 4]);
-    for (const y of [p.mid - reach, p.mid, p.mid + reach]) {
-      const yy = Math.round(y) + 0.5;
-      ctx.beginPath();
-      ctx.moveTo(p.left, yy);
-      ctx.lineTo(p.right, yy);
-      ctx.stroke();
-    }
-    ctx.restore();
-
-    ctx.save();
-    ctx.font = LABEL_FONT;
-    ctx.fillStyle = palette.quiet;
-    ctx.textAlign = "right";
-    ctx.textBaseline = "middle";
-    ctx.fillText(`+${peakText}`, p.left - 12, p.mid - reach);
-    ctx.fillText("0", p.left - 12, p.mid);
-    ctx.fillText(`${MINUS}${peakText}`, p.left - 12, p.mid + reach);
+    ctx.beginPath();
+    ctx.moveTo(p.left, p.mid);
+    ctx.lineTo(p.right, p.mid);
+    ctx.stroke();
     ctx.restore();
   }
 
   private drawWaveform(p: Plot): void {
     const { ctx, palette } = this;
     const progress = this.engine.progress();
-
-    const reach = p.halfRows * PITCH;
-    const outline = new Path2D();
+    const reach = (p.bottom - p.top) * 0.42;
+    const active = new Path2D();
+    const remaining = new Path2D();
     for (let c = 0; c < p.cols; c++) {
-      const x = p.left + c / Math.max(1,p.cols - 1) * p.gridW;
-      const y = p.mid - this.shownMax[c] * reach;
-      if (c === 0) outline.moveTo(x,y); else outline.lineTo(x,y);
+      const x = p.left + (c + 0.5) * PITCH;
+      const hi = this.shownMax[c] * reach;
+      const lo = -this.shownMin[c] * reach;
+      // No invented height: the smallest ink mark simply keeps silence visible.
+      const path = progress === null || (c + 0.5) / p.cols <= progress ? active : remaining;
+      path.moveTo(x, p.mid - Math.max(0.35, hi));
+      path.lineTo(x, p.mid + Math.max(0.35, lo));
     }
-    for (let c = p.cols - 1; c >= 0; c--) {
-      outline.lineTo(p.left + c / Math.max(1,p.cols - 1) * p.gridW, p.mid - this.shownMin[c] * reach);
-    }
-    outline.closePath();
-    ctx.fillStyle = progress === null ? palette.accent : palette.soft;
-    ctx.fill(outline);
-    ctx.strokeStyle = ctx.fillStyle;
-    ctx.lineWidth = 0.8;
-    ctx.stroke(outline);
+    ctx.save();
+    ctx.lineWidth = 1.65;
+    ctx.lineCap = "round";
+    ctx.strokeStyle = palette.soft;
+    ctx.stroke(remaining);
+    ctx.strokeStyle = palette.accent;
+    ctx.stroke(active);
     if (progress !== null) {
-      ctx.save();
-      ctx.beginPath();
-      ctx.rect(p.left,p.top,p.gridW * progress,p.bottom - p.top);
-      ctx.clip();
-      ctx.fillStyle = palette.accent;
-      ctx.fill(outline);
-      ctx.restore();
-    }
-
-    if (progress !== null) {
-      const x = Math.round(p.left + progress * p.gridW) + 0.5;
-      ctx.save();
+      const x = p.left + progress * p.gridW;
       ctx.strokeStyle = palette.ink;
       ctx.lineWidth = 1;
-      ctx.setLineDash([1, 3]);
       ctx.beginPath();
-      ctx.moveTo(x, p.top);
-      ctx.lineTo(x, p.bottom);
+      ctx.moveTo(x, p.top + 4);
+      ctx.lineTo(x, p.bottom - 4);
       ctx.stroke();
-      ctx.restore();
+      ctx.fillStyle = palette.ink;
+      ctx.beginPath();
+      ctx.arc(x, p.top + 3, 2, 0, Math.PI * 2);
+      ctx.fill();
     }
-
+    ctx.restore();
     if (this.pointerX !== null && this.pcm) this.drawHover(p);
   }
 
@@ -350,7 +326,7 @@ export class StageRenderer {
     const c = Math.min(p.cols - 1, Math.max(0, Math.floor((px - p.left) / PITCH)));
     const x = Math.round(p.left + c * PITCH + PITCH / 2) + 0.5;
     const t = ((c + 0.5) / p.cols) * this.duration;
-    const level = Math.max(this.shownMax[c], -this.shownMin[c]) * this.peak;
+    const level = Math.max(this.targetMax[c], -this.targetMin[c]) * this.peak;
 
     ctx.save();
     ctx.globalAlpha = 0.5;
@@ -363,7 +339,7 @@ export class StageRenderer {
     ctx.stroke();
     ctx.restore();
 
-    const text = `${fmtMs(t)}  ·  ${level.toFixed(2)}`;
+    const text = `${fmtMs(t)}  ·  ${level > 0 ? (20 * Math.log10(level)).toFixed(1) + " dBFS" : "−∞ dBFS"}`;
     ctx.save();
     ctx.font = LABEL_FONT;
     const w = ctx.measureText(text).width + 20;
@@ -388,30 +364,22 @@ export class StageRenderer {
     else this.scopeBuf.fill(0);
 
     const buf = this.scopeBuf;
-    const reach = p.halfRows * PITCH;
-    let endY = p.mid;
-
+    const reach = (p.bottom - p.top) * 0.42;
+    // Plot actual time-domain samples in order; avoid signed-peak aliasing.
     ctx.save();
     ctx.beginPath();
-    for (let px = 0; px < p.gridW; px++) {
-      const from = Math.floor((px / p.gridW) * n);
-      const to = Math.min(n, Math.max(from + 1, Math.floor(((px + 1) / p.gridW) * n)));
-      let v = 0;
-      for (let i = from; i < to; i++) if (Math.abs(buf[i]) > Math.abs(v)) v = buf[i];
-      const y = p.mid - Math.max(-1.15, Math.min(1.15, v / this.peak)) * reach;
-      if (px === 0) ctx.moveTo(p.left, y);
-      else ctx.lineTo(p.left + px, y);
-      endY = y;
+    const count = Math.max(2, buf.length);
+    for (let i = 0; i < buf.length; i++) {
+      const x = p.left + i / (count - 1) * p.gridW;
+      const y = p.mid - Math.max(-1, Math.min(1, buf[i])) * reach;
+      if (i === 0) ctx.moveTo(x,y);
+      else ctx.lineTo(x,y);
     }
     ctx.strokeStyle = palette.accent;
-    ctx.lineWidth = 1.8;
-    ctx.lineJoin = "miter";
-    ctx.lineCap = "butt";
+    ctx.lineWidth = 1.25;
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
     ctx.stroke();
-    ctx.fillStyle = palette.accent;
-    ctx.beginPath();
-    ctx.arc(p.right - 1, endY, 2.5, 0, Math.PI * 2);
-    ctx.fill();
     ctx.restore();
   }
 
@@ -419,10 +387,10 @@ export class StageRenderer {
     const { ctx, palette } = this;
     let labels: string[];
     if (this.mode === "waveform") {
-      labels = [0, 1 / 3, 2 / 3, 1].map((f) => fmtMs(f * this.duration));
+      labels = this.pcm ? [0, 0.5, 1].map((f) => fmtMs(f * this.duration)) : ["", "", ""];
     } else {
       const windowMs = Math.round(((this.scopeBuf.length || 4096) / this.engine.sampleRate) * 1000);
-      labels = [`${MINUS}${windowMs} ms`, `${MINUS}${Math.round((windowMs * 2) / 3)} ms`, `${MINUS}${Math.round(windowMs / 3)} ms`, "now"];
+      labels = [`${MINUS}${windowMs} ms`, `${MINUS}${Math.round(windowMs / 2)} ms`, "now"];
     }
 
     ctx.save();
