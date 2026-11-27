@@ -3,8 +3,8 @@ import { fmtMs } from "./format";
 
 export type StageMode = "waveform" | "scope";
 
-const PITCH = 7; // distance between pixel centres
-const CELL = 5; // pixel size
+const PITCH = 2; // waveform sampling interval
+const CELL = 2; // edge clearance
 const GUTTER_L = 56;
 const GUTTER_R = 8;
 const PAD_T = 14;
@@ -139,6 +139,8 @@ export class StageRenderer {
     this.pointerX = null;
     this.requestFrame();
   };
+
+  refresh(): void { this.requestFrame(); }
 
   private requestFrame(): void {
     if (this.destroyed || this.raf) return;
@@ -298,19 +300,31 @@ export class StageRenderer {
     const { ctx, palette } = this;
     const progress = this.engine.progress();
 
-    const played = new Path2D();
-    const pending = new Path2D();
+    const reach = p.halfRows * PITCH;
+    const outline = new Path2D();
     for (let c = 0; c < p.cols; c++) {
-      const x = p.left + c * PITCH + (PITCH - CELL) / 2;
-      const up = Math.round(this.shownMax[c] * p.halfRows);
-      const down = Math.round(-this.shownMin[c] * p.halfRows);
-      const path = progress === null || (c + 0.5) / p.cols <= progress ? played : pending;
-      for (let r = -down; r <= up; r++) path.rect(x, p.mid - r * PITCH - CELL / 2, CELL, CELL);
+      const x = p.left + c / Math.max(1,p.cols - 1) * p.gridW;
+      const y = p.mid - this.shownMax[c] * reach;
+      if (c === 0) outline.moveTo(x,y); else outline.lineTo(x,y);
     }
-    ctx.fillStyle = palette.accent;
-    ctx.fill(played);
-    ctx.fillStyle = palette.soft;
-    ctx.fill(pending);
+    for (let c = p.cols - 1; c >= 0; c--) {
+      outline.lineTo(p.left + c / Math.max(1,p.cols - 1) * p.gridW, p.mid - this.shownMin[c] * reach);
+    }
+    outline.closePath();
+    ctx.fillStyle = progress === null ? palette.accent : palette.soft;
+    ctx.fill(outline);
+    ctx.strokeStyle = ctx.fillStyle;
+    ctx.lineWidth = 0.8;
+    ctx.stroke(outline);
+    if (progress !== null) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(p.left,p.top,p.gridW * progress,p.bottom - p.top);
+      ctx.clip();
+      ctx.fillStyle = palette.accent;
+      ctx.fill(outline);
+      ctx.restore();
+    }
 
     if (progress !== null) {
       const x = Math.round(p.left + progress * p.gridW) + 0.5;
@@ -395,7 +409,9 @@ export class StageRenderer {
     ctx.lineCap = "butt";
     ctx.stroke();
     ctx.fillStyle = palette.accent;
-    ctx.fillRect(p.right - 3 - 1, endY - 3, 6, 6);
+    ctx.beginPath();
+    ctx.arc(p.right - 1, endY, 2.5, 0, Math.PI * 2);
+    ctx.fill();
     ctx.restore();
   }
 
