@@ -3,6 +3,7 @@ import { SAMPLE_RATE } from "../core/types";
 export const DEFAULT_VOLUME = 1.1;
 
 interface Playable {
+  readonly id: string;
   readonly samples: Float32Array;
   readonly sampleRate: number;
 }
@@ -14,6 +15,11 @@ export class AudioEngine {
   private volume = DEFAULT_VOLUME;
   private activeSource: AudioBufferSourceNode | null = null;
   private startedAt = 0;
+  private offset = 0;
+  private listeners = new Set<(id: string | null) => void>();
+  subscribe(listener: (id: string | null) => void): () => void { this.listeners.add(listener); return () => {this.listeners.delete(listener);}; }
+  private publish(id: string | null): void { for(const listener of this.listeners) listener(id); }
+  stop(): void { const source = this.activeSource; this.activeSource = null; if(source) source.stop(); this.duration = 0; this.offset = 0; this.publish(null); }
   private duration = 0;
   private readonly buffers = new WeakMap<Float32Array, AudioBuffer>();
 
@@ -39,7 +45,7 @@ export class AudioEngine {
     }
   }
 
-  async play(sound: Playable, isCurrent: () => boolean = () => true): Promise<void> {
+  async play(sound: Playable, isCurrent: () => boolean = () => true, fraction = 0): Promise<void> {
     const ctx = this.ensure();
     if (ctx.state !== "running") await ctx.resume();
     if (!isCurrent()) return;
@@ -52,7 +58,7 @@ export class AudioEngine {
     source.connect(input);
     source.onended = () => {
       source.disconnect();
-      if (this.activeSource === source) this.activeSource = null;
+      if (this.activeSource === source) { this.activeSource = null; this.publish(null); }
     };
     // Audition the latest sound, not a stack of overlapping transients.
     this.activeSource?.stop();
@@ -60,7 +66,9 @@ export class AudioEngine {
 
     this.startedAt = ctx.currentTime;
     this.duration = buffer.duration;
-    source.start(this.startedAt);
+    this.offset = Math.min(buffer.duration - 1 / buffer.sampleRate, Math.max(0, fraction * buffer.duration));
+    source.start(this.startedAt, this.offset);
+    this.publish(sound.id);
   }
 
   /** 0..1 while the latest sound is audible, otherwise null. Compensates output latency. */
@@ -68,7 +76,7 @@ export class AudioEngine {
     const ctx = this.ctx;
     if (!ctx || ctx.state !== "running" || this.duration <= 0) return null;
     const latency = ctx.outputLatency || ctx.baseLatency || 0;
-    const p = (ctx.currentTime - this.startedAt - latency) / this.duration;
+    const p = (ctx.currentTime - this.startedAt - latency + this.offset) / this.duration;
     if (p >= 1) return null;
     return p < 0 ? 0 : p;
   }
@@ -77,7 +85,7 @@ export class AudioEngine {
   isActive(pad = 0): boolean {
     const ctx = this.ctx;
     if (!ctx || ctx.state !== "running" || this.duration <= 0) return false;
-    return ctx.currentTime < this.startedAt + this.duration + pad;
+    return ctx.currentTime < this.startedAt + this.duration - this.offset + pad;
   }
 
   private bufferFor(ctx: AudioContext, sound: Playable): AudioBuffer {

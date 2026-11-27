@@ -207,7 +207,7 @@ export function Dropdown<T extends string>({ label, value, options, onChange }: 
         <span>{current?.label}</span>
         <ChevronIcon />
       </button>
-      <ul id={listId} role="listbox" className="dd-menu" data-open={open} aria-label={label}>
+      <ul id={listId} role="listbox" className="dd-menu" data-open={open} aria-label={label} hidden={!open}>
         {options.map((option, index) => (
           <li
             key={option.value}
