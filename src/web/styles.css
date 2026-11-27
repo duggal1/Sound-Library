@@ -65,14 +65,19 @@ main{min-height:0;min-width:0}.workspace{height:100%;min-height:0;display:grid;g
 @media(max-height:540px) and (max-width:850px) and (min-width:520px){.shell{grid-template-rows:48px minmax(0,1fr)}.workspace{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr);gap:var(--s4)}.library{grid-row:1;grid-column:2}.preview{grid-row:1;grid-column:1;overflow:auto;min-height:0}.preview[data-expanded=true]{max-height:none}.stage{height:100px}.library-foot{display:none}}
 @media(max-height:600px) and (max-width:519px){.shell{grid-template-rows:48px minmax(0,1fr)}.workspace{gap:var(--s2)}.preview{gap:4px}.preview-meta{display:none}.stage{height:72px}.library-head{padding-bottom:4px}.library-foot{display:none}.preview[data-expanded=true]{max-height:50dvh;overflow:auto}}
 
-/* The native scrollport clips the scene; its inner surface owns perspective.
-   Rows keep layout, hit-testing and focus. No opacity mask, snap or fake wheel. */
-.sound-list[data-cylinder=true] { transform-style:preserve-3d; }
+/* One shared rotating drum, with a native scroll carrier and a clipped stage.
+   No filter on the drum itself: that would flatten the 3D rendering context. */
+.library-scroll{--drum-pitch:64px;padding-block:0;overflow-x:hidden;overflow-anchor:none;touch-action:pan-y}
+.drum-carrier,.drum-stage{position:relative;min-width:0}
+.library-scroll[data-drum=true] .drum-stage{position:sticky;top:0;overflow:clip;perspective-origin:50% 50%}
+.library-scroll[data-drum=true] .sound-list[data-cylinder=true]{position:absolute;display:block;inset-inline:0;top:50%;height:0;transform-origin:50% 0;transform-style:preserve-3d}
 .sound-list[data-cylinder=true] > .sound-row,
-.sound-list[data-cylinder=true] > .more { transform-origin:50% 50%; backface-visibility:hidden; }
-.sound-list > .more { justify-self:center; }
-@media(prefers-reduced-motion:reduce) {
-  .sound-list[data-cylinder=true] { perspective:none!important; }
-  .sound-list[data-cylinder=true] > .sound-row,
-  .sound-list[data-cylinder=true] > .more { transform:none!important; }
-}
+.sound-list[data-cylinder=true] > .more{position:absolute;top:calc((4px - var(--drum-pitch)) / 2);height:calc(var(--drum-pitch) - 4px);min-height:0;margin:0;transform-origin:50% 50%;backface-visibility:hidden}
+.sound-list[data-cylinder=true] > .sound-row{inset-inline:0}
+.sound-list[data-cylinder=true] > .more{left:0;right:0;width:max-content;margin-inline:auto;height:36px;top:-18px}
+.sound-list[data-cylinder=true] > [data-drum-away=true]{opacity:0;pointer-events:none}
+.sound-list[data-cylinder=true] > .sound-row[data-drum-edge=true] .sound-text{filter:blur(.28px)}
+.sound-list[data-cylinder=true] > .sound-row:focus-within .sound-text,
+.sound-list[data-cylinder=true] > .sound-row:hover .sound-text{filter:none}
+.sound-list > .more{justify-self:center}
+@media(max-width:850px){.library-scroll{--drum-pitch:60px}}
