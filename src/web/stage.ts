@@ -3,7 +3,7 @@ import { fmtMs } from "./format";
 
 export type StageMode = "waveform" | "scope";
 
-const PITCH = 3.5; // optical spacing, independent of device pixel ratio
+const PITCH = 2.5; // optical spacing, independent of device pixel ratio
 const CELL = 1.5;
 const GUTTER_L = 8;
 const GUTTER_R = 8;
@@ -74,6 +74,8 @@ export class StageRenderer {
   private cols = 0;
   private targetMax = new Float32Array(0);
   private targetMin = new Float32Array(0);
+  private targetRms = new Float32Array(0);
+  private shownRms = new Float32Array(0);
   private shownMax = new Float32Array(0);
   private shownMin = new Float32Array(0);
   private scopeBuf = new Float32Array(0);
@@ -111,7 +113,9 @@ export class StageRenderer {
       }
     }
     this.peak = Math.max(peak, 1e-6);
-    this.computeTargets();
+    // Retain previous geometry across a cold load; the UI hides it until PCM is ready.
+    if (pcm) this.computeTargets();
+    this.pointerX = null;
     this.requestFrame();
   }
 
@@ -131,7 +135,8 @@ export class StageRenderer {
   /* ---------------------------------------------------------------- */
 
   private readonly onPointerMove = (e: PointerEvent) => {
-    this.pointerX = e.clientX - this.canvas.getBoundingClientRect().left;
+    const p = this.plot();
+    this.pointerX = Math.max(p.left,Math.min(p.right,e.clientX - this.canvas.getBoundingClientRect().left));
     this.requestFrame();
   };
 
@@ -140,6 +145,8 @@ export class StageRenderer {
     this.requestFrame();
   };
 
+  fractionAt(clientX: number): number { const p = this.plot(); return Math.max(0, Math.min(1, (clientX - this.canvas.getBoundingClientRect().left - p.left) / p.gridW)); }
+  inspect(fraction: number | null): void { const p = this.plot(); this.pointerX = fraction === null ? null : p.left + fraction * p.gridW; this.requestFrame(); }
   refresh(): void { this.requestFrame(); }
 
   private requestFrame(): void {
@@ -202,6 +209,8 @@ export class StageRenderer {
       this.shownMin = resample(this.shownMin, cols);
       this.targetMax = new Float32Array(cols);
       this.targetMin = new Float32Array(cols);
+      this.targetRms = new Float32Array(cols);
+      this.shownRms = resample(this.shownRms,cols);
       this.cols = cols;
     }
     this.computeTargets();
@@ -213,6 +222,7 @@ export class StageRenderer {
     if (!pcm || pcm.length === 0) {
       this.targetMax.fill(0);
       this.targetMin.fill(0);
+      this.targetRms.fill(0);
       return;
     }
     const n = pcm.length;
@@ -221,13 +231,16 @@ export class StageRenderer {
       const to = Math.max(from + 1, Math.floor(((c + 1) * n) / this.cols));
       let hi = 0;
       let lo = 0;
+      let energy = 0, count = 0;
       for (let i = from; i < to && i < n; i++) {
         const v = pcm[i];
+        energy += v*v; count++;
         if (v > hi) hi = v;
         if (v < lo) lo = v;
       }
       this.targetMax[c] = hi / this.peak;
       this.targetMin[c] = lo / this.peak;
+      this.targetRms[c] = Math.sqrt(energy / Math.max(1,count)) / this.peak;
     }
   }
 
@@ -238,6 +251,8 @@ export class StageRenderer {
     for (let i = 0; i < this.cols; i++) {
       const dMax = this.targetMax[i] - this.shownMax[i];
       const dMin = this.targetMin[i] - this.shownMin[i];
+      const dRms = this.targetRms[i] - this.shownRms[i];
+      if(Math.abs(dRms)<.002)this.shownRms[i]=this.targetRms[i];else{this.shownRms[i]+=dRms*k;moving=true;}
       if (Math.abs(dMax) < 0.002) this.shownMax[i] = this.targetMax[i];
       else {
         this.shownMax[i] += dMax * k;
@@ -281,37 +296,42 @@ export class StageRenderer {
 
   private drawWaveform(p: Plot): void {
     const { ctx, palette } = this;
+    if (!this.pcm) return;
     const progress = this.engine.progress();
     const reach = (p.bottom - p.top) * 0.42;
-    const active = new Path2D();
-    const remaining = new Path2D();
+    const peaks = new Path2D(), energy = new Path2D();
     for (let c = 0; c < p.cols; c++) {
-      const x = p.left + (c + 0.5) * PITCH;
-      const hi = this.shownMax[c] * reach;
-      const lo = -this.shownMin[c] * reach;
-      // No invented height: the smallest ink mark simply keeps silence visible.
-      const path = progress === null || (c + 0.5) / p.cols <= progress ? active : remaining;
-      path.moveTo(x, p.mid - Math.max(0.35, hi));
-      path.lineTo(x, p.mid + Math.max(0.35, lo));
+      const x = p.left + (c + .5) * PITCH;
+      const hi = this.shownMax[c] * reach, lo = -this.shownMin[c] * reach;
+      const rms = this.shownRms[c] * reach;
+      peaks.moveTo(x,p.mid-hi);peaks.lineTo(x,p.mid+lo);
+      // Inner ink encodes actual RMS, clamped within the measured extrema.
+      energy.moveTo(x,p.mid-Math.min(hi,rms));energy.lineTo(x,p.mid+Math.min(lo,rms));
     }
     ctx.save();
-    ctx.lineWidth = 1.65;
     ctx.lineCap = "round";
-    ctx.strokeStyle = palette.soft;
-    ctx.stroke(remaining);
-    ctx.strokeStyle = palette.accent;
-    ctx.stroke(active);
+    const drawInk = (played:boolean) => {
+      ctx.strokeStyle = played ? palette.accent : palette.soft;
+      ctx.globalAlpha = played ? .42 : .65;
+      ctx.lineWidth = 1;
+      ctx.stroke(peaks);
+      ctx.globalAlpha = 1;
+      ctx.lineWidth = 1.65;
+      ctx.stroke(energy);
+    };
+    drawInk(progress === null);
+    if(progress !== null){ctx.save();ctx.beginPath();ctx.rect(p.left,p.top,p.gridW*progress,p.bottom-p.top);ctx.clip();drawInk(true);ctx.restore();}
     if (progress !== null) {
       const x = p.left + progress * p.gridW;
-      ctx.strokeStyle = palette.ink;
+      ctx.strokeStyle = palette.accent;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(x, p.top + 4);
       ctx.lineTo(x, p.bottom - 4);
       ctx.stroke();
-      ctx.fillStyle = palette.ink;
+      ctx.fillStyle = palette.accent;
       ctx.beginPath();
-      ctx.arc(x, p.top + 3, 2, 0, Math.PI * 2);
+      ctx.rect(x-2, p.top + 1, 4, 4);
       ctx.fill();
     }
     ctx.restore();
@@ -346,7 +366,7 @@ export class StageRenderer {
     const bx = Math.min(p.right - w, Math.max(p.left, x - w / 2));
     ctx.fillStyle = "rgba(0,0,0,.84)";
     ctx.beginPath();
-    ctx.roundRect(bx, p.top + 4, w, 26, 12);
+    ctx.roundRect(bx, p.top + 4, w, 26, 13);
     ctx.fill();
     ctx.fillStyle = "#fff";
     ctx.textAlign = "left";
