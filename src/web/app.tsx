@@ -39,8 +39,6 @@ import { SoundStage } from "./sound-stage";
 import { VolumeControl } from "./volume-control";
 import { CylinderScroll, revealCylinderRow } from "./cylinder-scroll";
 
-const PAGE_SIZE = 12;
-
 const MODES: readonly SegmentedOption<StageMode>[] = [
   { value: "waveform", label: "Waveform" },
   { value: "scope", label: "Scope" },
@@ -135,7 +133,6 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState<StageMode>("waveform");
   const [volume, setVolume] = useState(DEFAULT_VOLUME);
-  const [shown, setShown] = useState(PAGE_SIZE);
   const [previewError, setPreviewError] = useState("");
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -236,7 +233,6 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
       const next = index < 0 ? 0 : Math.min(filtered.length - 1, Math.max(0, index + dir));
       const target = filtered[next];
       if (!target) return;
-      setShown((n) => Math.max(n, next + 1));
       audition(target.id);
       requestAnimationFrame(() =>
         revealCylinderRow(libraryRef.current, target.id),
@@ -260,7 +256,6 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
       }
       if (e.key === "Escape" && document.activeElement === searchRef.current) {
         setQuery("");
-        setShown(PAGE_SIZE);
         searchRef.current?.blur();
         return;
       }
@@ -284,10 +279,8 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
   const clearFilters = () => {
     setCategory("all");
     setQuery("");
-    setShown(PAGE_SIZE);
   };
 
-  const rows = filtered.slice(0, Math.max(shown, PAGE_SIZE));
   const stageSound = decoded && decoded.id === selectedId ? decoded : null;
 
   const busy = selectedId !== null && pendingId === selectedId;
@@ -331,15 +324,15 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
           <div className="library-head">
             <h2>Sounds <span className="library-count">{fmtCount(filtered.length)}</span></h2>
             <div className="filters">
-              <div className="search"><SearchIcon /><input ref={searchRef} type="search" placeholder="Search sounds" aria-label="Search sounds" value={query} onChange={e => {setQuery(e.target.value);setShown(PAGE_SIZE);}} />{query && <button type="button" className="clear-search" aria-label="Clear search" onClick={() => {setQuery("");setShown(PAGE_SIZE);searchRef.current?.focus();}}><ClearIcon /></button>}</div>
-              <Dropdown label="Sound category" value={category} options={categoryOptions} onChange={value => {setCategory(value);setShown(PAGE_SIZE);}} />
+              <div className="search"><SearchIcon /><input ref={searchRef} type="search" placeholder="Search sounds" aria-label="Search sounds" value={query} onChange={e => {setQuery(e.target.value);}} />{query && <button type="button" className="clear-search" aria-label="Clear search" onClick={() => {setQuery("");searchRef.current?.focus();}}><ClearIcon /></button>}</div>
+              <Dropdown label="Sound category" value={category} options={categoryOptions} onChange={value => {setCategory(value);}} />
             </div>
           </div>
           <div className="list-header" aria-hidden="true"><span>Name</span><span>Duration</span><span>Peak</span><span /></div>
           <CylinderScroll viewportRef={libraryRef}>
             {filtered.length === 0 ? <StatePanel kind="empty" title="No matching sounds" text="Try a different name or category." action={{label:"Clear filters",onClick:clearFilters}} /> :
               <div className="sound-list">
-                {rows.map(sound => {
+                {filtered.map(sound => {
                   const active = playingId === sound.id;
                   const loading = pendingId === sound.id;
                   return <div className="sound-row" id={`row-${sound.id}`} key={sound.id} data-selected={sound.id === selectedId} data-playing={active} data-loading={loading}
@@ -353,10 +346,9 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
                     <a className="pill icon-button" href={downloadUrl(sound.id)} download aria-label={`Download ${sound.name}`}><DownloadIcon /></a>
                   </div>;
                 })}
-                {rows.length < filtered.length && <button className="pill more" type="button" onClick={() => setShown(n => n + PAGE_SIZE)}>Show more <ArrowIcon /></button>}
               </div>}
           </CylinderScroll>
-          <div className="library-foot"><span>{fmtCount(rows.length)} of {fmtCount(filtered.length)}</span><span>↑ ↓ Browse · Space to play / stop</span></div>
+          <div className="library-foot"><span>{fmtCount(filtered.length)} sounds</span><span>↑ ↓ Browse · Space to play / stop</span></div>
         </section>
       </div>
     </Shell>
