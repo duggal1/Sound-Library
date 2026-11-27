@@ -284,13 +284,7 @@ export function AnimatedNumber({ value, format }: AnimatedNumberProps) {
 /* Pixel bar: an amount, counted                                       */
 /* ------------------------------------------------------------------ */
 
-export function MicroBar({ ratio, segments = 12 }: { ratio: number; segments?: number }) {
-  const on = ratio > 0 ? Math.max(1, Math.round(ratio * segments)) : 0;
-  return (
-    <span className="mb" aria-hidden="true">
-      {Array.from({ length: segments }, (_, i) => (
-        <i key={i} data-on={i < on} />
-      ))}
-    </span>
-  );
+export function MicroBar({ ratio }: { ratio: number }) {
+  const amount = Math.max(0, Math.min(1, ratio));
+  return <span className="mb" aria-hidden="true"><i style={{ transform: `scaleX(${amount})` }} /></span>;
 }

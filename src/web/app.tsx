@@ -24,6 +24,9 @@ import { AnimatedNumber, Dropdown, MicroBar, Segmented, type DropdownOption, typ
 import { fmtBytes, fmtCount, fmtDb, fmtMs, fmtMsRounded } from "./format";
 import {
   ArrowIcon,
+  ArchiveIcon,
+  VolumeIcon,
+  ClearIcon,
   BrandMark,
   DownloadIcon,
   NextIcon,
@@ -79,8 +82,8 @@ export function App() {
         <StatePanel
           kind="loading"
           level={1}
-          title="Reading the library"
-          text="Fetching sound metadata from the server."
+          title="Loading sounds"
+          text=""
         />
       </Shell>
     );
@@ -92,8 +95,8 @@ export function App() {
         <StatePanel
           kind="error"
           level={1}
-          title="Could not read the library"
-          text={`${state.message} No sounds are shown because none were loaded.`}
+          title="Library unavailable"
+          text={state.message}
           action={{ label: "Retry", onClick: reload }}
         />
       </Shell>
@@ -106,8 +109,8 @@ export function App() {
         <StatePanel
           kind="empty"
           level={1}
-          title="No sounds in this pack"
-          text="The server returned an empty library, so there is nothing to preview or export."
+          title="No sounds yet"
+          text=""
           action={{ label: "Reload library", onClick: reload }}
         />
       </Shell>
@@ -256,14 +259,14 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
 
   const dock = (
     <nav className="dock" aria-label="Transport">
-      <button type="button" aria-label="Previous sound" onClick={() => step(-1)}>
+      <button type="button" aria-label="Previous sound" disabled={filtered.length === 0 || selectedId === filtered[0]?.id} onClick={() => step(-1)}>
         <PrevIcon />
       </button>
-      <button type="button" className="dock-play" onClick={replay}>
+      <button type="button" className="dock-play" disabled={!selected} onClick={replay}>
         <PlayIcon />
         <span>Play</span>
       </button>
-      <button type="button" aria-label="Next sound" onClick={() => step(1)}>
+      <button type="button" aria-label="Next sound" disabled={filtered.length === 0 || selectedId === filtered[filtered.length - 1]?.id} onClick={() => step(1)}>
         <NextIcon />
       </button>
     </nav>
@@ -272,7 +275,6 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
   return (
     <Shell
       context={`${fmtCount(sounds.length)} sounds · ${SAMPLE_RATE / 1000} kHz · ${catalog.bitDepth}-bit · mono`}
-      dock={dock}
     >
       <div className="overview">
         {/* ----------------------------- hero + stage ----------------------------- */}
@@ -282,7 +284,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
               <div className="hero-label">{categoryLabel.get(selected.category)}</div>
               <h1 className="hero-name">{selected.name}</h1>
               <p className="hero-caption">
-                {selected.description} <strong>{fmtMs(selected.duration)}</strong> · peak {fmtDb(selected.peakDb)}
+                {selected.description}
               </p>
             </div>
           )}
@@ -290,19 +292,19 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
           <div className="stage-bar">
             <Segmented label="Visualisation" value={mode} options={MODES} onChange={setMode} />
             <div className="stage-actions">
-              <button type="button" className="pill primary" disabled={!selected} onClick={replay}><PlayIcon /> Play sound</button>
+              {dock}
               {selected && <a className="pill icon-button" aria-label="Download selected sound" href={downloadUrl(selected.id)}><DownloadIcon /></a>}
             </div>
           </div>
           <SoundStage engine={engine} sound={stageSound} mode={mode} />
           <div className="stage-footer">
-            <span role="status">{previewError || (stageSound ? "Ready to audition" : "Loading waveform…")}</span>
-            <label className="volume">Volume <input aria-label="Playback volume" type="range" min={0} max={1} step={0.01} value={volume} onChange={e => setVolume(Number(e.target.value))} /><span>{Math.round(volume * 100)}%</span></label>
+            <span role="status">{previewError || (stageSound ? "" : "Loading waveform…")}</span>
+            <label className="volume"><VolumeIcon /> <input aria-label="Playback volume" type="range" min={0} max={1} step={0.01} value={volume} onChange={e => setVolume(Number(e.target.value))} /><span>{Math.round(volume * 100)}%</span></label>
           </div>
         </section>
         <aside className="inspector" aria-label="Sound details">
           <div className="details">
-            <h2>Signal details</h2>
+            <h2>Signal</h2>
             <dl>
               <div><dt>Duration</dt><dd>{selected ? <AnimatedNumber value={selected.duration * 1000} format={fmtMsRounded} /> : "—"}</dd></div>
               <div><dt>Peak</dt><dd>{selected ? <AnimatedNumber value={selected.peakDb} format={fmtDb} /> : "—"}</dd></div>
@@ -312,18 +314,18 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
             </dl>
           </div>
           <section className="export">
-            <div className="export-heading"><BrandMark /><span>Complete collection</span></div>
-            <h2>{fmtCount(sounds.length)} sounds.<br/>One download.</h2>
-            <p>{fmtBytes(catalog.totalBytes)} of uncompressed WAV audio. {catalog.sampleRate / 1000} kHz, {catalog.bitDepth}-bit, mono.</p>
-            <a className="pill primary" href="/api/pack.zip"><DownloadIcon /> Download pack <ArrowIcon /></a>
+            <div className="export-heading"><ArchiveIcon /><span>Complete pack</span></div>
+            <h2>{fmtCount(sounds.length)} sounds</h2>
+            <p>{fmtBytes(catalog.totalBytes)} · WAV / ZIP</p>
+            <a className="pill primary" href="/api/pack.zip">Download all <DownloadIcon /></a>
           </section>
         </aside>
       </div>
       <section className="library" aria-label="Sound library">
         <div className="library-head">
-          <div><h2>Sound library</h2><p className="quiet">{fmtCount(filtered.length)} of {fmtCount(sounds.length)} sounds</p></div>
+          <div><h2>Library <span className="library-count">{fmtCount(filtered.length)}</span></h2></div>
           <div className="filters">
-            <label className="search"><SearchIcon /><input ref={searchRef} type="search" placeholder="Find a sound" aria-label="Search sounds" value={query} onChange={e => {setQuery(e.target.value);setShown(PAGE_SIZE);}} /></label>
+            <label className="search"><SearchIcon /><input ref={searchRef} type="search" placeholder="Search sounds" aria-label="Search sounds" value={query} onChange={e => {setQuery(e.target.value);setShown(PAGE_SIZE);}} />{query && <button type="button" className="clear-search" aria-label="Clear search" onClick={() => {setQuery("");setShown(PAGE_SIZE);searchRef.current?.focus();}}><ClearIcon /></button>}</label>
             <Dropdown label="Sound category" value={category} options={categoryOptions} onChange={value => {setCategory(value);setShown(PAGE_SIZE);}} />
           </div>
         </div>
@@ -332,7 +334,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
             <div className="list-header" aria-hidden="true"><span>Sound</span><span>Duration</span><span>Peak</span><span>File</span></div>
             {rows.map(sound => <div className="sound-row" id={`row-${sound.id}`} key={sound.id} data-selected={sound.id === selectedId}>
               <button className="sound-select" type="button" aria-label={`Play ${sound.name}`} aria-pressed={sound.id === selectedId} onClick={() => audition(sound.id)}>
-                <span className="row-play"><PlayIcon /></span><span className="sound-text"><span>{sound.name}</span><small>{categoryLabel.get(sound.category)} · {sound.description}</small></span>
+                <span className="row-play"><PlayIcon /></span><span className="sound-text"><span>{sound.name}</span><small>{categoryLabel.get(sound.category)}</small></span>
               </button>
               <div className="duration"><MicroBar ratio={sound.duration / maxDuration} /><span>{fmtMs(sound.duration)}</span></div>
               <span className="peak">{fmtDb(sound.peakDb)}</span>
@@ -365,10 +367,10 @@ function SoundStage({engine,sound,mode}: {engine:AudioEngine;sound:DecodedSound|
   useEffect(() => {renderer.current?.setMode(mode);},[mode]);
   return <div className="stage"><canvas ref={canvas} role="img" aria-label={mode === "scope" ? "Live audio oscilloscope" : "Sound amplitude over time"} /></div>;
 }
-function Shell({children,context,dock}: {children:ReactNode;context?:string;dock?:ReactNode}) {
-  return <><header className="top"><div className="brand"><BrandMark /><span>Verdant</span></div><span className="context">{context ?? "Interface sounds"}</span></header><main>{children}</main><footer><span>Verdant / Interface sounds</span><span>Generated by synthesis, not recordings.</span></footer>{dock}</>;
+function Shell({children,context}: {children:ReactNode;context?:string}) {
+  return <><header className="top"><div className="brand"><BrandMark /><span>Verdant</span></div><span className="context">{context ?? "Interface sounds"}</span></header><main>{children}</main><footer><span>Verdant</span><span>Synthesized audio</span></footer></>;
 }
 function StatePanel({kind,title,text,action,level=2}: {kind:"loading"|"empty"|"error";title:string;text:string;action?:{label:string;onClick:()=>void};level?:1|2}) {
   const Heading = level === 1 ? "h1" : "h2";
-  return <div className="state" role={kind === "error" ? "alert" : "status"} aria-busy={kind === "loading"}><BrandMark className={kind === "loading" ? "loading-mark" : ""}/><Heading>{title}</Heading><p>{text}</p>{action && <button className="pill primary" type="button" onClick={action.onClick}>{action.label}<ArrowIcon /></button>}</div>;
+  return <div className="state" role={kind === "error" ? "alert" : "status"} aria-busy={kind === "loading"}><BrandMark className={kind === "loading" ? "loading-mark" : ""}/><Heading>{title}</Heading>{text && <p>{text}</p>}{action && <button className="pill primary" type="button" onClick={action.onClick}>{action.label}<ArrowIcon /></button>}</div>;
 }
