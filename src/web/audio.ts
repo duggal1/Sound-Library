@@ -1,5 +1,7 @@
 import { SAMPLE_RATE } from "../core/types";
 
+export const DEFAULT_VOLUME = 1.1;
+
 interface Playable {
   readonly samples: Float32Array;
   readonly sampleRate: number;
@@ -9,7 +11,8 @@ export class AudioEngine {
   private ctx: AudioContext | null = null;
   private input: AnalyserNode | null = null;
   private master: GainNode | null = null;
-  private volume = 0.8;
+  private volume = DEFAULT_VOLUME;
+  private activeSource: AudioBufferSourceNode | null = null;
   private startedAt = 0;
   private duration = 0;
   private readonly buffers = new WeakMap<Float32Array, AudioBuffer>();
@@ -26,33 +29,34 @@ export class AudioEngine {
   /** Call synchronously inside a user gesture. Safari needs resume() in the same tick. */
   unlock(): void {
     const ctx = this.ensure();
-    if (ctx.state === "suspended") void ctx.resume();
+    if (ctx.state !== "running") void ctx.resume().catch(() => {});
   }
 
   setVolume(value: number): void {
-    this.volume = Math.min(1, Math.max(0, value));
+    this.volume = Math.min(DEFAULT_VOLUME, Math.max(0, value));
     if (this.ctx && this.master) {
-      this.master.gain.setTargetAtTime(this.volume ** 2, this.ctx.currentTime, 0.015);
+      this.master.gain.setTargetAtTime(this.volume, this.ctx.currentTime, 0.015);
     }
   }
 
-  async play(sound: Playable): Promise<void> {
+  async play(sound: Playable, isCurrent: () => boolean = () => true): Promise<void> {
     const ctx = this.ensure();
-    if (ctx.state !== "running") {
-      try {
-        await ctx.resume();
-      } catch {
-        return;
-      }
-    }
+    if (ctx.state !== "running") await ctx.resume();
+    if (!isCurrent()) return;
     const input = this.input;
-    if (!input) return;
+    if (!input || ctx.state !== "running") throw new Error("Audio context is unavailable.");
 
     const buffer = this.bufferFor(ctx, sound);
     const source = ctx.createBufferSource();
     source.buffer = buffer;
     source.connect(input);
-    source.onended = () => source.disconnect();
+    source.onended = () => {
+      source.disconnect();
+      if (this.activeSource === source) this.activeSource = null;
+    };
+    // Audition the latest sound, not a stack of overlapping transients.
+    this.activeSource?.stop();
+    this.activeSource = source;
 
     this.startedAt = ctx.currentTime;
     this.duration = buffer.duration;
@@ -104,9 +108,9 @@ export class AudioEngine {
     analyser.smoothingTimeConstant = 0;
 
     const master = ctx.createGain();
-    master.gain.value = this.volume ** 2;
+    master.gain.value = this.volume;
 
-    // Safety net for overlapping sounds. Transparent below -2 dBFS.
+    // Safety net for unexpected peaks; all current WAVs remain below the threshold at 110%.
     const limiter = ctx.createDynamicsCompressor();
     limiter.threshold.value = -2;
     limiter.knee.value = 0;

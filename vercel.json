@@ -1,0 +1,20 @@
+{
+  "framework": "vite",
+  "buildCommand": "bun run build",
+  "outputDirectory": "dist",
+  "headers": [
+    {
+      "source": "/sounds/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "Vercel-CDN-Cache-Control",
+          "value": "public, s-maxage=86400"
+        }
+      ]
+    }
+  ]
+}

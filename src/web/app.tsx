@@ -18,8 +18,8 @@ import {
 } from "react";
 import type { CatalogResponse, CategoryId, CategoryInfo, SoundSummary } from "../core/types";
 import { SAMPLE_RATE } from "../core/types";
-import { fetchCatalog, loadSound, type DecodedSound } from "./api";
-import { AudioEngine } from "./audio";
+import { fetchCatalog, loadSound, peekSound, prefetchSound, type DecodedSound } from "./api";
+import { AudioEngine, DEFAULT_VOLUME } from "./audio";
 import { AnimatedNumber, Dropdown, MicroBar, Segmented, type DropdownOption, type SegmentedOption } from "./controls";
 import { fmtBytes, fmtCount, fmtDb, fmtMs, fmtMsRounded } from "./format";
 import {
@@ -131,7 +131,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
   const [category, setCategory] = useState<CategoryFilter>("all");
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState<StageMode>("waveform");
-  const [volume, setVolume] = useState(0.8);
+  const [volume, setVolume] = useState(DEFAULT_VOLUME);
   const [shown, setShown] = useState(PAGE_SIZE);
   const [previewError, setPreviewError] = useState("");
   const auditionVersion = useRef(0);
@@ -158,11 +158,13 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
     [sounds, categories],
   );
 
-  // Decode the selected WAV for the stage; warm everything else in the background.
+  // Prioritize the selected sound; only warm likely next previews.
   useEffect(() => {
     if (!selectedId) return;
     let cancelled = false;
     setPreviewError("");
+    const cached = peekSound(selectedId);
+    if (cached) { setDecoded(cached); return; }
     loadSound(selectedId).then(
       (d) => !cancelled && setDecoded(d),
       () => {if (!cancelled) {setDecoded(null);setPreviewError("Could not load waveform. Play to retry.");}},
@@ -173,8 +175,11 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
   }, [selectedId]);
 
   useEffect(() => {
-    for (const s of sounds) void loadSound(s.id).catch(() => {});
-  }, [sounds]);
+    if (!selectedId) return;
+    const index = filtered.findIndex(sound => sound.id === selectedId);
+    prefetchSound(filtered[index + 1]?.id);
+    if (index > 0) prefetchSound(filtered[index - 1]?.id);
+  }, [selectedId, filtered]);
 
   useEffect(() => engine.setVolume(volume), [engine, volume]);
 
@@ -184,12 +189,19 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
       setSelectedId(id);
       setPreviewError("");
       try { engine.unlock(); } catch { setPreviewError("Audio is unavailable in this browser."); return; }
-      void loadSound(id).then(async d => {
-        if (version !== auditionVersion.current) return;
+      const current = () => version === auditionVersion.current;
+      const play = (d: DecodedSound) => {
+        if (!current()) return;
         setDecoded(d);
-        await engine.play(d);
-        if (version === auditionVersion.current) window.dispatchEvent(new Event("verdant:play"));
-      }).catch(() => {if (version === auditionVersion.current) setPreviewError("Playback failed. Try again.");});
+        // On a RAM hit, enter the audio engine synchronously in the gesture.
+        void engine.play(d, current).then(() => {
+          if (current()) window.dispatchEvent(new Event("verdant:play"));
+        }).catch(failed);
+      };
+      const failed = () => { if (current()) setPreviewError("Playback failed. Try again."); };
+      const cached = peekSound(id);
+      if (cached) play(cached);
+      else void loadSound(id).then(play, failed);
     },
     [engine],
   );
@@ -299,7 +311,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
           <SoundStage engine={engine} sound={stageSound} mode={mode} />
           <div className="stage-footer">
             <span role="status">{previewError || (stageSound ? "" : "Loading waveform…")}</span>
-            <label className="volume"><VolumeIcon /> <input aria-label="Playback volume" type="range" min={0} max={1} step={0.01} value={volume} onChange={e => setVolume(Number(e.target.value))} /><span>{Math.round(volume * 100)}%</span></label>
+            <label className="volume"><VolumeIcon /> <input aria-label="Playback volume" type="range" min={0} max={1.1} step={0.01} value={volume} onChange={e => setVolume(Number(e.target.value))} /><span>{Math.round(volume * 100)}%</span></label>
           </div>
         </section>
         <aside className="inspector" aria-label="Sound details">
@@ -333,7 +345,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
           <div className="sound-list">
             <div className="list-header" aria-hidden="true"><span>Sound</span><span>Duration</span><span>Peak</span><span>File</span></div>
             {rows.map(sound => <div className="sound-row" id={`row-${sound.id}`} key={sound.id} data-selected={sound.id === selectedId}>
-              <button className="sound-select" type="button" aria-label={`Play ${sound.name}`} aria-pressed={sound.id === selectedId} onClick={() => audition(sound.id)}>
+              <button className="sound-select" onPointerEnter={() => prefetchSound(sound.id)} onFocus={() => prefetchSound(sound.id)} type="button" aria-label={`Play ${sound.name}`} aria-pressed={sound.id === selectedId} onClick={() => audition(sound.id)}>
                 <span className="row-play"><PlayIcon /></span><span className="sound-text"><span>{sound.name}</span><small>{categoryLabel.get(sound.category)}</small></span>
               </button>
               <div className="duration"><MicroBar ratio={sound.duration / maxDuration} /><span>{fmtMs(sound.duration)}</span></div>
