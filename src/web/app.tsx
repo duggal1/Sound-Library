@@ -37,6 +37,7 @@ import {
 } from "./icons";
 import type { StageMode } from "./stage";
 import { SoundStage } from "./sound-stage";
+import { CylinderScroll, revealCylinderRow } from "./cylinder-scroll";
 
 const PAGE_SIZE = 12;
 
@@ -143,6 +144,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
   const auditionVersion = useRef(0);
   const [decoded, setDecoded] = useState<DecodedSound | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
+  const libraryRef = useRef<HTMLDivElement>(null);
 
   const categoryLabel = useMemo(() => new Map(categories.map((c) => [c.id, c.label])), [categories]);
   const maxDuration = useMemo(() => Math.max(0.001, ...sounds.map((s) => s.duration)), [sounds]);
@@ -237,7 +239,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
       setShown((n) => Math.max(n, next + 1));
       audition(target.id);
       requestAnimationFrame(() =>
-        document.getElementById(`row-${target.id}`)?.scrollIntoView({ block: "nearest" }),
+        revealCylinderRow(libraryRef.current, target.id),
       );
     },
     [filtered, selectedId, audition],
@@ -277,6 +279,8 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
     return () => window.removeEventListener("keydown", onKey);
   }, [step, replay]);
 
+  useEffect(() => { if (libraryRef.current) libraryRef.current.scrollTop = 0; }, [query, category]);
+
   const clearFilters = () => {
     setCategory("all");
     setQuery("");
@@ -293,37 +297,6 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
     <Shell context={`${fmtCount(sounds.length)} sounds · ${SAMPLE_RATE / 1000} kHz · ${catalog.bitDepth}-bit · mono`}
       pack={<a className="pill pack" href="/sounds/pack.zip" download="verdant-sounds.zip"><DownloadIcon /><span>Download all</span><small>{fmtBytes(catalog.totalBytes)}</small></a>}>
       <div className="workspace">
-        <section className="library" aria-label="Sound library">
-          <div className="library-head">
-            <h2>Sounds <span className="library-count">{fmtCount(filtered.length)}</span></h2>
-            <div className="filters">
-              <div className="search"><SearchIcon /><input ref={searchRef} type="search" placeholder="Search sounds" aria-label="Search sounds" value={query} onChange={e => {setQuery(e.target.value);setShown(PAGE_SIZE);}} />{query && <button type="button" className="clear-search" aria-label="Clear search" onClick={() => {setQuery("");setShown(PAGE_SIZE);searchRef.current?.focus();}}><ClearIcon /></button>}</div>
-              <Dropdown label="Sound category" value={category} options={categoryOptions} onChange={value => {setCategory(value);setShown(PAGE_SIZE);}} />
-            </div>
-          </div>
-          <div className="list-header" aria-hidden="true"><span>Name</span><span>Duration</span><span>Peak</span><span /></div>
-          <div className="library-scroll" tabIndex={0} aria-label="Browse sounds, scroll to see more">
-            {filtered.length === 0 ? <StatePanel kind="empty" title="No matching sounds" text="Try a different name or category." action={{label:"Clear filters",onClick:clearFilters}} /> :
-              <div className="sound-list">
-                {rows.map(sound => {
-                  const active = playingId === sound.id;
-                  const loading = pendingId === sound.id;
-                  return <div className="sound-row" id={`row-${sound.id}`} key={sound.id} data-selected={sound.id === selectedId} data-playing={active} data-loading={loading}
-                    onPointerEnter={() => prefetchSound(sound.id)}>
-                    <button className="sound-select" onFocus={() => prefetchSound(sound.id)} type="button" aria-label={`${active || loading ? "Stop" : "Play"} ${sound.name}`} aria-pressed={sound.id === selectedId} onClick={() => active || loading ? stop() : audition(sound.id)}>
-                      <span className="row-play">{active || loading ? <StopIcon /> : <PlayIcon />}</span>
-                      <span className="sound-text"><span>{sound.name}</span><small>{loading ? "Loading…" : active ? "Playing" : categoryLabel.get(sound.category)}</small></span>
-                    </button>
-                    <div className="duration"><MicroBar ratio={sound.duration / maxDuration} /><span>{fmtMs(sound.duration)}</span></div>
-                    <span className="peak">{fmtDb(sound.peakDb)}</span>
-                    <a className="pill icon-button" href={downloadUrl(sound.id)} download aria-label={`Download ${sound.name}`}><DownloadIcon /></a>
-                  </div>;
-                })}
-              </div>}
-            {rows.length < filtered.length && <button className="pill more" type="button" onClick={() => setShown(n => n + PAGE_SIZE)}>Show more <ArrowIcon /></button>}
-          </div>
-          <div className="library-foot"><span>{fmtCount(rows.length)} of {fmtCount(filtered.length)}</span><span>↑ ↓ Browse · Space to play / stop</span></div>
-        </section>
         <section className="preview" aria-label="Audio inspector" data-expanded={expanded}>
           <div className="preview-top">
             <div className="preview-meta"><span>{selected ? categoryLabel.get(selected.category) : "Preview"}</span><span>{selected ? fmtMs(selected.duration) : ""}</span></div>
@@ -353,6 +326,37 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
               <div><dt>File size</dt><dd>{selected ? fmtBytes(selected.bytes) : "—"}</dd></div>
             </dl>
           </section>
+        </section>
+        <section className="library" aria-label="Sound library">
+          <div className="library-head">
+            <h2>Sounds <span className="library-count">{fmtCount(filtered.length)}</span></h2>
+            <div className="filters">
+              <div className="search"><SearchIcon /><input ref={searchRef} type="search" placeholder="Search sounds" aria-label="Search sounds" value={query} onChange={e => {setQuery(e.target.value);setShown(PAGE_SIZE);}} />{query && <button type="button" className="clear-search" aria-label="Clear search" onClick={() => {setQuery("");setShown(PAGE_SIZE);searchRef.current?.focus();}}><ClearIcon /></button>}</div>
+              <Dropdown label="Sound category" value={category} options={categoryOptions} onChange={value => {setCategory(value);setShown(PAGE_SIZE);}} />
+            </div>
+          </div>
+          <div className="list-header" aria-hidden="true"><span>Name</span><span>Duration</span><span>Peak</span><span /></div>
+          <CylinderScroll viewportRef={libraryRef}>
+            {filtered.length === 0 ? <StatePanel kind="empty" title="No matching sounds" text="Try a different name or category." action={{label:"Clear filters",onClick:clearFilters}} /> :
+              <div className="sound-list">
+                {rows.map(sound => {
+                  const active = playingId === sound.id;
+                  const loading = pendingId === sound.id;
+                  return <div className="sound-row" id={`row-${sound.id}`} key={sound.id} data-selected={sound.id === selectedId} data-playing={active} data-loading={loading}
+                    onPointerEnter={() => prefetchSound(sound.id)}>
+                    <button className="sound-select" onFocus={() => prefetchSound(sound.id)} type="button" aria-label={`${active || loading ? "Stop" : "Play"} ${sound.name}`} aria-pressed={sound.id === selectedId} onClick={() => active || loading ? stop() : audition(sound.id)}>
+                      <span className="row-play">{active || loading ? <StopIcon /> : <PlayIcon />}</span>
+                      <span className="sound-text"><span>{sound.name}</span><small>{loading ? "Loading…" : active ? "Playing" : categoryLabel.get(sound.category)}</small></span>
+                    </button>
+                    <div className="duration"><MicroBar ratio={sound.duration / maxDuration} /><span>{fmtMs(sound.duration)}</span></div>
+                    <span className="peak">{fmtDb(sound.peakDb)}</span>
+                    <a className="pill icon-button" href={downloadUrl(sound.id)} download aria-label={`Download ${sound.name}`}><DownloadIcon /></a>
+                  </div>;
+                })}
+                {rows.length < filtered.length && <button className="pill more" type="button" onClick={() => setShown(n => n + PAGE_SIZE)}>Show more <ArrowIcon /></button>}
+              </div>}
+          </CylinderScroll>
+          <div className="library-foot"><span>{fmtCount(rows.length)} of {fmtCount(filtered.length)}</span><span>↑ ↓ Browse · Space to play / stop</span></div>
         </section>
       </div>
     </Shell>

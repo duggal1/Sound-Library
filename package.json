@@ -7,7 +7,8 @@
     "build": "vite build",
     "start": "vite preview",
     "generate": "bun src/cli/generate.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "test": "bun test"
   },
   "dependencies": {
     "react": "^19.0.0",
