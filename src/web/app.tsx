@@ -35,8 +35,7 @@ import {
   SearchIcon,
 } from "./icons";
 import { StageRenderer, type StageMode } from "./stage";
-
-const PAGE_SIZE = 12;
+import { CylindricalList, revealCylinderRow } from "./cylindrical-list";
 
 const MODES: readonly SegmentedOption<StageMode>[] = [
   { value: "waveform", label: "Waveform" },
@@ -132,7 +131,6 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
   const [query, setQuery] = useState("");
   const [mode, setMode] = useState<StageMode>("waveform");
   const [volume, setVolume] = useState(DEFAULT_VOLUME);
-  const [shown, setShown] = useState(PAGE_SIZE);
   const [previewError, setPreviewError] = useState("");
   const auditionVersion = useRef(0);
   const [decoded, setDecoded] = useState<DecodedSound | null>(null);
@@ -217,10 +215,9 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
       const next = index < 0 ? 0 : Math.min(filtered.length - 1, Math.max(0, index + dir));
       const target = filtered[next];
       if (!target) return;
-      setShown((n) => Math.max(n, next + 1));
       audition(target.id);
       requestAnimationFrame(() =>
-        document.getElementById(`row-${target.id}`)?.scrollIntoView({ block: "nearest" }),
+        revealCylinderRow(`row-${target.id}`),
       );
     },
     [filtered, selectedId, audition],
@@ -241,7 +238,6 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
       }
       if (e.key === "Escape" && document.activeElement === searchRef.current) {
         setQuery("");
-        setShown(PAGE_SIZE);
         searchRef.current?.blur();
         return;
       }
@@ -263,10 +259,9 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
   const clearFilters = () => {
     setCategory("all");
     setQuery("");
-    setShown(PAGE_SIZE);
   };
 
-  const rows = filtered.slice(0, Math.max(shown, PAGE_SIZE));
+  const itemKey = useMemo(() => filtered.map(sound => sound.id).join("\u0000"), [filtered]);
   const stageSound = decoded && decoded.id === selectedId ? decoded : null;
 
   const dock = (
@@ -288,6 +283,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
     <Shell
       context={`${fmtCount(sounds.length)} sounds · ${SAMPLE_RATE / 1000} kHz · ${catalog.bitDepth}-bit · mono`}
     >
+      <div className="sound-workspace">
       <div className="overview">
         {/* ----------------------------- hero + stage ----------------------------- */}
         <section className="hero-block" aria-label="Preview">
@@ -337,14 +333,15 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
         <div className="library-head">
           <div><h2>Library <span className="library-count">{fmtCount(filtered.length)}</span></h2></div>
           <div className="filters">
-            <label className="search"><SearchIcon /><input ref={searchRef} type="search" placeholder="Search sounds" aria-label="Search sounds" value={query} onChange={e => {setQuery(e.target.value);setShown(PAGE_SIZE);}} />{query && <button type="button" className="clear-search" aria-label="Clear search" onClick={() => {setQuery("");setShown(PAGE_SIZE);searchRef.current?.focus();}}><ClearIcon /></button>}</label>
-            <Dropdown label="Sound category" value={category} options={categoryOptions} onChange={value => {setCategory(value);setShown(PAGE_SIZE);}} />
+            <label className="search"><SearchIcon /><input ref={searchRef} type="search" placeholder="Search sounds" aria-label="Search sounds" value={query} onChange={e => {setQuery(e.target.value);}} />{query && <button type="button" className="clear-search" aria-label="Clear search" onClick={() => {setQuery("");searchRef.current?.focus();}}><ClearIcon /></button>}</label>
+            <Dropdown label="Sound category" value={category} options={categoryOptions} onChange={value => {setCategory(value);}} />
           </div>
         </div>
         {filtered.length === 0 ? <StatePanel kind="empty" title="No matching sounds" text="Try a different name or category." action={{label:"Clear filters",onClick:clearFilters}} /> :
           <div className="sound-list">
             <div className="list-header" aria-hidden="true"><span>Sound</span><span>Duration</span><span>Peak</span><span>File</span></div>
-            {rows.map(sound => <div className="sound-row" id={`row-${sound.id}`} key={sound.id} data-selected={sound.id === selectedId}>
+            <CylindricalList itemKey={itemKey}>
+            {filtered.map(sound => <div className="sound-row" id={`row-${sound.id}`} key={sound.id} data-selected={sound.id === selectedId}>
               <button className="sound-select" onPointerEnter={() => prefetchSound(sound.id)} onFocus={() => prefetchSound(sound.id)} type="button" aria-label={`Play ${sound.name}`} aria-pressed={sound.id === selectedId} onClick={() => audition(sound.id)}>
                 <span className="row-play"><PlayIcon /></span><span className="sound-text"><span>{sound.name}</span><small>{categoryLabel.get(sound.category)}</small></span>
               </button>
@@ -352,9 +349,10 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
               <span className="peak">{fmtDb(sound.peakDb)}</span>
               <a className="pill icon-button" href={downloadUrl(sound.id)} download aria-label={`Download ${sound.name}`}><DownloadIcon /></a>
             </div>)}
+            </CylindricalList>
           </div>}
-        {rows.length < filtered.length && <button className="pill more" type="button" onClick={() => setShown(n => n + PAGE_SIZE)}>Show more <ArrowIcon /></button>}
       </section>
+      </div>
     </Shell>
   );
 }
