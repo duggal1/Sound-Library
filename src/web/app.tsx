@@ -293,7 +293,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
             <Segmented label="Visualisation" value={mode} options={MODES} onChange={setMode} />
             <div className="stage-actions">
               {dock}
-              {selected && <a className="pill icon-button" aria-label="Download selected sound" href={downloadUrl(selected.id)}><DownloadIcon /></a>}
+              {selected && <a className="pill icon-button" aria-label="Download selected sound" href={downloadUrl(selected.id)} download><DownloadIcon /></a>}
             </div>
           </div>
           <SoundStage engine={engine} sound={stageSound} mode={mode} />
@@ -317,7 +317,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
             <div className="export-heading"><ArchiveIcon /><span>Complete pack</span></div>
             <h2>{fmtCount(sounds.length)} sounds</h2>
             <p>{fmtBytes(catalog.totalBytes)} · WAV / ZIP</p>
-            <a className="pill primary" href="/api/pack.zip">Download all <DownloadIcon /></a>
+            <a className="pill primary" href="/sounds/pack.zip" download="verdant-sounds.zip">Download all <DownloadIcon /></a>
           </section>
         </aside>
       </div>
@@ -338,7 +338,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
               </button>
               <div className="duration"><MicroBar ratio={sound.duration / maxDuration} /><span>{fmtMs(sound.duration)}</span></div>
               <span className="peak">{fmtDb(sound.peakDb)}</span>
-              <a className="pill icon-button" href={downloadUrl(sound.id)} aria-label={`Download ${sound.name}`}><DownloadIcon /></a>
+              <a className="pill icon-button" href={downloadUrl(sound.id)} download aria-label={`Download ${sound.name}`}><DownloadIcon /></a>
             </div>)}
           </div>}
         {rows.length < filtered.length && <button className="pill more" type="button" onClick={() => setShown(n => n + PAGE_SIZE)}>Show more <ArrowIcon /></button>}
@@ -346,7 +346,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
     </Shell>
   );
 }
-function downloadUrl(id: string) { return `/api/sounds/${encodeURIComponent(id)}.wav?download`; }
+function downloadUrl(id: string) { return `/sounds/${encodeURIComponent(id)}.wav`; }
 function filterSounds(sounds: readonly SoundSummary[], labels: Map<CategoryId,string>, category: CategoryFilter, query: string) {
   const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   return sounds.filter(s => (category === "all" || s.category === category) &&

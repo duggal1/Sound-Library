@@ -45,7 +45,7 @@ function readPalette(): Palette {
   };
 }
 
-function resample(src: Float32Array, n: number): Float32Array {
+function resample(src: Float32Array, n: number) {
   const out = new Float32Array(n);
   if (src.length === 0) return out;
   for (let i = 0; i < n; i++) out[i] = src[Math.min(src.length - 1, Math.floor((i * src.length) / n))];

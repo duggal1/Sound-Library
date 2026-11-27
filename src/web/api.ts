@@ -13,8 +13,8 @@ export async function fetchCatalog(signal: AbortSignal): Promise<CatalogResponse
   if (forced === "loading") return new Promise<CatalogResponse>(() => {});
   if (forced === "error") throw new Error("Simulated failure (?state=error).");
 
-  const res = await fetch("/api/sounds", { signal });
-  if (!res.ok) throw new Error(`The server answered ${res.status} for /api/sounds.`);
+  const res = await fetch("/sounds/catalog.json", { signal });
+  if (!res.ok) throw new Error(`The server answered ${res.status} for /sounds/catalog.json.`);
   const data = (await res.json()) as CatalogResponse;
   return forced === "empty" ? { ...data, sounds: [], totalBytes: 0 } : data;
 }
@@ -25,7 +25,7 @@ const cache = new Map<string, Promise<DecodedSound>>();
 export function loadSound(id: string): Promise<DecodedSound> {
   let pending = cache.get(id);
   if (!pending) {
-    pending = fetch(`/api/sounds/${encodeURIComponent(id)}.wav`).then(async (res) => {
+    pending = fetch(`/sounds/${encodeURIComponent(id)}.wav`).then(async (res) => {
       if (!res.ok) throw new Error(`Could not load ${id}.wav (${res.status}).`);
       const { sampleRate, samples } = decodeWav(await res.arrayBuffer());
       return { id, sampleRate, samples };

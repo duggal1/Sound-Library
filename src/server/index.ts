@@ -60,7 +60,7 @@ const server = Bun.serve({
       if (!entry) return notFound();
 
       const download = new URL(req.url).searchParams.has("download");
-      return new Response(entry.wav, {
+      return new Response(new Uint8Array(entry.wav), {
         headers: {
           "content-type": "audio/wav",
           "content-length": String(entry.wav.byteLength),
@@ -72,7 +72,7 @@ const server = Bun.serve({
 
     "/api/pack.zip": () => {
       const bytes = pack();
-      return new Response(bytes, {
+      return new Response(new Uint8Array(bytes), {
         headers: {
           "content-type": "application/zip",
           "content-length": String(bytes.byteLength),
