@@ -26,7 +26,6 @@ import {
   ArrowIcon,
   StopIcon,
   ChevronIcon,
-  VolumeIcon,
   ClearIcon,
   BrandMark,
   DownloadIcon,
@@ -37,6 +36,7 @@ import {
 } from "./icons";
 import type { StageMode } from "./stage";
 import { SoundStage } from "./sound-stage";
+import { VolumeControl } from "./volume-control";
 import { CylinderScroll, revealCylinderRow } from "./cylinder-scroll";
 
 const PAGE_SIZE = 12;
@@ -316,7 +316,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
               <button className="pill icon-button" type="button" aria-label="Next sound" disabled={!filtered.length || currentIndex === filtered.length - 1} onClick={() => step(1)}><NextIcon /></button>
             </nav>
             {selected && <a className="pill icon-button current-download" aria-label="Download selected sound" href={downloadUrl(selected.id)} download><DownloadIcon /></a>}
-            <label className="volume"><VolumeIcon /><input aria-label="Playback volume" type="range" min={0} max={1.1} step={0.01} value={volume} onChange={e => setVolume(Number(e.target.value))} /><span>{Math.round(volume * 100)}%</span></label>
+            <VolumeControl value={volume} onChange={setVolume} />
           </div>
           <section className="details" aria-label="Source signal metrics">
             <dl>

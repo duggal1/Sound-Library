@@ -103,8 +103,8 @@ class CylinderController {
     if (!this.enabled || !this.scene) return;
     const half = this.height / 2;
     const center = scroll + half - this.sceneTop;
-    const base = this.coarse.matches ? .28 : .44;
-    const curve = base + (this.coarse.matches ? .05 : .08) * Math.max(0, Math.min(1, this.bend));
+    const base = this.coarse.matches ? .30 : .52;
+    const curve = base + (this.coarse.matches ? .05 : .09) * Math.max(0, Math.min(1, this.bend));
     const overscan = half + Math.max(160, half * .4 + 80);
     this.scene.style.perspectiveOrigin = `50% ${center.toFixed(3)}px`;
     for (const row of this.rows) {
