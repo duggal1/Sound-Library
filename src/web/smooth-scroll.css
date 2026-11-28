@@ -1,0 +1,25 @@
+/* Native trackpad momentum, native thumb dragging and a quiet stone scroll rail.
+   No scroll hijacking, hidden overflow, global animation loop, or black thumb. */
+:where(.library-scroll,.preview,.dashboard-sidebar,.library,.device-dialog){
+ scrollbar-width:thin;scrollbar-color:#d6d3d1 transparent;
+}
+@supports selector(::-webkit-scrollbar){
+ :where(.library-scroll,.preview,.dashboard-sidebar,.library,.device-dialog){
+  scrollbar-width:auto;scrollbar-color:auto;
+ }
+ :is(.library-scroll,.preview,.dashboard-sidebar,.library,.device-dialog)::-webkit-scrollbar{width:5px;height:5px}
+ :is(.library-scroll,.preview,.dashboard-sidebar,.library,.device-dialog)::-webkit-scrollbar-track{background:transparent}
+ :is(.library-scroll,.preview,.dashboard-sidebar,.library,.device-dialog)::-webkit-scrollbar-thumb{background:#d6d3d1;border-radius:999px}
+ :is(.library-scroll,.preview,.dashboard-sidebar,.library,.device-dialog)::-webkit-scrollbar-thumb:hover{background:#a8a29e}
+ :is(.library-scroll,.preview,.dashboard-sidebar,.library,.device-dialog)::-webkit-scrollbar-corner{background:transparent}
+}
+.library-scroll,.preview,.dashboard-sidebar{overscroll-behavior-y:contain}
+.library-scroll{scrollbar-width:thin;scrollbar-color:#d6d3d1 transparent}
+@supports selector(::-webkit-scrollbar){.library-scroll,.preview,.dashboard-sidebar,.device-dialog{scrollbar-width:auto;scrollbar-color:auto}}
+/* Keep the inspector inside its viewport where possible. Overflow still works
+   on very short screens or when metadata wraps. */
+@media(min-width:851px){
+ [data-layout="dashboard"] .preview{padding-block:clamp(8px,2.2vh,24px);gap:clamp(8px,1.5vh,16px)}
+ [data-layout="dashboard"] .stage{height:clamp(136px,24vh,240px)}
+}
+@media(prefers-reduced-motion:reduce){:is(.library-scroll,.preview,.dashboard-sidebar,.library,.device-dialog){scroll-behavior:auto!important}}
