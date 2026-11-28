@@ -16,11 +16,14 @@ test("natural aspect ratio is preserved at every compact and expanded width",()=
   expect(b.width/b.height).toBeCloseTo(BOARD_WIDTH/BOARD_HEIGHT,8);
  }
 });
-test("arrow cluster has half-height up/down keys and full-height left/right",()=>{
+test("arrow cluster is a true inverted T with four equal caps",()=>{
  const key=(code:string)=>PHYSICAL_KEYS.find(k=>k.code===code)!;
  expect(key("ArrowUp").x).toBe(key("ArrowDown").x);
  expect(key("ArrowUp").height).toBe(key("ArrowDown").height);
- expect(key("ArrowLeft").height).toBeGreaterThan(key("ArrowUp").height);
+ for(const code of ["ArrowLeft","ArrowRight","ArrowDown"]){expect(key(code).height).toBe(key("ArrowUp").height);expect(key(code).width).toBe(key("ArrowUp").width);}
+ expect(key("ArrowLeft").y).toBe(key("ArrowDown").y);expect(key("ArrowRight").y).toBe(key("ArrowDown").y);
+ expect(key("ArrowUp").y).toBeLessThan(key("ArrowLeft").y);
+ expect(key("Fn").x).toBeLessThan(key("ControlLeft").x);
 });
 
 test("wide low-profile geometry has tight even key gaps",()=>{

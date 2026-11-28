@@ -37,3 +37,5 @@ test("hardware legends use deterministic vectors and expanded chassis is neutral
  expect(component).toContain("<KeySymbol code={key.code}/>");
  expect(css).toContain("background:#f5f5f5;border:0");
 });
+
+test("function and modifier legends occupy independent zones",()=>{expect(css).toContain(".device-key[data-function=true] .key-symbol{position:absolute;top:15%");expect(css).toContain(".device-key[data-function=true] .key-legend{position:absolute;bottom:12%");expect(css).toContain(".device-key[data-modifier=true] .key-secondary{position:absolute;top:13%;right:13%");expect(component).toContain('key.code==="Fn"');expect(component).toContain("DEVICE_FALLBACK[code]");});

@@ -1,7 +1,7 @@
 import {useCallback,useEffect,useMemo,useRef,useState,useId,type CSSProperties,type KeyboardEvent,type PointerEvent,type MouseEvent} from "react";
 import {createPortal} from "react-dom";
 import type {SoundSummary} from "../core/types";
-import {CLASSIC_FALLBACK} from "../core/mac-keyboard";
+import {CLASSIC_FALLBACK,DEVICE_FALLBACK} from "../core/mac-keyboard";
 import {BOARD_WIDTH,BOARD_HEIGHT,PHYSICAL_KEYS} from "../core/device-geometry";
 import type {KeyboardTheme} from "../core/keyboard-themes";
 import {loadSound,peekSound,prefetchSound} from "./api";
@@ -44,7 +44,7 @@ function MacKeyboard({sounds,theme,fire}:{sounds:readonly SoundSummary[];theme:K
  const pressedAt=useRef(new Map<string,number>());
  const releaseTimers=useRef(new Map<string,number>());
  const byCode=useMemo(()=>new Map(sounds.filter(s=>s.keyCode).map(s=>[s.keyCode!,s])),[sounds]);
- const lookup=(code:string)=>byCode.get(code)??(theme==="classic"?byCode.get(CLASSIC_FALLBACK[code]??""):undefined);
+ const lookup=(code:string)=>byCode.get(code)??byCode.get(DEVICE_FALLBACK[code]??"")??(theme==="classic"?byCode.get(CLASSIC_FALLBACK[code]??""):undefined);
  const setPressed=(code:string,value:boolean)=>{
   const node=board.current?.querySelector<HTMLElement>('[data-code="'+code+'"]');
   if(node)node.dataset.pressed=String(value);
@@ -72,6 +72,7 @@ function MacKeyboard({sounds,theme,fire}:{sounds:readonly SoundSummary[];theme:K
  const press=(code:string)=>{cancelRelease(code);pressedAt.current.set(code,performance.now());setPressed(code,true);fire(lookup(code));};
  function keyDown(e:KeyboardEvent<HTMLDivElement>){
   if(e.nativeEvent.isComposing)return;
+  if(e.key==="Fn"||e.code==="Fn"){if(!e.repeat){press("Fn");settle("Fn");}return;}
   if(e.key==="Escape"){if(!e.repeat){press(e.code);settle(e.code);}return;}
   if((e.metaKey||e.ctrlKey||e.altKey)&&!/^Meta|^Control|^Alt/.test(e.code))return;
   if(!lookup(e.code))return;
@@ -79,7 +80,7 @@ function MacKeyboard({sounds,theme,fire}:{sounds:readonly SoundSummary[];theme:K
   if(e.key!=="Tab"){e.preventDefault();e.stopPropagation();}
   if(!held.current.has(e.code)||e.repeat){held.current.add(e.code);press(e.code);}
  }
- function keyUp(e:KeyboardEvent<HTMLDivElement>){release(e.code);}
+ function keyUp(e:KeyboardEvent<HTMLDivElement>){release(e.key==="Fn"?"Fn":e.code);}
  function pointerDown(e:PointerEvent<HTMLButtonElement>,code:string){
   if(e.button!==0)return;
   e.preventDefault();board.current?.focus({preventScroll:true});
@@ -95,14 +96,15 @@ function MacKeyboard({sounds,theme,fire}:{sounds:readonly SoundSummary[];theme:K
     {PHYSICAL_KEYS.map(key=>{
      const sound=lookup(key.code),mapped=sound&&sound.keyCode!==key.code;
      const style={left:key.x/BOARD_WIDTH*100+"%",top:key.y/BOARD_HEIGHT*100+"%",width:key.width/BOARD_WIDTH*100+"%",height:key.height/BOARD_HEIGHT*100+"%"} as CSSProperties;
-     return <button type="button" key={key.code} className="device-key" data-code={key.code} data-function={!!key.functionLabel} data-modifier={key.width>120} disabled={!sound}
-       aria-label={key.code==="Space"?"Space":key.functionLabel?key.label+" "+key.functionLabel:key.label||key.code} title={mapped?"Classic fallback: "+sound.name:sound?.name} style={style}
+     return <button type="button" key={key.code} className="device-key" data-code={key.code} data-function={!!key.functionLabel} data-modifier={/^(Fn|Control|Alt|Meta)/.test(key.code)} data-edge={/^(Tab|CapsLock|ShiftLeft|Escape)$/.test(key.code)?"left":/^(Backspace|Enter|ShiftRight)$/.test(key.code)?"right":undefined} disabled={!sound}
+       aria-label={key.code==="Space"?"Space":key.functionLabel?key.label+" "+key.functionLabel:key.label||key.code} title={mapped?"Shared sound: "+sound.name:sound?.name} style={style}
        onPointerEnter={()=>{if(sound)prefetchSound(sound);}} onPointerDown={e=>pointerDown(e,key.code)} onPointerUp={pointerEnd} onPointerCancel={pointerEnd} onLostPointerCapture={pointerEnd}
        onClick={e=>{if(e.detail===0){press(key.code);settle(key.code);}}}>
       <span className="device-key-face">
-       {key.functionLabel?<KeySymbol code={key.code}/>:key.secondary&&<span className="key-secondary">{key.secondary}</span>}
+       {key.functionLabel?<KeySymbol code={key.code}/>:key.code==="Fn"?<KeySymbol code="Fn"/>:key.secondary&&<span className="key-secondary">{key.secondary}</span>}
        {key.code.startsWith("Arrow")?<KeySymbol code={key.code}/>:<span className="key-legend">{key.label}</span>}
        {key.code==="CapsLock"&&<i aria-hidden="true"/>}
+       {(key.code==="KeyF"||key.code==="KeyJ")&&<span className="key-homing" aria-hidden="true"/>}
       </span>
      </button>;
     })}
@@ -134,9 +136,9 @@ function MousePreview({sounds,fire,mouseId}:{sounds:readonly SoundSummary[];fire
      </defs>
      <path d="M78 8C33 8 9 32 6 81L6 199C7 250 27 277 78 278C129 277 149 250 150 199L150 81C147 32 123 8 78 8Z" fill={"url(#"+prefix+"metal)"}/>
      <g className="magic-mouse-shell">
-      <path d="M78 3C33 3 9 27 6 76L6 194C7 245 27 272 78 273C129 272 149 245 150 194L150 76C147 27 123 3 78 3Z" fill={"url(#"+prefix+"shell)"} stroke={"url(#"+prefix+"rim)"} strokeWidth="1.15"/>
+      <path d="M78 3C33 3 9 27 6 76L6 194C7 245 27 272 78 273C129 272 149 245 150 194L150 76C147 27 123 3 78 3Z" fill={"url(#"+prefix+"shell)"} stroke={"url(#"+prefix+"rim)"} strokeWidth=".8"/>
       <path d="M16 81C17 38 38 13 78 12C118 13 139 38 140 81" stroke="#fff" strokeWidth="1.2" strokeLinecap="round" fill="none"/>
-      <path d="M78 18V105" stroke={"url(#"+prefix+"center)"} strokeWidth=".85" strokeLinecap="round"/>
+      <path d="M78 18V105" stroke={"url(#"+prefix+"center)"} strokeWidth=".6" strokeLinecap="round"/>
       <path d="M18 202C21 242 38 261 78 263C118 261 135 242 138 202" stroke="#fff" strokeOpacity=".78" strokeWidth="1" strokeLinecap="round" fill="none"/>
      </g>
     </svg>
