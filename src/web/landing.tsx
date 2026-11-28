@@ -109,7 +109,6 @@ export function Landing({catalog,engine}:{catalog:CatalogResponse;engine:AudioEn
       <span className="field-help" role="status">{error||(sequence!==null?`Playing ${sequence} of ${ordered.length}`:"Drag to wander · Tap to listen")}</span>
       <button type="button" className="pill field-reset" disabled={!dirty} onClick={()=>driver.current?.reset()}>Back to center</button>
       <button type="button" className="pill primary field-play-all" onClick={()=>void playAll()}>{sequence!==null?<><StopIcon/> Stop</>:<><PlayIcon/> Play all sounds</>}</button>
-      <a href="/sounds/credits.md">Credits</a>
     </div></div>
   </div>;
 }
