@@ -9,7 +9,7 @@ export function VolumeControl({ value, onChange }: { value: number; onChange: (v
       <VolumeIcon />
       <span className="volume-slider">
         <span className="volume-track" aria-hidden="true">
-          <span className="volume-fill" style={{ transform: `scaleX(${fraction})` }} />
+          {Array.from({length:23},(_,index)=><i key={index} className="gain-tick" data-active={(index+1)/23<=fraction+1e-8} data-major={index%5===0} />)}
         </span>
         <input aria-label="Playback volume" aria-valuetext={`${percent}%`} type="range" min={0} max={DEFAULT_VOLUME} step={0.01}
           value={value} onChange={event => onChange(Number(event.currentTarget.value))} />

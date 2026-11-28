@@ -24,6 +24,7 @@ import { AnimatedNumber, Dropdown, MicroBar, Segmented, type DropdownOption, typ
 import { fmtBytes, fmtCount, fmtDb, fmtMs } from "./format";
 import {
   ArrowIcon,
+  BookmarkIcon,
   StopIcon,
   ChevronIcon,
   ClearIcon,
@@ -131,6 +132,16 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
   const [selectedId, setSelectedId] = useState<string | null>(sounds[0]?.id ?? null);
   const [category, setCategory] = useState<CategoryFilter>("all");
   const [query, setQuery] = useState("");
+  const [savedOnly,setSavedOnly]=useState(false);
+  const [bookmarks,setBookmarks]=useState<Set<string>>(()=>readBookmarks());
+  const toggleBookmark=useCallback((id:string)=>{
+    setBookmarks(previous=>{
+      const next=new Set(previous);
+      if(next.has(id))next.delete(id);else next.add(id);
+      return next;
+    });
+  },[]);
+  useEffect(()=>{try{localStorage.setItem("verdant.bookmarks.v1",JSON.stringify([...bookmarks]));}catch{}},[bookmarks]);
   const [mode, setMode] = useState<StageMode>("waveform");
   const [volume, setVolume] = useState(DEFAULT_VOLUME);
   const [previewError, setPreviewError] = useState("");
@@ -147,8 +158,8 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
   const maxDuration = useMemo(() => Math.max(0.001, ...sounds.map((s) => s.duration)), [sounds]);
   const selected = useMemo(() => sounds.find((s) => s.id === selectedId) ?? null, [sounds, selectedId]);
   const filtered = useMemo(
-    () => filterSounds(sounds, categoryLabel, category, query),
-    [sounds, categoryLabel, category, query],
+    () => filterSounds(sounds, categoryLabel, category, query).filter(sound=>!savedOnly || bookmarks.has(sound.id)),
+    [sounds, categoryLabel, category, query,savedOnly,bookmarks],
   );
 
   const categoryOptions = useMemo<DropdownOption<CategoryFilter>[]>(
@@ -274,11 +285,12 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
     return () => window.removeEventListener("keydown", onKey);
   }, [step, replay]);
 
-  useEffect(() => { if (libraryRef.current) libraryRef.current.scrollTop = 0; }, [query, category]);
+  useEffect(() => { if (libraryRef.current) libraryRef.current.scrollTop = 0; }, [query, category,savedOnly]);
 
   const clearFilters = () => {
     setCategory("all");
     setQuery("");
+    setSavedOnly(false);
   };
 
   const stageSound = decoded && decoded.id === selectedId ? decoded : null;
@@ -295,6 +307,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
             <div className="preview-meta"><span>{selected ? categoryLabel.get(selected.category) : "Preview"}</span><span>{selected ? fmtMs(selected.duration) : ""}</span></div>
             <div className="hero">
               <h1 className="hero-name" key={selectedId}>{selected?.name ?? "Select a sound"}</h1>
+              {selected && <button type="button" className="pill icon-button hero-bookmark" aria-label={bookmarks.has(selected.id)?"Remove bookmark":"Bookmark sound"} aria-pressed={bookmarks.has(selected.id)} onClick={()=>toggleBookmark(selected.id)}><BookmarkIcon filled={bookmarks.has(selected.id)}/></button>}
               <button type="button" className="pill expand-preview" aria-expanded={expanded} aria-label={expanded ? "Collapse sound details" : "Expand sound details"} onClick={() => setExpanded(v => !v)}><ChevronIcon /></button>
             </div>
             <p className="hero-caption">{selected?.description}</p>
@@ -322,15 +335,15 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
         </section>
         <section className="library" aria-label="Sound library">
           <div className="library-head">
-            <h2>Sounds <span className="library-count">{fmtCount(filtered.length)}</span></h2>
+            <div className="library-title"><h2>Sounds <span className="library-count">{fmtCount(filtered.length)}</span></h2><button type="button" className="pill saved-filter" aria-pressed={savedOnly} onClick={()=>setSavedOnly(v=>!v)}><BookmarkIcon filled={savedOnly}/><span>Saved</span><small>{bookmarks.size}</small></button></div>
             <div className="filters">
               <div className="search"><SearchIcon /><input ref={searchRef} type="search" placeholder="Search sounds" aria-label="Search sounds" value={query} onChange={e => {setQuery(e.target.value);}} />{query && <button type="button" className="clear-search" aria-label="Clear search" onClick={() => {setQuery("");searchRef.current?.focus();}}><ClearIcon /></button>}</div>
               <Dropdown label="Sound category" value={category} options={categoryOptions} onChange={value => {setCategory(value);}} />
             </div>
           </div>
-          <div className="list-header" aria-hidden="true"><span>Name</span><span>Duration</span><span>Peak</span><span /></div>
+          <div className="list-header" aria-hidden="true"><span>Name</span><span>Duration</span><span>Peak</span><span /><span /></div>
           <CylinderScroll viewportRef={libraryRef}>
-            {filtered.length === 0 ? <StatePanel kind="empty" title="No matching sounds" text="Try a different name or category." action={{label:"Clear filters",onClick:clearFilters}} /> :
+            {filtered.length === 0 ? <StatePanel kind="empty" title={savedOnly?"No saved sounds match":"No matching sounds"} text={savedOnly?"Bookmark a sound or clear the filters.":"Try a different name or category."} action={{label:"Clear filters",onClick:clearFilters}} /> :
               <div className="sound-list">
                 {filtered.map(sound => {
                   const active = playingId === sound.id;
@@ -343,6 +356,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
                     </button>
                     <div className="duration"><MicroBar ratio={sound.duration / maxDuration} /><span>{fmtMs(sound.duration)}</span></div>
                     <span className="peak">{fmtDb(sound.peakDb)}</span>
+                    <button type="button" className="pill icon-button row-bookmark" aria-label={`${bookmarks.has(sound.id)?"Remove bookmark from":"Bookmark"} ${sound.name}`} aria-pressed={bookmarks.has(sound.id)} onClick={()=>toggleBookmark(sound.id)}><BookmarkIcon filled={bookmarks.has(sound.id)}/></button>
                     <a className="pill icon-button" href={downloadUrl(sound.id)} download aria-label={`Download ${sound.name}`}><DownloadIcon /></a>
                   </div>;
                 })}
@@ -355,6 +369,12 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
   );
 }
 
+function readBookmarks(): Set<string> {
+  try {
+    const values:unknown=JSON.parse(localStorage.getItem("verdant.bookmarks.v1")??"[]");
+    return new Set(Array.isArray(values)?values.filter((id):id is string=>typeof id==="string"):[]);
+  } catch { return new Set(); }
+}
 function downloadUrl(id: string) { return `/sounds/${encodeURIComponent(id)}.wav`; }
 function filterSounds(sounds: readonly SoundSummary[], labels: Map<CategoryId,string>, category: CategoryFilter, query: string) {
   const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
