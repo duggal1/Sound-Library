@@ -24,7 +24,7 @@ try{
    await page.locator(".agent-results").waitFor();
    const count=Number(await page.locator(".agent-count").innerText());if(count===0)assert.match(await page.locator(".agent-results").innerText(),/approved catalog is empty/);
    await page.locator(".agent-markdown").waitFor();
-   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),"Horizontal overflow at "+width);
+   const overflow=await page.evaluate(()=>({width:innerWidth,scrollWidth:document.documentElement.scrollWidth,offenders:[...document.querySelectorAll("*")].filter(e=>e.getBoundingClientRect().right>innerWidth+1).slice(0,10).map(e=>({tag:e.tagName,className:e.getAttribute("class"),right:e.getBoundingClientRect().right}))}));assert.ok(overflow.scrollWidth<=width+1,"Horizontal overflow: "+JSON.stringify(overflow));
    await page.locator(".agent-skill-section").scrollIntoViewIfNeeded();
    assert.ok(await page.evaluate(()=>scrollY>0),"Skill section cannot scroll");
    await page.evaluate(()=>scrollTo(0,0));

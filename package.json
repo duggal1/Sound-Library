@@ -15,7 +15,7 @@
     "assets:publish": "bun run prepare:assets && bun tools/storage/publish.ts publish",
     "assets:verify": "bun run prepare:assets && bun tools/storage/publish.ts verify",
     "prepare:agents": "bun src/cli/build-agent-release.ts && bun src/cli/build-agent-distribution.ts && bun build packages/verdant-cli/cli.ts --target=node --outfile=.generated-public/agents/v1/verdant.mjs",
-    "agents:install": "bun install --cwd tools/agent-runtime",
+    "agents:install": "bun install --cwd tools/agent-runtime --frozen-lockfile",
     "agents:serve": "bun run prepare:assets && bun run prepare:agents && bun tools/agent-runtime/local.mjs",
     "agents:cli": "bun packages/verdant-cli/cli.ts",
     "agents:package": "cd packages/verdant-cli && bun run build && npm pack --dry-run"

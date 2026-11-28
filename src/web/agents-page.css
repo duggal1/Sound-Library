@@ -69,3 +69,10 @@
 
 /* The small-screen nav wraps instead of forcing the document wider than the viewport. */
 @media(max-width:400px){.site-agents .top{gap:4px}.site-agents .site-nav{margin-left:0;flex-wrap:wrap}.site-agents .site-nav a{padding-inline:7px}.site-agents .brand{flex-shrink:0}.agent-intro h1{font-size:36px}.agent-skill-toolbar{min-width:0}}
+
+/* Let every documentation grid shrink to the viewport, including long commands. */
+.agent-page,.agent-intro,.agent-install,.agent-section,.agent-section-heading,.agent-command,.agent-markdown,.agent-tool-list,.agent-install-aside{grid-template-columns:minmax(0,1fr);min-width:0}
+.agent-command-top>span,.agent-skill-toolbar>span,.agent-tool>p,.agent-note{min-width:0;overflow-wrap:anywhere}
+.agent-search,.agent-search input,.agent-skill-toolbar>div{min-width:0;max-width:100%}
+.agent-intro h1{overflow-wrap:normal}
+@media(max-width:360px){.agent-intro h1{font-size:30px}.agent-page{padding-inline:0}.site-agents .top{flex-wrap:wrap;align-content:center;row-gap:4px}.site-agents .site-nav{min-width:0}.agent-skill-toolbar>div{gap:0}.agent-command-top{gap:4px}.agent-command{padding-inline:12px}.agent-markdown{overflow-wrap:anywhere}}
