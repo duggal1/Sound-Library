@@ -1,6 +1,6 @@
 /* Device materials are the only gradient exception: lighting describes a physical surface,
    never a page background. Fixed coordinate geometry scales as a single rigid object. */
-.device-preview{min-width:0;display:grid;gap:10px;padding-block:8px 6px}
+.device-preview{min-width:0;display:grid;gap:7px;padding-block:3px 2px}
 .device-toolbar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
 .device-tabs,.device-theme-options{display:flex;gap:4px;align-items:center;flex-wrap:wrap}
 .device-tabs button,.device-theme-options button{display:flex;align-items:center;gap:6px;padding:7px 10px;border-radius:999px;font-size:12px;color:#686b6a;min-height:32px;font-weight:400}
@@ -13,19 +13,19 @@
 .device-expand{height:32px!important;font-size:12px;white-space:nowrap}
 .device-expand svg{width:13px;height:13px;transform:rotate(-40deg)}
 /* Fixed, orthographic industrial-design surfaces. Only physical press travel moves. */
-.magic-stage{min-width:0;width:100%;display:grid;justify-items:center;align-items:center;padding:clamp(14px,3cqw,28px) clamp(4px,1.2cqw,12px) clamp(18px,3.8cqw,32px);isolation:isolate}
-.magic-keyboard-frame{width:min(100%,900px);min-width:0;container-type:inline-size}
-.magic-keyboard{position:relative;width:100%;aspect-ratio:1540/606;background:linear-gradient(180deg,#fdfdfd 0%,#f7f7f7 48%,#f0f0f1 100%);border-radius:1.05cqw;box-shadow:inset 0 1px 0 #fff,inset 0 0 0 1px #a7a9ad40,0 .22cqw 0 #d9dadd,0 .45cqw .65cqw #25272c12,0 1.1cqw 2.6cqw #25272c09;user-select:none;touch-action:manipulation}
+.magic-stage{min-width:0;width:100%;display:grid;justify-items:center;align-items:center;padding:clamp(7px,1.3cqw,14px) 4px clamp(9px,1.7cqw,18px);isolation:isolate}
+.magic-keyboard-frame{width:min(100%,1040px);min-width:0;container-type:inline-size}
+.magic-keyboard{position:relative;width:100%;aspect-ratio:1540/510;background:linear-gradient(180deg,#fdfdfd 0%,#f7f7f7 48%,#f0f0f1 100%);border-radius:1.05cqw;box-shadow:inset 0 1px 0 #fff,inset 0 0 0 1px #a7a9ad40,0 .22cqw 0 #d9dadd,0 .45cqw .65cqw #25272c12,0 1.1cqw 2.6cqw #25272c09;user-select:none;touch-action:manipulation}
 .magic-keyboard:focus-visible{outline:none;box-shadow:inset 0 1px 0 #fff,inset 0 0 0 1px #a7a9ad40,0 .22cqw 0 #d9dadd,0 0 0 2px #a7cdb2,0 1.1cqw 2.6cqw #25272c09}
-.device-key{position:absolute;border:0;padding:0;background:#17181a;border-radius:.46cqw;box-shadow:0 .09cqw .12cqw #16181b26;cursor:var(--cursor-pointer);touch-action:none;-webkit-tap-highlight-color:transparent;overflow:visible;transition:none}
-.device-key-face{position:absolute;inset:0 0 .14cqw;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:.16cqw;border-radius:.42cqw;background:linear-gradient(175deg,#333538 0%,#27292c 35%,#232426 100%);color:#f2f2f3;box-shadow:inset 0 .085cqw 0 #ffffff22,inset 0 -.07cqw 0 #00000038;transform:translateY(-.09cqw);transition:transform 115ms cubic-bezier(.18,.78,.26,1),background-color 115ms ease,box-shadow 115ms ease;pointer-events:none;font-weight:400;line-height:1.04;letter-spacing:normal;-webkit-font-smoothing:antialiased}
+.device-key{position:absolute;border:0;padding:0;background:#17181a;border-radius:.39cqw;box-shadow:0 .11cqw .13cqw #16181b30;cursor:var(--cursor-pointer);touch-action:none;-webkit-tap-highlight-color:transparent;overflow:visible;transition:none}
+.device-key-face{position:absolute;inset:0 0 .25cqw;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:.10cqw;border-radius:.35cqw;background:linear-gradient(175deg,#333538 0%,#27292c 35%,#232426 100%);color:#f2f2f3;box-shadow:inset 0 .09cqw 0 #ffffff29,inset 0 -.09cqw 0 #00000055,0 .10cqw .08cqw #00000030;transform:translateY(-.10cqw);transition:transform 110ms cubic-bezier(.18,.78,.26,1),box-shadow 110ms ease,color 90ms ease;pointer-events:none;font-weight:400;line-height:1.04;letter-spacing:normal;-webkit-font-smoothing:antialiased}
 .key-legend{font-size:clamp(5px,1.73cqw,15px);white-space:nowrap}
 .key-secondary{font-size:clamp(4px,1.26cqw,11px);color:#b8babd;white-space:nowrap}
 .device-key[data-function=true] .key-legend{font-size:clamp(4px,1.05cqw,9px)}
 .device-key[data-function=true] .key-secondary{font-size:clamp(5px,1.5cqw,13px)}
 .device-key[data-modifier=true] .key-legend{font-size:clamp(4px,1.22cqw,11px)}
 .device-key[data-code=CapsLock] .device-key-face i{position:absolute;left:10%;top:12%;width:.34cqw;height:.34cqw;border-radius:50%;background:#85878a}
-.device-key[data-pressed=true] .device-key-face,.device-key:not(:disabled):active .device-key-face{transform:translateY(.13cqw);background:#1d1e20;box-shadow:inset 0 .1cqw .2cqw #00000070;transition-duration:28ms;color:#fff}
+.device-key[data-pressed=true] .device-key-face,.device-key:not(:disabled):active .device-key-face{transform:translateY(.24cqw) scale(.985,.975);background:#18191b;box-shadow:inset 0 .20cqw .28cqw #00000080,inset 0 -.05cqw 0 #ffffff12;transition-duration:24ms;color:#fff}
 .device-key[data-pressed=true][data-code=CapsLock] i{background:#22c55e}
 .device-key:disabled{opacity:.62;cursor:var(--cursor-default)}
 .device-key:focus-visible{outline:none;box-shadow:0 0 0 1.5px #a7cdb2;z-index:2}
@@ -44,13 +44,13 @@
 .magic-mouse-instructions{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;font-size:11px;color:#737373}
 .magic-scroll-tick{padding:5px 9px;background:#f5f5f4;border-radius:999px;color:#525252;white-space:nowrap}
 .magic-scroll-tick:hover{background:#eceeec}
-.device-dialog{border:0;border-radius:24px;padding:clamp(18px,3vw,36px);background:#fff;color:#303733;width:min(1060px,calc(100vw - 24px));max-height:calc(100dvh - 24px);overflow:auto;box-shadow:0 18px 70px #29322e19;container-type:inline-size;margin:auto}
+.device-dialog{border:0;border-radius:24px;padding:clamp(18px,3vw,36px);background:#fff;color:#303733;width:min(1160px,calc(100vw - 32px));max-height:calc(100dvh - 24px);overflow:auto;box-shadow:0 18px 70px #29322e19;container-type:inline-size;margin:auto}
 .device-dialog::backdrop{background:#28322c20;backdrop-filter:blur(7px)}
 .device-dialog-top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
 .device-dialog-top h2{font:450 clamp(24px,4vw,36px)/1.2 "Open Sans",sans-serif;letter-spacing:-.015em;margin-top:6px}
 .device-dialog-kicker{font-size:12px;color:#737373}
-.device-expanded-body{margin-block:16px;min-width:0}
-.device-expanded-body .magic-keyboard-stage{padding:clamp(10px,3cqw,30px) clamp(5px,2cqw,20px) clamp(18px,4cqw,40px)}
+.device-expanded-body{margin-block:10px;min-width:0}
+.device-expanded-body .magic-keyboard-stage{padding:clamp(10px,1.6cqw,20px) 4px clamp(12px,2cqw,24px)}
 .device-expanded-body .magic-mouse-frame{width:clamp(116px,23cqw,176px)}
 .device-expanded-body .magic-mouse-stage{padding-block:24px 30px;gap:20px}
 .device-dialog .device-caption{font-size:13px}
@@ -61,8 +61,22 @@
 .dashboard-themes .device-theme-options button{justify-content:flex-start;text-align:left;white-space:normal}
 .dashboard-themes .device-theme-options button[aria-pressed=true]{background:#f5f5f4}
 .device-download-disabled{opacity:.35;display:grid;place-items:center;cursor:var(--cursor-default)}
-/* At high browser zoom or a short viewport the header can scroll rather than
-   clipping the hardware or consuming the whole sound-list track. */
-.library-head:has(.device-preview){max-height:57dvh;overflow:auto;scrollbar-width:thin;scrollbar-color:#dedfdd transparent;padding:4px 4px var(--s4);min-height:0;overscroll-behavior:contain}
-@media(max-width:850px){.library-head:has(.device-preview){max-height:40dvh}.device-preview{gap:7px}.magic-stage{padding-block:10px 17px}}
+/* The header is not a scroll container. Reserve list space by fitting the
+   device to the available library height, not by cropping its contents. */
+.library{container-type:size}
+.library-head:has(.device-preview){max-height:none;overflow:visible;gap:10px;padding:4px 2px 8px;min-height:0}
+.library .magic-keyboard-frame{width:min(100%,1040px,max(200px,calc((100cqh - 285px)*3.0196)))}
+.library .magic-mouse-frame{width:min(122px,max(48px,calc((100cqh - 320px)*.545)))}
+.library .magic-mouse-stage{padding-block:6px 8px;gap:5px}
+@media(max-height:700px) and (min-width:851px){.library-head:has(.device-preview){gap:6px;padding-bottom:5px}.library .device-preview{gap:4px}.library .magic-stage{padding-block:5px 8px}}
+/* On narrow/short dashboard layouts, use one native library scroll region
+   instead of two nested scrollports; no header-specific scrollbar. */
+@media(max-width:850px),(max-height:560px){
+ [data-layout="dashboard"] .library{container-type:inline-size;grid-template-rows:auto auto auto auto;align-content:start;overflow:auto;scrollbar-width:none;overscroll-behavior:contain}
+ [data-layout="dashboard"] .library-scroll{overflow:visible;padding-right:0}
+ [data-layout="dashboard"] .library .magic-keyboard-frame{width:min(100%,1040px)}
+ [data-layout="dashboard"] .library .magic-mouse-frame{width:clamp(68px,19cqw,100px)}
+}
+@media(max-width:850px){.device-preview{gap:5px}.magic-stage{padding-block:7px 10px}}
+
 @media(prefers-reduced-motion:reduce){.device-key-face,.magic-mouse-shell,.magic-mouse-hit-area button{transition:none}.device-key[data-pressed=true] .device-key-face,.device-key:not(:disabled):active .device-key-face,.magic-mouse:has([data-pressed=true],button:not(:disabled):active) .magic-mouse-shell{transform:none}}

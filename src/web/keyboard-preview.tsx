@@ -40,22 +40,38 @@ function MacKeyboard({sounds,theme,fire}:{sounds:readonly SoundSummary[];theme:K
  const board=useRef<HTMLDivElement>(null);
  const held=useRef(new Set<string>());
  const pointers=useRef(new Map<number,string>());
+ const pressedAt=useRef(new Map<string,number>());
+ const releaseTimers=useRef(new Map<string,number>());
  const byCode=useMemo(()=>new Map(sounds.filter(s=>s.keyCode).map(s=>[s.keyCode!,s])),[sounds]);
  const lookup=(code:string)=>byCode.get(code)??(theme==="classic"?byCode.get(CLASSIC_FALLBACK[code]??""):undefined);
  const setPressed=(code:string,value:boolean)=>{
   const node=board.current?.querySelector<HTMLElement>('[data-code="'+code+'"]');
   if(node)node.dataset.pressed=String(value);
  };
+ const cancelRelease=(code:string)=>{
+  const timer=releaseTimers.current.get(code);
+  if(timer!==undefined){window.clearTimeout(timer);releaseTimers.current.delete(code);}
+ };
  const clear=useCallback(()=>{
-  held.current.clear();pointers.current.clear();
+  for(const timer of releaseTimers.current.values())window.clearTimeout(timer);
+  releaseTimers.current.clear();pressedAt.current.clear();held.current.clear();pointers.current.clear();
   board.current?.querySelectorAll<HTMLElement>("[data-pressed=true]").forEach(n=>{n.dataset.pressed="false";});
  },[]);
  useEffect(()=>{window.addEventListener("blur",clear);return()=>{window.removeEventListener("blur",clear);clear();};},[clear,theme]);
- const release=(code:string)=>{held.current.delete(code);if(!Array.from(pointers.current.values()).includes(code))setPressed(code,false);};
- const press=(code:string)=>{setPressed(code,true);fire(lookup(code));};
+ const isHeld=(code:string)=>held.current.has(code)||Array.from(pointers.current.values()).includes(code);
+ const settle=(code:string)=>{
+  if(isHeld(code))return;
+  cancelRelease(code);
+  // A fast tap still completes a visible downstroke. Audio is never delayed.
+  const remaining=Math.max(0,55-(performance.now()-(pressedAt.current.get(code)??0)));
+  const finish=()=>{releaseTimers.current.delete(code);if(!isHeld(code)){setPressed(code,false);pressedAt.current.delete(code);}};
+  if(remaining>0)releaseTimers.current.set(code,window.setTimeout(finish,remaining));else finish();
+ };
+ const release=(code:string)=>{held.current.delete(code);settle(code);};
+ const press=(code:string)=>{cancelRelease(code);pressedAt.current.set(code,performance.now());setPressed(code,true);fire(lookup(code));};
  function keyDown(e:KeyboardEvent<HTMLDivElement>){
   if(e.nativeEvent.isComposing)return;
-  if(e.key==="Escape"){if(!e.repeat)fire(lookup(e.code));return;}
+  if(e.key==="Escape"){if(!e.repeat){press(e.code);settle(e.code);}return;}
   if((e.metaKey||e.ctrlKey||e.altKey)&&!/^Meta|^Control|^Alt/.test(e.code))return;
   if(!lookup(e.code))return;
   // Tab continues normal focus navigation. Browser shortcuts remain untouched.
@@ -70,7 +86,7 @@ function MacKeyboard({sounds,theme,fire}:{sounds:readonly SoundSummary[];theme:K
  }
  function pointerEnd(e:PointerEvent<HTMLButtonElement>){
   const code=pointers.current.get(e.pointerId);if(!code)return;
-  pointers.current.delete(e.pointerId);if(!held.current.has(code)&&!Array.from(pointers.current.values()).includes(code))setPressed(code,false);
+  pointers.current.delete(e.pointerId);settle(code);
  }
  return <div className="magic-stage magic-keyboard-stage">
   <div className="magic-keyboard-frame">
@@ -81,7 +97,7 @@ function MacKeyboard({sounds,theme,fire}:{sounds:readonly SoundSummary[];theme:K
      return <button type="button" key={key.code} className="device-key" data-code={key.code} data-function={!!key.functionLabel} data-modifier={key.width>120} disabled={!sound}
        aria-label={key.code==="Space"?"Space":key.label||key.code} title={mapped?"Classic fallback: "+sound.name:sound?.name} style={style}
        onPointerEnter={()=>{if(sound)prefetchSound(sound);}} onPointerDown={e=>pointerDown(e,key.code)} onPointerUp={pointerEnd} onPointerCancel={pointerEnd} onLostPointerCapture={pointerEnd}
-       onClick={e=>{if(e.detail===0)fire(sound);}}>
+       onClick={e=>{if(e.detail===0){press(key.code);settle(key.code);}}}>
       <span className="device-key-face">
        {(key.functionLabel||key.secondary)&&<span className="key-secondary">{key.functionLabel||key.secondary}</span>}
        <span className="key-legend">{key.label}</span>

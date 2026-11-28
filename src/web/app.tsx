@@ -295,7 +295,7 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
     return () => window.removeEventListener("keydown", onKey);
   }, [step, replay]);
 
-  useEffect(() => { if (libraryRef.current) libraryRef.current.scrollTop = 0; }, [query, category,savedOnly]);
+  useEffect(() => { const viewport=libraryRef.current;if(viewport){viewport.scrollTop=0;const library=viewport.closest<HTMLElement>(".library");if(library&&getComputedStyle(library).overflowY==="auto")library.scrollTop=0;} }, [query, category,savedOnly]);
 
   const changeCategory = (value: CategoryFilter) => {
     setCategory(value);
