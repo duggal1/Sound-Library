@@ -1,4 +1,4 @@
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CatalogResponse, SoundSummary } from "../core/types";
 import { decodeWaveform } from "../core/waveform";
 import { prefetchSound } from "./api";
@@ -7,6 +7,7 @@ import { fmtMs } from "./format";
 import { ArrowIcon, PlayIcon, StopIcon } from "./icons";
 import { mountSoundField } from "./sound-field";
 import { useAudition } from "./use-audition";
+import { waveformBars } from "./landing-waveform";
 import { sketchSource } from "./sound-sketches";
 import "./sound-field.css";
 
@@ -15,26 +16,26 @@ import "./sound-field.css";
 // App owns loading/empty/error; this view owns audition error and reversible local moves.
 const FEATURED=["click","key-space","wheel-step","switch-latch","drop-soft","key-enter","hover","control-back","toggle-engage","mouse-down","key-a","slider-step","drop-snap","confirm-choice"];
 
-const SoundObject=memo(function SoundObject({sound,active,pending,onPlay,onStop}:{sound:SoundSummary;active:boolean;pending:boolean;onPlay:(sound:SoundSummary)=>void;onStop:()=>void}){
-  const path=useMemo(()=>{
-    if(!sound.waveform)return "";
-    const points=decodeWaveform(sound.waveform),bins=points.length/3;
-    let d="";
-    for(let i=0;i<22;i++){
-      let lo=0,hi=0;
-      for(let j=Math.floor(i*bins/22);j<Math.floor((i+1)*bins/22);j++){lo=Math.max(lo,points[j*3]);hi=Math.max(hi,points[j*3+1]);}
-      d+=`M${i*4+6} ${(20-Math.max(.045,hi)*17).toFixed(2)}V${(20+Math.max(.045,lo)*17).toFixed(2)}`;
-    }
-    return d;
-  },[sound.waveform]);
+const SoundObject=memo(function SoundObject({sound,active,pending,onPlay,engine}:{sound:SoundSummary;active:boolean;pending:boolean;onPlay:(sound:SoundSummary)=>void;engine:AudioEngine}){
+  const bars=useMemo(()=>waveformBars(sound.waveform?decodeWaveform(sound.waveform):new Float32Array()),[sound.waveform]);
+  const progress=useRef<SVGSVGElement>(null);
+  useEffect(()=>{
+    if(!active||!progress.current)return;
+    let frame=0;const node=progress.current;
+    const draw=()=>{const p=engine.progress()??0;node.style.clipPath=`inset(0 ${100-p*100}% 0 0)`;if(engine.isActive())frame=requestAnimationFrame(draw);};
+    draw();return()=>{cancelAnimationFrame(frame);node.style.clipPath="inset(0 100% 0 0)";};
+  },[active,engine]);
   return <div className="field-object" data-sound-object={sound.id}>
-    <button type="button" className="field-sound" aria-label={`${active||pending?"Stop":"Preview"} ${sound.name}`} aria-pressed={active||pending}
-      onPointerDown={()=>prefetchSound(sound)} onClick={()=>active||pending?onStop():onPlay(sound)}>
+    <button type="button" className="field-sound" aria-label={`Play ${sound.name}`} aria-pressed={active||pending}
+      onPointerDown={()=>prefetchSound(sound)} onClick={()=>onPlay(sound)}>
       <span className="field-paper">
-        <span className="field-art"><img src={sketchSource(sound.id,sound.category)} alt="" draggable={false} decoding="async" loading="lazy"/><span className="field-action">{active||pending?<StopIcon/>:<PlayIcon/>}</span></span>
+        <span className="field-art"><img src={sketchSource(sound.id,sound.category)} alt="" draggable={false} decoding="async" loading="lazy"/><span className="field-action"><PlayIcon/></span></span>
         <span className="field-name">{sound.name}</span>
         <span className="field-duration">{pending?"Loading…":active?"Playing":fmtMs(sound.duration)}</span>
-        <svg className="field-wave" viewBox="0 0 96 40" aria-hidden="true"><path d={path} fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="square"/></svg>
+        <span className="field-wave" aria-hidden="true">
+ <svg viewBox="0 0 96 36">{bars.map((b,i)=><line key={i} x1={b.x} x2={b.x} y1={b.y1} y2={b.y2===b.y1?b.y2+.01:b.y2}/>)}</svg>
+ <svg ref={progress} className="field-wave-played" viewBox="0 0 96 36">{bars.map((b,i)=><line key={i} x1={b.x} x2={b.x} y1={b.y1} y2={b.y2===b.y1?b.y2+.01:b.y2}/>)}</svg>
+ </span>
       </span>
     </button>
   </div>;
@@ -45,6 +46,11 @@ export function Landing({catalog,engine}:{catalog:CatalogResponse;engine:AudioEn
   const driver=useRef<ReturnType<typeof mountSoundField>|null>(null);
   const [dirty,setDirty]=useState(false);
   const {play,stop,playingId,pendingId,error}=useAudition(engine);
+  const queue=useRef<AbortController|null>(null);
+  const [sequence,setSequence]=useState<number|null>(null);
+  const cancelQueue=useCallback(()=>{queue.current?.abort();queue.current=null;setSequence(null);stop();},[stop]);
+  const audition=useCallback((sound:SoundSummary)=>{queue.current?.abort();queue.current=null;setSequence(null);void play(sound);},[play]);
+  useEffect(()=>()=>{queue.current?.abort();queue.current=null;},[]);
   const ordered=useMemo(()=>{
     const byId=new Map(catalog.sounds.map(sound=>[sound.id,sound]));
     const first=FEATURED.flatMap(id=>{const sound=byId.get(id);return sound?[sound]:[]});
@@ -54,13 +60,35 @@ export function Landing({catalog,engine}:{catalog:CatalogResponse;engine:AudioEn
     while(true){let added=false;for(const group of groups.values()){const sound=group.shift();if(sound){first.push(sound);added=true;}}if(!added)break;}
     return first;
   },[catalog]);
+  const playAll=useCallback(async()=>{
+    if(queue.current){cancelQueue();return;}
+    const controller=new AbortController();queue.current=controller;
+    const signal=controller.signal;
+    try{
+      engine.unlock();
+      for(let i=0;i<ordered.length&&!signal.aborted;i++){
+        setSequence(i+1);
+        const sound=ordered[i]!;
+        if(i+1<ordered.length)prefetchSound(ordered[i+1]!);
+        const started=await play(sound);
+        if(signal.aborted||!started)break;
+        await new Promise<void>(resolve=>{
+          let unsubscribe=()=>{};
+          const done=()=>{unsubscribe();signal.removeEventListener("abort",done);resolve();};
+          unsubscribe=engine.subscribe(id=>{if(id!==sound.id)done();});
+          signal.addEventListener("abort",done,{once:true});
+          if(signal.aborted||!engine.isActive())done();
+        });
+      }
+    }finally{if(queue.current===controller){queue.current=null;setSequence(null);}}
+  },[ordered,engine,play,cancelQueue]);
   useEffect(()=>{
     if(!viewport.current||!world.current)return;
     const byId=new Map(ordered.map(sound=>[sound.id,sound]));
-    const field=mountSoundField(viewport.current,world.current,id=>{const sound=byId.get(id);if(sound)play(sound);},setDirty);
+    const field=mountSoundField(viewport.current,world.current,id=>{const sound=byId.get(id);if(sound)audition(sound);},setDirty);
     driver.current=field;
     return ()=>{field.dispose();driver.current=null;};
-  },[ordered,play]);
+  },[ordered,audition]);
   return <div className="sound-landing">
     <div className="sound-field" ref={viewport} tabIndex={0} role="region" aria-label="Endless sound canvas. Drag empty space or use arrow keys to explore. Click a sound to play. Escape resets.">
       <div className="field-grid" aria-hidden="true"/>
@@ -74,13 +102,13 @@ export function Landing({catalog,engine}:{catalog:CatalogResponse;engine:AudioEn
             <a href="/sounds/pack.zip" className="field-download" download="verdant-sounds.zip">Download all</a>
           </div>
         </section>
-        {ordered.map(sound=><SoundObject key={sound.id} sound={sound} active={playingId===sound.id} pending={pendingId===sound.id} onPlay={play} onStop={stop}/>)}
+        {ordered.map(sound=><SoundObject key={sound.id} sound={sound} active={playingId===sound.id} pending={pendingId===sound.id} onPlay={audition} engine={engine}/>)}
       </div>
     </div>
     <div className="field-dock"><div className="field-dock-inner">
-      <span className="field-help" role="status">{error||"Drag to wander · Tap to listen"}</span>
+      <span className="field-help" role="status">{error||(sequence!==null?`Playing ${sequence} of ${ordered.length}`:"Drag to wander · Tap to listen")}</span>
       <button type="button" className="pill field-reset" disabled={!dirty} onClick={()=>driver.current?.reset()}>Back to center</button>
-      <button type="button" className="pill" disabled={!playingId&&!pendingId} onClick={stop}>Stop <StopIcon/></button>
+      <button type="button" className="pill primary field-play-all" onClick={()=>void playAll()}>{sequence!==null?<><StopIcon/> Stop</>:<><PlayIcon/> Play all sounds</>}</button>
       <a href="/sounds/credits.md">Credits</a>
     </div></div>
   </div>;

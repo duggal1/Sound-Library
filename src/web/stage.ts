@@ -4,8 +4,8 @@ import { fmtMs } from "./format";
 
 export type StageMode = "waveform" | "scope";
 
-const PITCH = 2.5; // optical spacing, independent of device pixel ratio
-const CELL = 1.5;
+const PITCH = 3.6; // optical spacing, independent of device pixel ratio
+const CELL = 2.3;
 const GUTTER_L = 8;
 const GUTTER_R = 8;
 const PAD_T = 22;
@@ -316,10 +316,10 @@ export class StageRenderer {
     const drawInk = (played:boolean) => {
       ctx.strokeStyle = played ? palette.accent : palette.soft;
       ctx.globalAlpha = played ? .42 : .65;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = 1.5;
       ctx.stroke(peaks);
       ctx.globalAlpha = 1;
-      ctx.lineWidth = 1.65;
+      ctx.lineWidth = 2.5;
       ctx.stroke(energy);
     };
     drawInk(progress === null);
@@ -334,7 +334,7 @@ export class StageRenderer {
       ctx.stroke();
       ctx.fillStyle = palette.accent;
       ctx.beginPath();
-      ctx.rect(x-2, p.top + 1, 4, 4);
+      ctx.arc(x, p.top + 3, 3, 0, Math.PI * 2);
       ctx.fill();
     }
     ctx.restore();

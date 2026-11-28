@@ -35,6 +35,7 @@ import {
   ChevronIcon,
   ClearIcon,
   BrandMark,
+  GitHubIcon,
   DownloadIcon,
   NextIcon,
   PlayIcon,
@@ -443,7 +444,7 @@ function Shell({children, context, pack, current}: {children: ReactNode; context
       </nav>
       {context && <span className="context">{context}</span>}
       {pack}
-      {current === "home" && <a className="home-repo" href="https://github.com/duggal1/Sound-Library">GitHub <ArrowIcon /></a>}
+      {current === "home" && <a className="home-repo" href="https://github.com/duggal1/Sound-Library"><GitHubIcon /> GitHub</a>}
     </header>
     <main id="page-main" tabIndex={-1}>{children}</main>
   </div>;

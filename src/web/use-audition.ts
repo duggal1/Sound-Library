@@ -24,30 +24,21 @@ export function useAudition(engine: AudioEngine) {
     setPendingId(null);
   }, [engine]);
 
-  const play = useCallback((sound: SoundSummary, fraction = 0) => {
+  const play = useCallback(async (sound: SoundSummary, fraction = 0): Promise<boolean> => {
     const request = ++version.current;
     const isCurrent = () => request === version.current;
-    const failed = () => {
-      if (!isCurrent()) return;
-      setPendingId(null);
-      setError("Playback failed. Try again.");
-    };
-    const begin = (decoded: Awaited<ReturnType<typeof loadSound>>) => {
-      if (!isCurrent()) return;
-      void engine.play(decoded, isCurrent, fraction).then(() => {
-        if (isCurrent()) setPendingId(null);
-      }).catch(failed);
-    };
-
-    engine.stop();
-    setPendingId(sound.id);
-    setError("");
+    engine.stop();setPendingId(sound.id);setError("");
     try {
       engine.unlock();
-      const cached = peekSound(sound);
-      if (cached) begin(cached);
-      else void loadSound(sound).then(begin, failed);
-    } catch { failed(); }
+      const decoded=peekSound(sound)??await loadSound(sound);
+      if(!isCurrent())return false;
+      await engine.play(decoded,isCurrent,fraction);
+      if(!isCurrent())return false;
+      setPendingId(null);return true;
+    }catch{
+      if(isCurrent()){setPendingId(null);setError("Playback failed. Try again.");}
+      return false;
+    }
   }, [engine]);
 
   return {playingId, pendingId, error, play, stop};
