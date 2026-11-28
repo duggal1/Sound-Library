@@ -34,3 +34,7 @@ The landing alone uses a playful Trazo-style crayon illustration layer (MIT orig
 The dashboard uses a flat catalog and a stationary inspector. Studio keeps the left waveform and right cylindrical rail. Both share one audio engine, persistent saved IDs and the original download URLs. Keyboard auditions are scoped to the focused keyboard pad, while the on-screen keys also support click and touch.
 
 Waveform envelopes are built from the delivered PCM and included with the catalog. Individual immutable previews replace the full-catalog bank. Audio loads when invited, with a bounded decoded cache and a single playback source. The expanded collection has per-asset credit and listening review status.
+
+## Device audition
+
+Keyboard theme selection is persisted locally, with Modern and Classic as distinct playback mappings. A MacBook-style ANSI hardware layout and mouse controls share the same compact/expanded component, using CSS key travel and layered depth, not WebGL. Actual key events are scoped to focused previews; browser shortcuts and search remain available. Modern uses ten shared clips from the supplied sprite, and Classic uses its existing recorded takes with explicit fallback for extra keys. Modern is preview-only pending license verification; the existing WAV pack is unchanged. Audio transients are bounded to eight overlapping sources and use the existing gain/limiter. Reduced motion eliminates animated travel. The dashboard remains white with stone-neutral hardware surfaces and green signal.
