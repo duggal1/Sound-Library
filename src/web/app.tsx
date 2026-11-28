@@ -21,7 +21,7 @@ import {
 } from "react";
 import type { CatalogResponse, CategoryId, CategoryInfo, SoundSummary } from "../core/types";
 import { SAMPLE_RATE } from "../core/types";
-import { fetchCatalog } from "./api";
+import { fetchCatalog,downloadSound,downloadPack } from "./api";
 import { useAudition } from "./use-audition";
 import { Landing } from "./landing";
 import { DevicePreview, ThemePicker } from "./keyboard-preview";
@@ -349,7 +349,7 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
   const currentIndex = filtered.findIndex(sound => sound.id === selectedId);
   return (
     <Shell current={studio ? "studio" : "library"} context={`${fmtCount(baseSounds.length)} downloadable WAVs · ${SAMPLE_RATE / 1000} kHz · mono`}
-      pack={<a className="pill pack" href="/sounds/pack.zip" download="verdant-sounds.zip"><DownloadIcon /><span>Download WAV pack</span><small>{fmtBytes(catalog.totalBytes)}</small></a>}>
+      pack={<a className="pill pack" href="/sounds/pack.zip" download="verdant-sounds.zip" onClick={downloadPack}><DownloadIcon /><span>Download WAV pack</span><small>{fmtBytes(catalog.totalBytes)}</small></a>}>
       <div className="workspace" data-layout={studio ? "studio" : "dashboard"}>
         {!studio && <aside className="dashboard-sidebar" aria-label="Library navigation">
           <a className="dashboard-index" href="/library" aria-current={!savedOnly && category === "all" ? "page" : undefined}>Library <span>{fmtCount(sounds.length)}</span></a>
@@ -381,7 +381,7 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
               <button className="pill primary dock-play" type="button" disabled={!selected} onClick={replay}>{playing || busy ? <StopIcon /> : <PlayIcon />}<span>{playing || busy ? "Stop" : "Play"}</span></button>
               <button className="pill icon-button" type="button" aria-label="Next sound" disabled={!filtered.length || currentIndex === filtered.length - 1} onClick={() => step(1)}><NextIcon /></button>
             </nav>
-            {selected && !isModern(selected) && !selected.importedMouse && <a className="pill icon-button current-download" aria-label="Download selected sound" href={downloadUrl(selected.id)} download><DownloadIcon /></a>}
+            {selected && !isModern(selected) && !selected.importedMouse && <a className="pill icon-button current-download" aria-label="Download selected sound" href={downloadUrl(selected.id)} download onClick={e=>downloadSound(selected,e)}><DownloadIcon /></a>}
             <VolumeControl engine={engine} />
           </div>
           <section className="details" aria-label="Source signal metrics">
@@ -451,7 +451,7 @@ const SoundRow=memo(function SoundRow({sound,selected,active,loading,saved,categ
                     <div className="duration"><MicroBar ratio={sound.duration / maxDuration} /><span>{fmtMs(sound.duration)}</span></div>
                     <span className="peak">{fmtDb(sound.peakDb)}</span>
                     <button type="button" className="pill icon-button row-bookmark" aria-label={`${saved?"Remove bookmark from":"Bookmark"} ${sound.name}`} aria-pressed={saved} onClick={()=>toggleBookmark(sound.id)}><BookmarkIcon filled={saved}/></button>
-                    {(isModern(sound)||sound.importedMouse)?<span className="pill icon-button device-download-disabled" title="Imported recording is preview only" aria-label="Preview only"><DownloadIcon/></span>:<a className="pill icon-button" href={downloadUrl(sound.id)} download aria-label={`Download ${sound.name}`}><DownloadIcon /></a>}
+                    {(isModern(sound)||sound.importedMouse)?<span className="pill icon-button device-download-disabled" title="Imported recording is preview only" aria-label="Preview only"><DownloadIcon/></span>:<a className="pill icon-button" href={downloadUrl(sound.id)} download onClick={e=>downloadSound(sound,e)} aria-label={`Download ${sound.name}`}><DownloadIcon /></a>}
                   </div>;
 });
 

@@ -142,6 +142,8 @@ export interface CatalogResponse {
   /** Immutable, contiguous WAV bank in catalog order; optional for legacy catalogs. */
   readonly previewBank?: string;
   readonly previewWarning?: string;
+  /** Present only when the deployment explicitly pins its verified generated release. */
+  readonly storage?: {readonly releaseId:string;readonly publicBase:string;readonly packKey:string};
   readonly categories: readonly CategoryInfo[];
   readonly sounds: readonly SoundSummary[];
 }

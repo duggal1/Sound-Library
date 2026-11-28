@@ -1,7 +1,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { CatalogResponse, SoundSummary } from "../core/types";
 import { decodeWaveform } from "../core/waveform";
-import { prefetchSound } from "./api";
+import { prefetchSound,downloadPack } from "./api";
 import type { AudioEngine } from "./audio";
 import { fmtMs } from "./format";
 import { ArrowIcon, PlayIcon, StopIcon } from "./icons";
@@ -99,7 +99,7 @@ export function Landing({catalog,engine}:{catalog:CatalogResponse;engine:AudioEn
           <p>Discover tactile interface sounds. Grab, listen, and bring them into your next project.</p>
           <div className="field-hero-actions">
             <a href="/library" className="pill primary">Explore the library <ArrowIcon/></a>
-            <a href="/sounds/pack.zip" className="field-download" download="verdant-sounds.zip">Download WAV pack</a>
+            <a href="/sounds/pack.zip" className="field-download" download="verdant-sounds.zip" onClick={downloadPack}>Download WAV pack</a>
           </div>
         </section>
         {ordered.map(sound=><SoundObject key={sound.id} sound={sound} active={playingId===sound.id} pending={pendingId===sound.id} onPlay={audition} engine={engine}/>)}

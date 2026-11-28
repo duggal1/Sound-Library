@@ -7,3 +7,5 @@ generated-sounds/
 .DS_Store
 
 .generated-public/
+
+.storage-receipt.json
