@@ -1,6 +1,6 @@
 # Verdant
 
-An interface sound library for software, with an endless, draggable illustrated sound canvas, a searchable catalog, and a waveform studio. The current catalog includes 150 sounds. The new collection contains 61 recorded keyboard strikes and 50 mouse, control, and feedback effects. See [sound credits](licenses/sound-collection.md) for sources, edits, and listening review status.
+A curated interface sound library for developers and AI coding agents, with an endless, draggable illustrated sound canvas, a searchable catalog, and a waveform studio. The current catalog includes 150 sounds. The new collection contains 61 recorded keyboard strikes and 50 mouse, control, and feedback effects. See [sound credits](licenses/sound-collection.md) for sources, edits, and listening review status.
 
 ```sh
 bun install
@@ -24,3 +24,10 @@ Visual peaks and RMS come from the exported PCM and render immediately from cata
 ## Object storage (Neon S3-compatible)
 
 Storage release publishing is intentionally separate from ordinary builds. The generated WAV catalog is canonical; only redistributable WAVs, license files, and the ZIP are published. Preview-only imported mouse and Modern keyboard recordings are excluded from the public release. Read [storage operations](docs/storage.md) before publishing. An explicit verified release pin enables remote-first audio, with Vercel fallback. Browser HTTP caching and bounded decoded PCM/native buffer caches share content hashes rather than logical aliases. No storage credentials enter Vite.
+
+## Search and agent discovery
+
+Production builds generate crawlable category and individual sound pages, route-specific metadata, structured data, a social image, sitemap.xml, robots.txt, llms.txt, and /agents/catalog.json. The agent catalog excludes preview-only imports and retired click/press/release sounds, exposes measured attributes and links, and does not assume unspecified licenses grant distribution rights. /agents explains HTTP retrieval; it is not an MCP implementation.
+
+Set SITE_URL to the canonical production origin when changing domains (defaults to the repository's published Vercel homepage). Submit the sitemap in Google Search Console after deployment. Indexing and ranking are determined by search engines, not the build.
+
