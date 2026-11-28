@@ -50,6 +50,7 @@ import { SoundStage } from "./sound-stage";
 import { VolumeControl } from "./volume-control";
 import { CylinderScroll, revealCylinderRow } from "./cylinder-scroll";
 import { enhanceWheelScroll } from "./smooth-scroll";
+import { AgentsPage } from "./agents-page";
 
 const MODES: readonly SegmentedOption<StageMode>[] = [
   { value: "waveform", label: "Waveform" },
@@ -93,6 +94,10 @@ function useNavigation() {
 /* ------------------------------------------------------------------ */
 
 export function App() {
+  if(location.pathname.replace(/\/$/,"")==="/agents")return <Shell current="agents"><AgentsPage/></Shell>;
+  return <AudioApp/>;
+}
+function AudioApp() {
   const {url, navigate} = useNavigation();
   const [engine] = useState(() => new AudioEngine());
   const [attempt, setAttempt] = useState(0);
@@ -179,7 +184,7 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
   initialSaved: boolean;
 }) {
   const { sounds:baseSounds, categories } = catalog;
-  const [theme,setTheme]=useState<KeyboardTheme>(()=>{try{return localStorage.getItem("verdant.keyboard-theme")==="classic"?"classic":"modern";}catch{return "modern";}});
+  const [theme,setTheme]=useState<KeyboardTheme>("classic");
   const [modern,setModern]=useState<readonly SoundSummary[]|null>(null);
   const [themeError,setThemeError]=useState(false);
   const [device,setDevice]=useState<"keyboard"|"mouse">(initialCategory==="pointer"?"mouse":"keyboard");
@@ -478,14 +483,14 @@ function SoundListViewport({children, studio, viewportRef}: {
     : <div className="library-scroll" ref={viewportRef} tabIndex={0} aria-label="Browse sounds">{children}</div>;
 }
 
-function Shell({children, context, pack, current}: {children: ReactNode; context?: string; pack?: ReactNode; current?: "home" | "library" | "studio"}) {
-  return <div className={`shell ${current === "home" ? "site-home" : ""}`}>
+function Shell({children, context, pack, current}: {children: ReactNode; context?: string; pack?: ReactNode; current?: "home" | "library" | "studio" | "agents"}) {
+  return <div className={`shell ${current === "home" ? "site-home" : current==="agents"?"site-agents":""}`}>
     <header className="top">
       <a href="/" className="brand" aria-label="Verdant home"><BrandMark /><span>Verdant</span></a>
       <nav className="site-nav" aria-label="Main navigation">
         <a href="/library" aria-current={current === "library" ? "page" : undefined}>Library</a>
         <a href="/studio" aria-current={current === "studio" ? "page" : undefined}>Studio</a>
-        <a href="/agents">For agents</a>
+        <a href="/agents" aria-current={current==="agents"?"page":undefined}>For agents</a>
       </nav>
       {context && <span className="context">{context}</span>}
       {pack}

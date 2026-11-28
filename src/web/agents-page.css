@@ -1,0 +1,68 @@
+/* Purpose: connect an agent and read the actual skill. One hero, no dashboard cards.
+   Calibrated against design-taste-skills a44ecac. Verdant overrides serif/orange with
+   existing Open Sans, stone chrome, and a single green accent. */
+.shell.site-agents{height:auto;min-height:100dvh;grid-template-rows:72px auto;max-width:1240px}
+.site-agents #page-main{min-width:0;overflow:visible}
+.agent-page{max-width:1024px;margin:auto;padding:64px 0 48px;display:grid;gap:64px;font-size:14px}
+.agent-page h1,.agent-page h2,.agent-page h3{font-family:"Open Sans",sans-serif;font-weight:450;letter-spacing:-.035em}
+.agent-page p{color:var(--muted);line-height:1.65}
+.agent-intro{max-width:670px;display:grid;gap:24px;padding:32px 0}
+.agent-eyebrow,.agent-section-heading>span{color:var(--quiet);font-size:12px;display:flex;align-items:center;gap:8px}
+.agent-dot{display:inline-block;width:8px;height:8px;flex:none;background:var(--accent);border-radius:48% 55% 46% 53%}
+.agent-intro h1{font-size:clamp(36px,6vw,64px);line-height:1.11;letter-spacing:-.055em}
+.agent-intro h1 span{position:relative;white-space:nowrap}
+.agent-intro h1 svg{position:absolute;left:0;right:0;bottom:-9px;width:100%;height:10px;color:var(--accent)}
+.agent-intro>p{max-width:48ch;font-size:14px}
+.agent-actions{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.agent-primary,.agent-copy,.agent-tabs button,.agent-link{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:40px;border-radius:999px;font-size:14px;font-weight:450;padding:0 16px;white-space:nowrap}
+.agent-primary{background:var(--button);color:white}
+.agent-primary:hover:not(:disabled){background:var(--hover);color:white}
+.agent-primary svg,.agent-link svg{width:15px;height:15px;transition:transform 220ms var(--liquid)}
+.agent-primary:hover svg,.agent-link:hover svg{transform:translateX(2px)}
+.agent-link{padding:0 4px;color:var(--muted);text-decoration:underline dotted;text-underline-offset:4px;justify-content:flex-start}
+.agent-link:hover{color:var(--ink)}
+.agent-install,.agent-section{border-top:1px solid var(--line);padding-top:32px;display:grid;gap:24px;scroll-margin-top:24px}
+.agent-section-heading{display:grid;gap:8px;max-width:68ch}
+.agent-section-heading h2{font-size:20px;letter-spacing:-.025em}
+.agent-install-grid{display:grid;grid-template-columns:minmax(0,1fr) 276px;gap:48px;align-items:start}
+.agent-install-grid>div{display:grid;gap:16px;min-width:0}
+.agent-tabs{display:flex;gap:4px;flex-wrap:wrap}
+.agent-tabs button{background:var(--surface);color:var(--muted)}
+.agent-tabs button[aria-pressed=true],.agent-tabs button:hover{background:var(--button);color:white}
+.agent-command{min-width:0;background:var(--surface);border-radius:16px;padding:12px 16px 16px;display:grid;gap:12px}
+.agent-command-top,.agent-skill-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:12px;color:var(--quiet)}
+.agent-command pre{white-space:pre-wrap;overflow-wrap:anywhere;word-break:break-word;margin:0;color:var(--ink);font-size:12px;line-height:1.7}
+.agent-page code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;font-weight:400}
+.agent-copy{min-height:32px;padding:0 10px;color:var(--muted);font-size:12px}
+.agent-copy:hover{background:var(--hover);color:#fff}
+.agent-note{display:flex;align-items:baseline;gap:8px;color:var(--quiet);font-size:12px;line-height:1.6}
+.agent-note .agent-dot{width:6px;height:6px}
+.agent-install-aside{display:grid;gap:8px;min-width:0}
+.agent-install-aside h3,.agent-result h3{font-size:14px}
+.agent-install-aside .agent-count{font-size:44px;line-height:1.1;letter-spacing:-.055em;color:var(--ink);font-weight:450}
+.agent-search{display:flex;align-items:center;gap:12px;border-radius:999px;background:var(--surface);padding:5px 5px 5px 16px;border:1px solid transparent}
+.agent-search:focus-within{border-color:var(--line)}
+.agent-search>svg{width:16px;height:16px;flex:none;color:var(--quiet)}
+.agent-search input{min-width:0;flex:1;border:0;background:none;outline:none;font:inherit}
+.agent-search input:focus-visible{outline:none}
+.agent-examples{display:flex;gap:8px;flex-wrap:wrap;margin-top:-12px}
+.agent-examples button{min-height:36px;border-radius:999px;background:var(--surface);padding:6px 12px;color:var(--muted);font-size:12px}
+.agent-examples button:hover{background:var(--hover);color:#fff}
+.agent-results{padding:16px 0;border-top:1px solid var(--line)}
+.agent-result{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 0}
+.agent-tool-list{display:grid}
+.agent-tool{display:grid;grid-template-columns:minmax(0,180px) minmax(0,1fr) auto;gap:16px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}
+.agent-tool>code{overflow-wrap:anywhere}
+.agent-skill-toolbar{background:var(--surface);border-radius:999px;padding:4px 12px 4px 16px;flex-wrap:wrap}
+.agent-skill-toolbar>div{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.agent-markdown{max-width:72ch;padding:16px 0;display:grid;gap:16px}
+.agent-markdown h2{font-size:20px}
+.agent-markdown h3{font-size:20px;margin-top:12px}
+.agent-markdown ul{margin:0;padding-left:20px;display:grid;gap:12px;line-height:1.65;color:var(--muted)}
+.agent-markdown li::marker{color:var(--accent)}
+.agent-markdown code{background:var(--surface);padding:2px 5px;border-radius:5px;overflow-wrap:anywhere;color:var(--ink)}
+.agent-footer{border-top:1px solid var(--line);display:flex;justify-content:space-between;gap:16px;padding-top:24px;flex-wrap:wrap;color:var(--muted)}
+.agent-footer a{display:inline-flex;align-items:center;gap:8px}.agent-footer svg{width:14px;height:14px}
+.agent-page :focus-visible{outline:2px solid var(--focus);outline-offset:3px}
+@media(max-width:720px){.shell.site-agents{grid-template-rows:60px auto}.agent-page{padding:24px 4px 32px;gap:48px}.agent-intro{padding:24px 0}.agent-install-grid{grid-template-columns:minmax(0,1fr);gap:24px}.agent-tool{grid-template-columns:minmax(0,1fr) auto;gap:4px 12px}.agent-tool p{grid-row:2;grid-column:1/-1}.agent-tool .agent-copy{grid-column:2;grid-row:1}.agent-search{gap:8px;padding-left:12px}.agent-tabs button{padding-inline:12px}.agent-skill-toolbar{border-radius:16px;align-items:flex-start}.agent-skill-toolbar>div{gap:4px}}
+@media(prefers-reduced-motion:reduce){.agent-page *, .agent-page *::before,.agent-page *::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
