@@ -13,12 +13,18 @@ const revalidate = {"cache-control": "public, max-age=0, must-revalidate"};
 const immutable = {"cache-control": "public, max-age=31536000, immutable"};
 const notFound = () => new Response("Not found", {status: 404});
 const page = () => new Response(index, {headers: revalidate});
+const htmlPage = async (path: string) => { const file=Bun.file(join(output,path+".html")); return await file.exists()?new Response(file,{headers:revalidate}):notFound(); };
 const serve = (path: string, headers: HeadersInit = revalidate) => new Response(Bun.file(join(output, path)), {headers});
 
 const server = Bun.serve({
   port: Number(process.env.PORT ?? 3000),
   routes: {
-    "/": page, "/library": page, "/studio": page, "/saved": page,
+    "/": page, "/library": () => htmlPage("library"), "/studio": () => htmlPage("studio"), "/saved": () => htmlPage("saved"),
+    "/agents": () => htmlPage("agents"),
+    "/agents/catalog.json": () => serve("agents/catalog.json"),
+    "/llms.txt": () => serve("llms.txt"), "/robots.txt": () => serve("robots.txt"), "/sitemap.xml": () => serve("sitemap.xml"), "/social-card.png": () => serve("social-card.png"),
+    "/effects/category/:category": req => /^[a-z0-9-]+$/.test(req.params.category)?htmlPage("effects/category/"+req.params.category):notFound(),
+    "/effects/:id": req => /^[a-z0-9-]+$/.test(req.params.id)?htmlPage("effects/"+req.params.id):notFound(),
     "/api/health": () => Response.json({ok: true, sounds: catalog.sounds.length}),
     "/api/sounds": () => new Response(manifest, {headers: revalidate}),
     "/api/sounds/:file": req => {

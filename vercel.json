@@ -33,15 +33,27 @@
   "rewrites": [
     {
       "source": "/library",
-      "destination": "/index.html"
+      "destination": "/library.html"
     },
     {
       "source": "/studio",
-      "destination": "/index.html"
+      "destination": "/studio.html"
     },
     {
       "source": "/saved",
-      "destination": "/index.html"
+      "destination": "/saved.html"
+    },
+    {
+      "source": "/agents",
+      "destination": "/agents.html"
+    },
+    {
+      "source": "/effects/category/:category",
+      "destination": "/effects/category/:category.html"
+    },
+    {
+      "source": "/effects/:id",
+      "destination": "/effects/:id.html"
     }
   ]
 }

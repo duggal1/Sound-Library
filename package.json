@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "bun run prepare:assets && vite",
-    "build": "bun run prepare:assets && vite build",
+    "build": "bun run prepare:assets && vite build && bun src/cli/build-discovery.ts",
     "start": "vite preview",
     "generate": "bun src/cli/generate.ts",
     "typecheck": "tsc --noEmit",

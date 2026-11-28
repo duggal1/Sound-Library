@@ -483,6 +483,7 @@ function Shell({children, context, pack, current}: {children: ReactNode; context
       <nav className="site-nav" aria-label="Main navigation">
         <a href="/library" aria-current={current === "library" ? "page" : undefined}>Library</a>
         <a href="/studio" aria-current={current === "studio" ? "page" : undefined}>Studio</a>
+        <a href="/agents">For agents</a>
       </nav>
       {context && <span className="context">{context}</span>}
       {pack}

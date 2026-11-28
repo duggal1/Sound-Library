@@ -1,6 +1,6 @@
 # Verdant
 
-An interface sound library for software, with an endless, draggable illustrated sound canvas, a searchable catalog, and a waveform studio. The current catalog includes 150 sounds. The new collection contains 61 recorded keyboard strikes and 50 mouse, control, and feedback effects. See [sound credits](licenses/sound-collection.md) for sources, edits, and listening review status.
+A curated interface sound library for developers and AI coding agents, with an endless, draggable illustrated sound canvas, a searchable catalog, and a waveform studio. The current catalog includes 150 sounds. The new collection contains 61 recorded keyboard strikes and 50 mouse, control, and feedback effects. See [sound credits](licenses/sound-collection.md) for sources, edits, and listening review status.
 
 ```sh
 bun install
@@ -19,3 +19,9 @@ Run `bun run typecheck`, `bun test`, and `bun run build` to validate and compile
 ## Preview delivery
 
 Visual peaks and RMS come from the exported PCM and render immediately from catalog data. Auditions fetch individual content-addressed WAVs. Concurrent requests for the same sound share a promise, and the decoded PCM cache is capped at 768 KiB. A pointer-down on a sound tile can warm that single sample before it plays. The preview engine uses a 1.1× default gain, while WAV downloads use the original signal.
+
+## Search and agent discovery
+
+Production builds generate crawlable category and individual sound pages, route-specific metadata, structured data, a social image, sitemap.xml, robots.txt, llms.txt, and /agents/catalog.json. The agent catalog excludes preview-only imports and retired click/press/release sounds, exposes measured attributes and links, and does not assume unspecified licenses grant distribution rights. /agents explains HTTP retrieval; it is not an MCP implementation.
+
+Set SITE_URL to the canonical production origin when changing domains (defaults to the repository's published Vercel homepage). Submit the sitemap in Google Search Console after deployment. Indexing and ranking are determined by search engines, not the build.
