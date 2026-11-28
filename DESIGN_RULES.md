@@ -23,3 +23,6 @@ Warm paper canvas with green data accents; volume is a calibrated tick ruler wit
 
 ## Volume and Trazo gestures
 The gain control uses a single native range value, an ink capsule, an aligned white thumb, mute/restore and a full-width compact layout. No ruler or tick layers. Drag is the deterministic offline adaptation of Trazo's procedural sticker peel. Hover is a quieter adaptation of its sticker placement, not an upstream hover asset. Preserve the MIT notice in licenses/trazo-MIT.txt. No upstream MP3 assets are used. The seven revised sounds are generated at build time; the other 32 baseline WAVs remain byte-identical.
+
+## Direct manipulation and rendering budget
+Volume state is local to its control; pointer capture preserves the grab offset, one frame commit updates gain and UI, and gain automation replaces the previous tail. No spring lag on direct manipulation. Saved hover uses black/white with a separate keyboard-only focus indicator. Duration is a measured linear mark with dotted guide and square endpoint, never playback progress. Memoized rows, range-based PCM decoding without byte-slice copies, and cached waveform paths avoid unnecessary work. Idle motion remains event-driven. Audio assets are unchanged.

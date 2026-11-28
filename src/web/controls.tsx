@@ -256,11 +256,8 @@ export function AnimatedNumber({ value, format }: AnimatedNumberProps) {
       return;
     }
 
-    el.style.transition = "none";
-    el.style.filter = "blur(2.5px)";
-    void el.offsetWidth;
-    el.style.transition = "filter 300ms var(--liquid)";
-    el.style.filter = "none";
+    const blur=el.animate([{filter:"blur(2.5px)"},{filter:"blur(0px)"}],
+      {duration:300,easing:"cubic-bezier(.16,1,.3,1)"});
 
     const start = performance.now();
     const tick = (now: number) => {
@@ -274,7 +271,7 @@ export function AnimatedNumber({ value, format }: AnimatedNumberProps) {
       }
     };
     raf.current = requestAnimationFrame(tick);
-    return () => cancelAnimationFrame(raf.current);
+    return () => {cancelAnimationFrame(raf.current);blur.cancel();};
   }, [value, format]);
 
   return <span ref={ref} className="num" />;
@@ -286,5 +283,9 @@ export function AnimatedNumber({ value, format }: AnimatedNumberProps) {
 
 export function MicroBar({ ratio }: { ratio: number }) {
   const amount = Math.max(0, Math.min(1, ratio));
-  return <span className="mb" aria-hidden="true"><i style={{ transform: `scaleX(${amount})` }} /></span>;
+  const end=2+amount*60;
+  return <span className="mb" aria-hidden="true"><svg viewBox="0 0 64 8" preserveAspectRatio="none">
+    <path className="duration-guide" d="M2 4H62"/>
+    {amount>0&&<><path className="duration-ink" d={`M2 4H${end}`}/><rect className="duration-end" x={end-1.5} y="2.5" width="3" height="3"/></>}
+  </svg></span>;
 }

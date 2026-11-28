@@ -12,6 +12,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  memo,
   useRef,
   useState,
   type ReactNode,
@@ -19,7 +20,7 @@ import {
 import type { CatalogResponse, CategoryId, CategoryInfo, SoundSummary } from "../core/types";
 import { SAMPLE_RATE } from "../core/types";
 import { fetchCatalog, loadSound, peekSound, prefetchSound, type DecodedSound } from "./api";
-import { AudioEngine, DEFAULT_VOLUME } from "./audio";
+import { AudioEngine } from "./audio";
 import { AnimatedNumber, Dropdown, MicroBar, Segmented, type DropdownOption, type SegmentedOption } from "./controls";
 import { fmtBytes, fmtCount, fmtDb, fmtMs } from "./format";
 import {
@@ -143,7 +144,6 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
   },[]);
   useEffect(()=>{try{localStorage.setItem("verdant.bookmarks.v1",JSON.stringify([...bookmarks]));}catch{}},[bookmarks]);
   const [mode, setMode] = useState<StageMode>("waveform");
-  const [volume, setVolume] = useState(DEFAULT_VOLUME);
   const [previewError, setPreviewError] = useState("");
   const [playingId, setPlayingId] = useState<string | null>(null);
   const [pendingId, setPendingId] = useState<string | null>(null);
@@ -198,7 +198,6 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
     if (index > 0) prefetchSound(filtered[index - 1]?.id);
   }, [selectedId, filtered]);
 
-  useEffect(() => engine.setVolume(volume), [engine, volume]);
 
   const audition = useCallback(
     (id: string, fraction = 0) => {
@@ -322,7 +321,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
               <button className="pill icon-button" type="button" aria-label="Next sound" disabled={!filtered.length || currentIndex === filtered.length - 1} onClick={() => step(1)}><NextIcon /></button>
             </nav>
             {selected && <a className="pill icon-button current-download" aria-label="Download selected sound" href={downloadUrl(selected.id)} download><DownloadIcon /></a>}
-            <VolumeControl value={volume} onChange={setVolume} />
+            <VolumeControl engine={engine} />
           </div>
           <section className="details" aria-label="Source signal metrics">
             <dl>
@@ -345,21 +344,10 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
           <CylinderScroll viewportRef={libraryRef}>
             {filtered.length === 0 ? <StatePanel kind="empty" title={savedOnly?"No saved sounds match":"No matching sounds"} text={savedOnly?"Bookmark a sound or clear the filters.":"Try a different name or category."} action={{label:"Clear filters",onClick:clearFilters}} /> :
               <div className="sound-list">
-                {filtered.map(sound => {
-                  const active = playingId === sound.id;
-                  const loading = pendingId === sound.id;
-                  return <div className="sound-row" id={`row-${sound.id}`} key={sound.id} data-selected={sound.id === selectedId} data-playing={active} data-loading={loading}
-                    onPointerEnter={() => prefetchSound(sound.id)}>
-                    <button className="sound-select" onFocus={() => prefetchSound(sound.id)} type="button" aria-label={`${active || loading ? "Stop" : "Play"} ${sound.name}`} aria-pressed={sound.id === selectedId} onClick={() => active || loading ? stop() : audition(sound.id)}>
-                      <span className="row-play">{active || loading ? <StopIcon /> : <PlayIcon />}</span>
-                      <span className="sound-text"><span>{sound.name}</span><small>{loading ? "Loading…" : active ? "Playing" : categoryLabel.get(sound.category)}</small></span>
-                    </button>
-                    <div className="duration"><MicroBar ratio={sound.duration / maxDuration} /><span>{fmtMs(sound.duration)}</span></div>
-                    <span className="peak">{fmtDb(sound.peakDb)}</span>
-                    <button type="button" className="pill icon-button row-bookmark" aria-label={`${bookmarks.has(sound.id)?"Remove bookmark from":"Bookmark"} ${sound.name}`} aria-pressed={bookmarks.has(sound.id)} onClick={()=>toggleBookmark(sound.id)}><BookmarkIcon filled={bookmarks.has(sound.id)}/></button>
-                    <a className="pill icon-button" href={downloadUrl(sound.id)} download aria-label={`Download ${sound.name}`}><DownloadIcon /></a>
-                  </div>;
-                })}
+                {filtered.map(sound=><SoundRow key={sound.id} sound={sound}
+                  selected={sound.id===selectedId} active={playingId===sound.id} loading={pendingId===sound.id}
+                  saved={bookmarks.has(sound.id)} categoryName={categoryLabel.get(sound.category)??""}
+                  maxDuration={maxDuration} audition={audition} stop={stop} toggleBookmark={toggleBookmark}/>)}
               </div>}
           </CylinderScroll>
           <div className="library-foot"><span>{fmtCount(filtered.length)} sounds</span><span>↑ ↓ Browse · Space to play / stop</span></div>
@@ -368,6 +356,24 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
     </Shell>
   );
 }
+
+/** Only the rows whose selection/play/bookmark state changes are rendered again. */
+const SoundRow=memo(function SoundRow({sound,selected,active,loading,saved,categoryName,maxDuration,audition,stop,toggleBookmark}:{
+  sound:SoundSummary;selected:boolean;active:boolean;loading:boolean;saved:boolean;categoryName:string;maxDuration:number;
+  audition:(id:string)=>void;stop:()=>void;toggleBookmark:(id:string)=>void;
+}){
+  return <div className="sound-row" id={`row-${sound.id}`} key={sound.id} data-selected={selected} data-playing={active} data-loading={loading}
+                    onPointerEnter={() => prefetchSound(sound.id)}>
+                    <button className="sound-select" onFocus={() => prefetchSound(sound.id)} type="button" aria-label={`${active || loading ? "Stop" : "Play"} ${sound.name}`} aria-pressed={selected} onClick={() => active || loading ? stop() : audition(sound.id)}>
+                      <span className="row-play">{active || loading ? <StopIcon /> : <PlayIcon />}</span>
+                      <span className="sound-text"><span>{sound.name}</span><small>{loading ? "Loading…" : active ? "Playing" : categoryName}</small></span>
+                    </button>
+                    <div className="duration"><MicroBar ratio={sound.duration / maxDuration} /><span>{fmtMs(sound.duration)}</span></div>
+                    <span className="peak">{fmtDb(sound.peakDb)}</span>
+                    <button type="button" className="pill icon-button row-bookmark" aria-label={`${saved?"Remove bookmark from":"Bookmark"} ${sound.name}`} aria-pressed={saved} onClick={()=>toggleBookmark(sound.id)}><BookmarkIcon filled={saved}/></button>
+                    <a className="pill icon-button" href={downloadUrl(sound.id)} download aria-label={`Download ${sound.name}`}><DownloadIcon /></a>
+                  </div>;
+});
 
 function readBookmarks(): Set<string> {
   try {

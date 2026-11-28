@@ -41,7 +41,11 @@ export class AudioEngine {
   setVolume(value: number): void {
     this.volume = Math.min(DEFAULT_VOLUME, Math.max(0, value));
     if (this.ctx && this.master) {
-      this.master.gain.setTargetAtTime(this.volume, this.ctx.currentTime, 0.015);
+      const param=this.master.gain, now=this.ctx.currentTime;
+      // Replace the automation tail instead of accumulating events during a grab.
+      if(typeof param.cancelAndHoldAtTime==="function")param.cancelAndHoldAtTime(now);
+      else {const current=param.value;param.cancelScheduledValues(now);param.setValueAtTime(current,now);}
+      param.setTargetAtTime(this.volume,now,.008);
     }
   }
 

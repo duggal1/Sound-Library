@@ -37,8 +37,8 @@ export function encodeWav(samples: ArrayLike<number>, sampleRate: number): Uint8
 }
 
 /** Minimal decoder for what encodeWav writes: 16-bit PCM mono. */
-export function decodeWav(buffer: ArrayBuffer): { sampleRate: number; samples: Float32Array } {
-  const view = new DataView(buffer);
+export function decodeWav(buffer: ArrayBuffer, byteOffset=0, byteLength=buffer.byteLength-byteOffset): { sampleRate: number; samples: Float32Array } {
+  const view = new DataView(buffer,byteOffset,byteLength);
   if (view.byteLength < 12 || readAscii(view, 0, 4) !== "RIFF" || readAscii(view, 8, 4) !== "WAVE") {
     throw new Error("Not a RIFF/WAVE file");
   }
@@ -53,8 +53,10 @@ export function decodeWav(buffer: ArrayBuffer): { sampleRate: number; samples: F
     const id = readAscii(view, offset, 4);
     const size = view.getUint32(offset + 4, true);
     const body = offset + 8;
+    if(size>view.byteLength-body)throw new Error("Truncated WAV chunk");
 
     if (id === "fmt ") {
+      if(size<16)throw new Error("Truncated WAV format");
       format = view.getUint16(body, true);
       channels = view.getUint16(body + 2, true);
       sampleRate = view.getUint32(body + 4, true);
