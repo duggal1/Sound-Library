@@ -29,7 +29,7 @@ Volume state is local to its control; pointer capture preserves the grab offset,
 
 ## Landing and catalog dashboard
 
-The landing page has a 360-degree sound cylinder. Drag the surface to turn it, drag a tile to move it, and tap a tile or release a drag to audition. The tiles use measured envelope strips and a shared SVG glyph system. Reduced motion gives a static horizontal strip with native scrolling and the same playable sounds.
+The landing alone uses a playful Trazo-style crayon illustration layer (MIT original layered artwork and Verdant sound-specific sketches), white dotted paper, green measured waveform signals, black pills and Instrument Sans UI. Its central editorial hero is surrounded by individually draggable painted objects; the catalog occupies a periodic rectangular sheet. The camera wraps indefinitely on both axes, with a period aligned to the 22px dot texture; no repeated React trees or finite dead edges. Drag empty paper, use trackpad or arrow keys to pan; drag a sound to reposition and audition on release. Reset restores the authored layout. Direct manipulation preserves pointer offset; velocity-dependent lift and exponential coast settle without bounce. Reduced motion disables coast and lift. All multicolor illustration exceptions are landing-only; Studio and dashboard remain unchanged.
 
 The dashboard uses a flat catalog and a stationary inspector. Studio keeps the left waveform and right cylindrical rail. Both share one audio engine, persistent saved IDs and the original download URLs. Keyboard auditions are scoped to the focused keyboard pad, while the on-screen keys also support click and touch.
 

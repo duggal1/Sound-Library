@@ -1,0 +1,62 @@
+/* Landing only: Trazo's 22px paper dot rhythm; ink controls and green signals. */
+.shell.site-home{max-width:none;height:100svh;min-height:480px;padding:0;grid-template-rows:66px minmax(0,1fr);background:#fff;--surface:#f5f5f5;--hover:#ececec;--accent:#16a34a;--soft:#86efac;--pale:#ecfdf3;--deep:#166534}
+.shell.site-home>.top{padding-inline:clamp(16px,4vw,64px);width:100%;max-width:1600px;margin-inline:auto;background:#fff;z-index:3}
+.shell.site-home>#page-main{height:100%;min-height:0}
+.sound-landing{height:100%;position:relative;min-height:0;overflow:hidden;background:#fff}
+.sound-field{position:absolute;inset:0;overflow:clip;isolation:isolate;user-select:none;touch-action:none;cursor:var(--cursor-grab);outline-offset:-3px!important;background:#fff}
+.sound-field[data-grabbing],.sound-field[data-grabbing] *{cursor:var(--cursor-grabbing)}
+.field-grid{position:absolute;inset:-22px;pointer-events:none;background-image:radial-gradient(#1f1e1b21 1px,transparent 1px);background-size:22px 22px}
+.field-world{position:absolute;left:50%;top:50%;width:0;height:0;transform:translate3d(0,0,0)}
+.field-hero{position:absolute;left:0;top:0;transform:translate(-50%,-50%);width:min(430px,calc(100vw - 40px));padding:24px 12px;text-align:center;z-index:100000;display:flex;flex-direction:column;align-items:center;background:white;cursor:var(--cursor-default);user-select:text}
+.field-kicker{display:flex;align-items:center;gap:7px;color:#525252;font-size:13px;font-weight:400;letter-spacing:-.01em}
+.field-kicker i{display:block;width:7px;height:7px;background:var(--accent)}
+.field-hero h1{margin-top:17px;font:italic 400 clamp(38px,4.1vw,58px)/1.04 Georgia,serif;letter-spacing:-.06em;color:#000;text-wrap:balance}
+.field-hero h1 span{position:relative;white-space:nowrap}
+.field-hero h1 svg{position:absolute;left:1%;bottom:-10px;width:98%;height:12px;overflow:visible;pointer-events:none}
+.field-hero p{margin-top:25px;max-width:34ch;font-size:15px;line-height:1.58;color:#525252;text-wrap:balance}
+.field-hero-actions{display:flex;justify-content:center;align-items:center;gap:18px;margin-top:24px}
+.field-hero-actions .primary{height:42px;padding-inline:17px;font-size:14px}
+.field-hero-actions .primary svg{width:14px;height:14px}
+.field-download,.field-dock a{color:#525252;text-decoration:underline dotted;text-underline-offset:4px;font-size:13px}
+.field-download:hover,.field-dock a:hover{color:#000}
+.field-object{position:absolute;left:0;top:0;width:136px;height:139px;perspective:640px;visibility:hidden}
+.sound-field[data-ready=true] .field-object{visibility:visible}
+.field-object[data-held=true]{z-index:100001!important}
+.field-sound{display:block;width:100%;height:100%;background:transparent!important;cursor:var(--cursor-grab);touch-action:none;border-radius:999px;outline-offset:2px;transform-style:preserve-3d}
+.field-paper{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;transform:translateZ(0);transition:transform 240ms var(--liquid),filter 240ms var(--liquid);pointer-events:none}
+.field-object[data-held=true] .field-paper{transform:translateZ(42px) rotateX(var(--lift-pitch,0deg)) rotateY(var(--lift-tilt,0deg));filter:drop-shadow(0 9px 7px #00000021)}
+.field-art{position:relative;width:calc(94px * var(--sticker-size,1));height:calc(94px * var(--sticker-size,1));display:grid;place-items:center;flex:none}
+.field-art img{display:block;width:100%;height:100%;object-fit:contain;user-select:none;-webkit-user-drag:none}
+.field-action{position:absolute;right:-5px;bottom:2px;width:24px;height:24px;display:grid;place-items:center;border-radius:999px;background:#171717;color:#fff;opacity:0;transition:opacity 180ms var(--liquid)}
+.field-action svg{width:13px;height:13px}
+.field-sound:focus-visible .field-action,.field-sound[aria-pressed=true] .field-action{opacity:1}
+@media(hover:hover){.field-sound:hover .field-action{opacity:1}.field-sound:hover .field-name{text-decoration:underline dotted;text-underline-offset:3px}}
+.field-wave{position:absolute;bottom:-5px;width:60px;height:16px;color:var(--accent);opacity:0;transition:opacity 180ms var(--liquid)}
+.field-sound[aria-pressed=true] .field-wave,.field-sound:focus-visible .field-wave{opacity:1}
+.field-name{font-size:13px;font-weight:450;color:#000;max-width:132px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
+.field-duration{font-size:11px;color:#737373;line-height:1.2}
+.field-sound[aria-pressed=true] .field-duration{color:var(--deep)}
+.field-sound[aria-pressed=true] .field-name{text-decoration:underline dotted;text-underline-offset:3px}
+.field-dock{position:absolute;z-index:2;bottom:max(18px,env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100% - 24px);pointer-events:none}
+.field-dock-inner{pointer-events:auto;display:flex;align-items:center;justify-content:center;gap:10px 14px;padding:6px 11px 6px 16px;background:#fffffff2;border-radius:999px;box-shadow:0 2px 14px #0000000c,0 0 0 1px #00000008;color:#525252;backdrop-filter:blur(14px)}
+.field-help{font-size:12px;text-align:center}
+.field-dock .pill{font-size:12px;height:36px;padding-inline:12px}
+.field-dock .pill:disabled{opacity:.42}
+.field-dock .pill svg{width:13px;height:13px}
+.field-dock a{font-size:12px;padding:8px 5px}
+@media(max-width:669px){
+  .shell.site-home{grid-template-rows:60px minmax(0,1fr)}
+  .field-world{top:calc(50% - 20px)}
+  .field-hero{width:min(310px,calc(100vw - 32px));padding:20px 8px}
+  .field-hero h1{font-size:36px}
+  .field-hero p{font-size:14px;max-width:28ch;margin-top:20px}
+  .field-hero-actions{gap:12px;margin-top:18px}
+  .field-hero-actions .primary{font-size:12px;padding-inline:12px}
+  .field-object{width:112px;height:120px}
+  .field-art{width:calc(70px * var(--sticker-size,1));height:calc(70px * var(--sticker-size,1))}
+  .field-name{font-size:12px;max-width:108px}
+  .field-dock-inner{flex-wrap:wrap;gap:5px 10px;padding:8px 12px;border-radius:24px}
+  .field-help{width:100%}
+}
+@media(max-height:600px){.field-hero{padding-block:10px}.field-hero h1{font-size:36px}.field-hero p{margin-top:16px}.field-hero-actions{margin-top:12px}}
+@media(prefers-reduced-motion:reduce){.field-paper,.field-object[data-held=true] .field-paper{transform:none;filter:none;transition:none}}
