@@ -66,3 +66,6 @@
 .agent-page :focus-visible{outline:2px solid var(--focus);outline-offset:3px}
 @media(max-width:720px){.shell.site-agents{grid-template-rows:60px auto}.agent-page{padding:24px 4px 32px;gap:48px}.agent-intro{padding:24px 0}.agent-install-grid{grid-template-columns:minmax(0,1fr);gap:24px}.agent-tool{grid-template-columns:minmax(0,1fr) auto;gap:4px 12px}.agent-tool p{grid-row:2;grid-column:1/-1}.agent-tool .agent-copy{grid-column:2;grid-row:1}.agent-search{gap:8px;padding-left:12px}.agent-tabs button{padding-inline:12px}.agent-skill-toolbar{border-radius:16px;align-items:flex-start}.agent-skill-toolbar>div{gap:4px}}
 @media(prefers-reduced-motion:reduce){.agent-page *, .agent-page *::before,.agent-page *::after{transition:none!important;animation:none!important;scroll-behavior:auto!important}}
+
+/* The small-screen nav wraps instead of forcing the document wider than the viewport. */
+@media(max-width:400px){.site-agents .top{gap:4px}.site-agents .site-nav{margin-left:0;flex-wrap:wrap}.site-agents .site-nav a{padding-inline:7px}.site-agents .brand{flex-shrink:0}.agent-intro h1{font-size:36px}.agent-skill-toolbar{min-width:0}}

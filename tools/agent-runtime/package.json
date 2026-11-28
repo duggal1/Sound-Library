@@ -8,6 +8,7 @@
     "zod": "4.2.1"
   },
   "devDependencies": {
-    "@modelcontextprotocol/client": "2.0.0"
+    "@modelcontextprotocol/client": "2.0.0",
+    "playwright": "1.65.1"
   }
 }

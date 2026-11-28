@@ -22,7 +22,7 @@ const server = Bun.serve({
     "/": page, "/library": () => htmlPage("library"), "/studio": () => htmlPage("studio"), "/saved": () => htmlPage("saved"),
     "/agents": () => htmlPage("agents"),
     "/agents/catalog.json": () => serve("agents/catalog.json"),
-    "/agents/v1/:file": req => ["catalog.json","catalog.jsonl","SKILL.md","plugin.zip","verdant.mjs"].includes(req.params.file)?serve("agents/v1/"+req.params.file):notFound(),
+    "/agents/v1/:file": req => ["catalog.json","catalog.jsonl","latest.json","SKILL.md","plugin.zip","verdant.mjs"].includes(req.params.file)?serve("agents/v1/"+req.params.file):notFound(),
     "/agents/v1/audio/:file": async req=>{const file=req.params.file;if(!/^[a-f0-9]{64}\.wav$/.test(file))return notFound();const path="agents/v1/audio/"+file;return await Bun.file(join(output,path)).exists()?serve(path,immutable):notFound();},
     "/agents/v1/releases/:id/:file": async req=>{const {id,file}=req.params;if(!/^[a-f0-9]{64}$/.test(id)||!["catalog.json","catalog.jsonl","pack.zip"].includes(file))return notFound();const path="agents/v1/releases/"+id+"/"+file;return await Bun.file(join(output,path)).exists()?serve(path,immutable):notFound();},
     "/llms.txt": () => serve("llms.txt"), "/robots.txt": () => serve("robots.txt"), "/sitemap.xml": () => serve("sitemap.xml"), "/social-card.png": () => serve("social-card.png"),
