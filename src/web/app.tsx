@@ -335,7 +335,6 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
             </button>)}
           </nav>
           <div className="dashboard-themes"><span>Keyboard themes</span><ThemePicker theme={theme} onTheme={next=>{chooseTheme(next);changeCategory("keyboard");}}/></div>
-          <a className="dashboard-credits" href="/sounds/credits.md">Sound credits <ArrowIcon /></a>
         </aside>}
         <section className="preview" aria-label="Audio inspector" data-expanded={expanded}>
           <div className="preview-top">

@@ -22,8 +22,8 @@
 @media(hover:hover){.field-hero-actions .primary:hover,.field-dock .primary:hover:not(:disabled){background:#171a18;color:#fff}.field-hero-actions .primary:hover svg{transform:translateX(3px)}}
 .field-hero-actions .primary:active{transform:scale(.98)}
 @media(prefers-reduced-motion:reduce){.field-hero-actions .primary,.field-hero-actions .primary svg{transition:none}.field-hero-actions .primary:hover svg,.field-hero-actions .primary:active{transform:none}}
-.field-download,.field-dock a{color:#525252;text-decoration:underline dotted;text-underline-offset:4px;font-size:13px}
-.field-download:hover,.field-dock a:hover{color:var(--ink)}
+.field-download{color:#525252;text-decoration:underline dotted;text-underline-offset:4px;font-size:13px}
+.field-download:hover{color:var(--ink)}
 .field-object{position:absolute;left:0;top:0;width:142px;height:146px;perspective:640px;visibility:hidden}
 .sound-field[data-ready=true] .field-object{visibility:visible}
 .field-object[data-held=true]{z-index:100001!important}
@@ -51,7 +51,6 @@
 .field-dock .pill{font-size:12px;height:36px;padding-inline:12px}
 .field-dock .pill:disabled{opacity:.42}
 .field-dock .pill svg{width:13px;height:13px}
-.field-dock a{font-size:12px;padding:8px 5px}
 @media(max-width:669px){
   .shell.site-home{grid-template-rows:60px minmax(0,1fr)}
   .field-world{top:calc(50% - 20px)}
