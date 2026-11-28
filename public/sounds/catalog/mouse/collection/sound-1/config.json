@@ -1,0 +1,65 @@
+{
+  "config_version": "2",
+  "name": "a mouse soundpack that uses literally G pro red switches from gateron",
+  "author": "Zen Zen",
+  "description": "im high :)",
+  "tags": [
+    "idk"
+  ],
+  "definition_method": "multi",
+  "audio_file": "1.mp3",
+  "soundpack_type": "Mouse",
+  "options": {
+    "recommended_volume": 1,
+    "random_pitch": false
+  },
+  "definitions": {
+    "MouseLeft": {
+      "audio_file": "2.mp3",
+      "timing": [
+        [
+          0,
+          244.71699999999998
+        ]
+      ]
+    },
+    "MouseRight": {
+      "audio_file": "1.mp3",
+      "timing": [
+        [
+          0,
+          165.05700000000002
+        ]
+      ]
+    },
+    "MouseMiddle": {
+      "audio_file": "3.mp3",
+      "timing": [
+        [
+          0,
+          155.64600000000002
+        ]
+      ]
+    },
+    "MouseWheelDown": {
+      "audio_file": "5.mp3",
+      "timing": [
+        [
+          0,
+          164.399
+        ]
+      ]
+    },
+    "MouseWheelUp": {
+      "audio_file": "4.mp3",
+      "timing": [
+        [
+          0,
+          152.041
+        ]
+      ]
+    }
+  },
+  "id": "mv-cc573d02db9a44009d3287087fb701be",
+  "version": "1"
+}
