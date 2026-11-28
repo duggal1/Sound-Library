@@ -2,7 +2,7 @@ import {SAMPLE_RATE,type SoundSummary} from "../core/types";
 import {measure} from "../core/render";
 import {encodeWaveform} from "../core/waveform";
 import {keySoundId} from "../core/keyboard";
-import {MAC_ROWS,MAC_KEYS} from "../core/mac-keyboard";
+import {MAC_ROWS,MAC_KEYS,DEVICE_FALLBACK} from "../core/mac-keyboard";
 import {spriteRanges} from "../core/keyboard-themes";
 import type {DecodedSound} from "./api";
 
@@ -50,7 +50,7 @@ export function loadModernKeyboard(base:readonly SoundSummary[]):Promise<readonl
    next.set(previewUrl,{id,samples:clip.samples,sampleRate:decoded.sampleRate});
    summaries.push({id,category:"keyboard",name:original?.name??((labels.get(range.code)||range.code)+" key"),description:"Custom Keyboard by remains · shared recorded clip",keyCode:range.code,keyboardTheme:"modern",previewUrl,bytes:clip.samples.byteLength,waveform:clip.waveform,...clip.metrics});
   }
-  for(const code of MAC_KEYS)if(!summaries.some(s=>s.keyCode===code))throw new Error("Modern pack missing "+code);
+  for(const code of MAC_KEYS)if(!summaries.some(s=>s.keyCode===code||s.keyCode===DEVICE_FALLBACK[code]))throw new Error("Modern pack missing "+code);
   variants.clear();for(const [url,sample] of next)variants.set(url,sample);
   return summaries;
  })().catch(error=>{pending=undefined;throw error;});

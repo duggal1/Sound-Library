@@ -3,7 +3,7 @@ export const BOARD_WIDTH=1540;
 export const BOARD_HEIGHT=500;
 export interface PhysicalKey {code:string;label:string;x:number;y:number;width:number;height:number;secondary?:string;functionLabel?:string}
 const GAP=6,UNIT=100,LEFT=18;
-const ROW_PITCH=84,KEY_HEIGHT=79;
+const ROW_PITCH=84,KEY_HEIGHT=78;
 const shifted:Record<string,string>={Backquote:"~",Digit1:"!",Digit2:"@",Digit3:"#",Digit4:"$",Digit5:"%",Digit6:"^",Digit7:"&",Digit8:"*",Digit9:"(",Digit0:")",Minus:"_",Equal:"+",BracketLeft:"{",BracketRight:"}",Backslash:"|",Semicolon:":",Quote:'"',Comma:"<",Period:">",Slash:"?"};
 const fn=["Brightness down","Brightness up","Mission Control","Spotlight","Dictation","Do Not Disturb","Previous track","Play / pause","Next track","Mute","Volume down","Volume up"];
 export function physicalKeys():PhysicalKey[]{
@@ -18,17 +18,17 @@ export function physicalKeys():PhysicalKey[]{
   }
   if(row===5){
    const y=407;
-   const widths=[1.5,1.25,1.5,5,1.5,1.25];
+   const widths=[1,1,1,1.25,5.5,1.25,1];
    let x=LEFT;
-   for(let i=0;i<6;i++){
+   for(let i=0;i<widths.length;i++){
     const key=source[i]!,width=widths[i]!*UNIT;
     const label=key.code.startsWith("Alt")?"option":key.code.startsWith("Meta")?"command":key.label;
     keys.push({code:key.code,label,x,y,width:width-GAP,height:KEY_HEIGHT,secondary:key.code.startsWith("Alt")?"⌥":key.code.startsWith("Meta")?"⌘":key.code==="ControlLeft"?"⌃":undefined});x+=width;
    }
-   keys.push({code:"ArrowLeft",label:"←",x,y,width:UNIT-GAP,height:KEY_HEIGHT},
-    {code:"ArrowUp",label:"↑",x:x+UNIT,y,width:UNIT-GAP,height:37},
-    {code:"ArrowDown",label:"↓",x:x+UNIT,y:y+42,width:UNIT-GAP,height:37},
-    {code:"ArrowRight",label:"→",x:x+UNIT*2,y,width:UNIT-GAP,height:KEY_HEIGHT});
+   keys.push({code:"ArrowLeft",label:"←",x,y:y+42,width:UNIT-GAP,height:36},
+    {code:"ArrowUp",label:"↑",x:x+UNIT,y,width:UNIT-GAP,height:36},
+    {code:"ArrowDown",label:"↓",x:x+UNIT,y:y+42,width:UNIT-GAP,height:36},
+    {code:"ArrowRight",label:"→",x:x+UNIT*2,y:y+42,width:UNIT-GAP,height:36});
    continue;
   }
   const widths=source.map(key=>key.width);

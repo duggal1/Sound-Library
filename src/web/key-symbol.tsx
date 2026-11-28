@@ -19,6 +19,7 @@ export function KeySymbol({code}:{code:string}){
   case "F10":shape=speaker;break;
   case "F11":shape=<>{speaker}<path d="M15 9a4 4 0 0 1 0 6"/></>;break;
   case "F12":shape=<>{speaker}<path d="M15 9a4 4 0 0 1 0 6m3-9a8 8 0 0 1 0 12"/></>;break;
+  case "Fn":shape=<><circle cx="12" cy="12" r="9"/><ellipse cx="12" cy="12" rx="4" ry="9"/><path d="M3.5 9h17M3.5 15h17"/></>;break;
   case "ArrowLeft":shape=<path fill="currentColor" stroke="none" d="m8 12 8-5v10z"/>;break;
   case "ArrowRight":shape=<path fill="currentColor" stroke="none" d="m16 12-8-5v10z"/>;break;
   case "ArrowUp":shape=<path fill="currentColor" stroke="none" d="m12 8-5 8h10z"/>;break;

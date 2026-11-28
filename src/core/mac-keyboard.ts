@@ -8,12 +8,14 @@ export const MAC_ROWS:readonly (readonly Keycap[])[]=[
  [k("Tab","tab",1.5),...letters("QWERTYUIOP"),k("BracketLeft","["),k("BracketRight","]"),k("Backslash","\\",1.1)],
  [k("CapsLock","caps lock",1.75),...letters("ASDFGHJKL"),k("Semicolon",";"),k("Quote","'"),k("Enter","return",1.85)],
  [k("ShiftLeft","shift",2.25),...letters("ZXCVBNM"),k("Comma",","),k("Period","."),k("Slash","/"),k("ShiftRight","shift",2.35)],
- [k("ControlLeft","control",1.2),k("AltLeft","⌥",1.2),k("MetaLeft","⌘",1.4),k("Space","",5),k("MetaRight","⌘",1.4),k("AltRight","⌥",1.2),k("ArrowLeft","←"),k("ArrowUp","↑"),k("ArrowDown","↓"),k("ArrowRight","→")],
+ [k("Fn","fn"),k("ControlLeft","control"),k("AltLeft","option"),k("MetaLeft","command",1.25),k("Space","",5.5),k("MetaRight","command",1.25),k("AltRight","option"),k("ArrowLeft","←"),k("ArrowUp","↑"),k("ArrowDown","↓"),k("ArrowRight","→")],
 ];
 export const MAC_KEYS=new Set(MAC_ROWS.flat().map(k=>k.code));
+/** Fn has no dedicated recording in either pack. */
+export const DEVICE_FALLBACK:Readonly<Record<string,string>>={Fn:"ControlLeft"};
 /** Classic recordings have no physical F-row or arrow takes. Map these explicitly,
  * never claim the fallback is a recording of that exact physical key. */
 export const CLASSIC_FALLBACK:Readonly<Record<string,string>>={
- Backquote:"Escape",ArrowUp:"KeyI",ArrowDown:"KeyK",ArrowLeft:"KeyJ",ArrowRight:"KeyL",
+ ...DEVICE_FALLBACK,Backquote:"Escape",ArrowUp:"KeyI",ArrowDown:"KeyK",ArrowLeft:"KeyJ",ArrowRight:"KeyL",
  ...Object.fromEntries(Array.from({length:12},(_,i)=>["F"+(i+1),"Escape"])),
 };
