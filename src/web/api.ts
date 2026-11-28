@@ -1,6 +1,6 @@
 import type { CatalogResponse, SoundSummary } from "../core/types";
 import {modernSample} from "./keyboard-theme";
-import {loadMouseRecordings,peekMouseRecording} from "./mouse-recordings";
+import {peekMouseRecording} from "./mouse-recordings";
 import { decodeWav } from "../core/wav";
 
 import {verifiedStorage,fetchWavBytes,downloadRemotePack,downloadRemoteSound} from "./asset-delivery";
@@ -23,8 +23,7 @@ export async function fetchCatalog(signal: AbortSignal): Promise<CatalogResponse
   if(!Array.isArray(data.sounds)||!Array.isArray(data.categories)||data.sampleRate!==48000||data.channels!==1)throw new Error("Invalid sound catalog");
   storage=verifiedStorage(data.storage);
   if (forced === "empty") return {...data, sounds: [], totalBytes: 0};
-  const imported=await loadMouseRecordings(signal);
-  return {...data,sounds:[...data.sounds.filter(s=>!["click","press","release"].includes(s.id)),...imported.sounds],previewWarning:imported.failed.length?`Mouse previews unavailable: ${imported.failed.join(", ")}.`:undefined};
+  return {...data,sounds:data.sounds.filter(s=>!["click","press","release"].includes(s.id))};
 }
 
 type SoundRef = {readonly id: string; readonly previewUrl?: string;readonly sha256?:string;readonly bytes?:number};

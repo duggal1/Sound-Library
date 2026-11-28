@@ -7,6 +7,7 @@ import { BRAND, DESCRIPTION, siteOrigin, pages, categoryNames, eligibleSounds, s
 
 const root=resolve("dist");
 const origin=siteOrigin(process.env.SITE_URL);
+const approved=JSON.parse(await readFile(join(root,"agents/v1/catalog.json"),"utf8")) as import("../agent/service").Release;
 const catalog=JSON.parse(await readFile(join(root,"sounds/catalog.json"),"utf8")) as CatalogResponse;
 const sounds=eligibleSounds(catalog);
 const html=await readFile(join(root,"index.html"),"utf8");
@@ -37,8 +38,8 @@ for(const page of pages){
   if(page.path==="/")content+='<p>Interface sounds are often scattered across general-purpose sound libraries. Verdant brings UI-specific recordings and synthesized effects together in a searchable collection with consistent WAV files, measured audio properties and source information.</p><p>'+link("/library","Browse the library")+' · '+link("/agents","Use sounds with coding agents")+'</p>'+categories();
   if(page.path==="/library")content+=categories()+list(sounds);
   if(page.path==="/studio")content+='<p>'+link("/library","Choose a sound to audition")+'</p>';
-  if(page.path==="/agents")content+='<h2>Find and integrate an interface sound</h2><ol><li>Read the '+link("/agents/catalog.json","machine-readable sound catalog")+'.</li><li>Match the interaction to the description, category and duration. Prefer a short, unobtrusive effect.</li><li>Check license and review status. A missing license is not permission to redistribute.</li><li>Download the selected WAV from its downloadUrl. Verify its SHA-256 when provided, then store it in your project.</li></ol><p>'+link("/llms.txt","Agent quick reference")+' · '+link("/sounds/credits.md","Source credits")+'</p><h2>Browse by interaction</h2>'+categories()+'<p>The catalog is a static HTTP JSON interface, not an MCP server. No API key is needed to read it.</p>';
-  await publish(page,content,page.path==="/"?website:page.path==="/library"?collection(page,sounds):{"@context":"https://schema.org","@type":"WebPage","name":page.heading,"description":page.description,"url":origin+page.path},page.path!=="/agents");
+  if(page.path==="/agents")content+='<h2>Install Verdant for coding agents</h2><p>One portable skill, a read-only MCP service and a local verified installer. The release is '+e(approved.status)+'.</p><p>'+link("/agents/v1/SKILL.md","Read the skill")+' · '+link("/agents/v1/plugin.zip","Download plugin bundle")+' · '+link("/agents/v1/catalog.json","Approved catalog")+' · '+link("/agents/v1/catalog.jsonl","JSONL")+'</p><p>Use the MCP endpoint /api/mcp to search or resolve a pack. Verify the exact WAV hash before installing.</p>';
+  await publish(page,content,page.path==="/"?website:page.path==="/library"?collection(page,sounds):{"@context":"https://schema.org","@type":"WebPage","name":page.heading,"description":page.description,"url":origin+page.path},true);
 }
 for(const category of catalog.categories){
   const items=sounds.filter(s=>s.category===category.id);
@@ -56,8 +57,8 @@ for(const s of sounds){
   const details='<p>'+e(s.description)+'</p><audio controls preload="none" src="'+e(preview)+'"></audio><p><a href="'+e(download)+'" download>Download WAV</a></p><dl><dt>Category</dt><dd>'+link(categoryPath(s.category),categoryNames[s.category]??s.category)+'</dd><dt>Duration</dt><dd>'+Math.round(s.duration*1000)+' ms</dd><dt>Format</dt><dd>'+catalog.sampleRate+' Hz, '+catalog.bitDepth+'-bit mono WAV</dd><dt>License</dt><dd>'+e(license)+'</dd><dt>Listening review</dt><dd>'+e(review)+'</dd>'+(s.source?'<dt>Source</dt><dd>'+e(s.source.name)+' — '+e(s.source.author)+'</dd>':'')+'</dl><p>'+link("/library","Browse all sounds")+' · '+link("/agents","Agent integration")+'</p>';
   await publish(page,details,{"@context":"https://schema.org","@type":"AudioObject","name":s.name,"description":s.description,"url":origin+page.path,"contentUrl":origin+download,"encodingFormat":"audio/wav","duration":"PT"+s.duration+"S",...(s.source?.license==="CC0-1.0"?{license:"https://creativecommons.org/publicdomain/zero/1.0/"}:{})});
 }
-await write("agents/catalog.json",JSON.stringify(agentCatalog(catalog,origin),null,2));
-await write("llms.txt","# Verdant\n\n> "+DESCRIPTION+"\n\n- [Agent integration]("+origin+"/agents): Retrieval instructions and license checks.\n- [Sound catalog]("+origin+"/agents/catalog.json): Stable IDs, WAV links, duration, hashes and provenance.\n- [Library]("+origin+"/library): Browse sounds.\n- [Source credits]("+origin+"/sounds/credits.md): Rights and review status.\n\nDo not assume an unspecified license grants redistribution rights.\n");
+await write("agents/catalog.json",JSON.stringify({...agentCatalog(catalog,origin),releaseId:approved.releaseId,status:approved.status,sounds:approved.sounds.map(s=>({...s,durationSeconds:s.durationMs/1000,downloadUrl:s.primaryUrl,previewUrl:s.primaryUrl,review:"approved"}))},null,2));
+await write("llms.txt","# Verdant\n\n> "+DESCRIPTION+"\n\n- [MCP endpoint]("+origin+"/api/mcp): Read-only sound tools.\n- [Agent skill]("+origin+"/agents/v1/SKILL.md): Installation and integration guidance.\n- [Agent integration]("+origin+"/agents): Retrieval instructions and license checks.\n- [Sound catalog]("+origin+"/agents/catalog.json): Stable IDs, WAV links, duration, hashes and provenance.\n- [Library]("+origin+"/library): Browse sounds.\n- [Source credits]("+origin+"/sounds/credits.md): Rights and review status.\n\nDo not assume an unspecified license grants redistribution rights.\n");
 await write("social-card.png",socialCard());
 await write("sitemap.xml",sitemap(origin,indexable));
 await write("robots.txt","User-agent: *\nAllow: /\nSitemap: "+origin+"/sitemap.xml\n");
