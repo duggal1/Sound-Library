@@ -14,6 +14,7 @@ export class AudioEngine {
   private master: GainNode | null = null;
   private volume = DEFAULT_VOLUME;
   private activeSource: AudioBufferSourceNode | null = null;
+  private readonly transients = new Set<AudioBufferSourceNode>();
   private startedAt = 0;
   private offset = 0;
   private listeners = new Set<(id: string | null) => void>();
@@ -21,7 +22,7 @@ export class AudioEngine {
 
   subscribe(listener: (id: string | null) => void): () => void { this.listeners.add(listener); return () => {this.listeners.delete(listener);}; }
   private publish(id: string | null): void { for(const listener of this.listeners) listener(id); }
-  stop(): void { const source = this.activeSource; this.activeSource = null; if(source) source.stop(); this.duration = 0; this.offset = 0; this.publish(null); }
+  stop(): void { this.stopTransients(); const source = this.activeSource; this.activeSource = null; if(source) source.stop(); this.duration = 0; this.offset = 0; this.publish(null); }
   private duration = 0;
   private readonly buffers = new WeakMap<Float32Array, AudioBuffer>();
 
@@ -75,6 +76,25 @@ export class AudioEngine {
     this.offset = Math.min(buffer.duration - 1 / buffer.sampleRate, Math.max(0, fraction * buffer.duration));
     source.start(this.startedAt, this.offset);
     this.publish(sound.id);
+  }
+
+  /** Independent, bounded key/mouse voices. Rapid typing does not cut off the preceding key. */
+  playTransient(sound:Playable,valid:()=>boolean=()=>true):void {
+    const ctx=this.ensure();
+    if(ctx.state!=="running"){
+      void ctx.resume().then(()=>{if(valid()&&ctx.state==="running")this.playTransient(sound,valid);}).catch(()=>{});
+      return;
+    }
+    if(!valid()||!this.input)return;
+    if(this.transients.size>=8){const oldest=this.transients.values().next().value;if(oldest){this.transients.delete(oldest);oldest.stop();}}
+    const source=ctx.createBufferSource();source.buffer=this.bufferFor(ctx,sound);source.connect(this.input);
+    this.transients.add(source);
+    source.onended=()=>{this.transients.delete(source);source.disconnect();};
+    source.start();
+  }
+  stopTransients():void {
+    for(const source of this.transients)source.stop();
+    this.transients.clear();
   }
 
   /** 0..1 while the latest sound is audible, otherwise null. Compensates output latency. */
