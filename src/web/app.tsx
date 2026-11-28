@@ -188,6 +188,7 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
   const sounds=useMemo(()=>effectiveTheme==="modern"&&modern?[...baseSounds.filter(s=>s.category!=="keyboard"),...modern]:baseSounds,[effectiveTheme,modern,baseSounds]);
 
   const [bookmarks, setBookmarks] = useState(readBookmarks);
+  const bookmarkRef=useRef(bookmarks);
   const [selectedId, setSelectedId] = useState<string | null>(() => sounds.find(sound => (
     (initialCategory === "all" || sound.category === initialCategory) && (!initialSaved || bookmarks.has(sound.id))
   ))?.id ?? null);
@@ -195,13 +196,13 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
   const [query, setQuery] = useState("");
   const [savedOnly, setSavedOnly] = useState(initialSaved);
   const toggleBookmark=useCallback((id:string)=>{
-    setBookmarks(previous=>{
-      const next=new Set(previous);
-      if(next.has(id))next.delete(id);else next.add(id);
-      return next;
-    });
+    const next=new Set(bookmarkRef.current);
+    if(next.has(id))next.delete(id);else next.add(id);
+    bookmarkRef.current=next;
+    // Persist before a route change can unmount this workspace.
+    try{localStorage.setItem("verdant.bookmarks.v1",JSON.stringify([...next]));}catch{}
+    setBookmarks(next);
   },[]);
-  useEffect(()=>{try{localStorage.setItem("verdant.bookmarks.v1",JSON.stringify([...bookmarks]));}catch{}},[bookmarks]);
   const [mode, setMode] = useState<StageMode>("waveform");
   const {playingId, pendingId, error: previewError, play, stop} = useAudition(engine);
   useEffect(()=>{stop();},[effectiveTheme,stop]);
@@ -216,7 +217,7 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
   const maxDuration = useMemo(() => Math.max(0.001, ...sounds.map((s) => s.duration)), [sounds]);
   const byId = useMemo(() => new Map(sounds.map(sound => [sound.id, sound])), [sounds]);
   const selected = selectedId ? byId.get(selectedId) ?? null : null;
-  useEffect(()=>{if(selectedId&&!byId.has(selectedId))setSelectedId(sounds.find(s=>s.category==="keyboard")?.id??sounds[0]?.id??null);},[selectedId,byId,sounds]);
+
   const searchIndex = useMemo(() => new Map(sounds.map(sound => [
     sound.id, `${sound.name} ${sound.id} ${sound.description} ${categoryLabel.get(sound.category) ?? ""}`.toLowerCase(),
   ])), [sounds, categoryLabel]);
@@ -225,6 +226,11 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
     [sounds, searchIndex, category, query,savedOnly,bookmarks],
   );
 
+  useEffect(()=>{
+    if(selectedId!==null&&filtered.some(sound=>sound.id===selectedId))return;
+    const next=filtered[0]?.id??null;
+    if(next!==selectedId){stop();setSelectedId(next);}
+  },[filtered,selectedId,stop]);
   const categoryOptions = useMemo<DropdownOption<CategoryFilter>[]>(
     () => [
       { value: "all", label: "All sounds", hint: fmtCount(sounds.length) },
@@ -315,7 +321,10 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
   const clearFilters = () => {
     changeCategory("all");
     setQuery("");
-    setSavedOnly(false);
+    if(savedOnly&&bookmarks.size===0){
+      setSavedOnly(false);
+      if(location.pathname==="/saved"){history.pushState(null,"","/library");window.dispatchEvent(new PopStateEvent("popstate"));}
+    }
   };
 
   const busy = selectedId !== null && pendingId === selectedId;
@@ -326,8 +335,8 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
       pack={<a className="pill pack" href="/sounds/pack.zip" download="verdant-sounds.zip"><DownloadIcon /><span>Download WAV pack</span><small>{fmtBytes(catalog.totalBytes)}</small></a>}>
       <div className="workspace" data-layout={studio ? "studio" : "dashboard"}>
         {!studio && <aside className="dashboard-sidebar" aria-label="Library navigation">
-          <a className="dashboard-index" href="/library" aria-current={!initialSaved && category === "all" ? "page" : undefined}>Library <span>{fmtCount(sounds.length)}</span></a>
-          <a className="dashboard-index" href="/saved" aria-current={initialSaved ? "page" : undefined}><BookmarkIcon /> Saved <span>{bookmarks.size}</span></a>
+          <a className="dashboard-index" href="/library" aria-current={!savedOnly && category === "all" ? "page" : undefined}>Library <span>{fmtCount(sounds.length)}</span></a>
+          <a className="dashboard-index" href="/saved" aria-current={savedOnly ? "page" : undefined}><BookmarkIcon /> Saved <span>{bookmarks.size}</span></a>
           <nav className="dashboard-categories" aria-label="Categories">
             {categoryOptions.slice(1).sort((a, b) => Number(b.value === "keyboard") - Number(a.value === "keyboard")).map(option => <button key={option.value} type="button" aria-pressed={category === option.value}
               onClick={() => changeCategory(category === option.value ? "all" : option.value)}>
@@ -397,7 +406,7 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
           </div>
           <div className="list-header" aria-hidden="true"><span>Name</span><span>Duration</span><span>Peak</span><span /><span /></div>
           <SoundListViewport studio={studio} viewportRef={libraryRef}>
-            {filtered.length === 0 ? <StatePanel kind="empty" title={savedOnly?"No saved sounds match":"No matching sounds"} text={savedOnly?"Bookmark a sound or clear the filters.":"Try a different name or category."} action={{label:"Clear filters",onClick:clearFilters}} /> :
+            {filtered.length === 0 ? <StatePanel kind="empty" title={savedOnly&&bookmarks.size===0?"No saved sounds yet":savedOnly?"No saved sounds match":"No matching sounds"} text={savedOnly&&bookmarks.size===0?"Save sounds from the library to find them here.":"Try a different name or category."} action={{label:savedOnly&&bookmarks.size===0?"Browse library":"Clear filters",onClick:clearFilters}} /> :
               <div className="sound-list">
                 {filtered.map(sound=><SoundRow key={sound.id} sound={sound}
                   selected={sound.id===selectedId} active={playingId===sound.id} loading={pendingId===sound.id}
