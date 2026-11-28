@@ -20,3 +20,6 @@ Volume uses a neutral pill, a real value-driven fill and a native keyboard/touch
 
 ## Studio paper and tactile audio
 Warm paper canvas with green data accents; volume is a calibrated tick ruler with a native range input. Bookmarks persist locally and do not require an account. The six rejected recordings (drag, send, dismiss, swipe, close, open) are regenerated at build time using short, dry, low-Q, non-sweeping textures. The remaining baseline WAVs are copied byte-for-byte. Production catalog, ZIP and content-addressed preview bank are assembled together; decoded cache remains bounded to 768 KiB and the optional raw bank to 3 MiB. No audio is synthesized at runtime.
+
+## Volume and Trazo gestures
+The gain control uses a single native range value, an ink capsule, an aligned white thumb, mute/restore and a full-width compact layout. No ruler or tick layers. Drag is the deterministic offline adaptation of Trazo's procedural sticker peel. Hover is a quieter adaptation of its sticker placement, not an upstream hover asset. Preserve the MIT notice in licenses/trazo-MIT.txt. No upstream MP3 assets are used. The seven revised sounds are generated at build time; the other 32 baseline WAVs remain byte-identical.

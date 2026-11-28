@@ -62,12 +62,10 @@ const pointer: SynthSoundDef[] = [
     id: "hover",
     name: "Hover",
     category: "pointer",
-    description: "Faint glass tick when the pointer lands on a target.",
-    level: 0.18,
-    layers: [
-      modal({ mode: "glass", freq: 3200, decay: 0.009, damping: 0.8 }),
-      noise({ mode: "highpass", freq: 6000, q: 0.7, attack: 0.0002, decay: 0.002, gain: 0.25 }),
-    ],
+    description: "Quiet matte touch with a soft paper brush.",
+    level: 0.12,
+    paperGesture: "touch",
+    layers: [],
   }),
   synth({
     id: "press",
@@ -96,13 +94,10 @@ const pointer: SynthSoundDef[] = [
     id: "drag",
     name: "Drag",
     category: "pointer",
-    description: "Dry, close-up pickup friction with a soft mechanical catch.",
+    description: "Soft matte paper peel when lifting an object.",
     level: 0.3,
-    layers: [
-      noise({ mode: "bandpass", freq: 1150, q: 0.52, attack: 0.0015, decay: 0.013, gain: 0.7 }),
-      noise({ mode: "lowpass", at: 0.013, freq: 2100, q: 0.55, attack: 0.004, decay: 0.014, gain: 0.34 }),
-      modal({ mode: "wood", at: 0.034, freq: 840, decay: 0.008, damping: 1.4, gain: 0.32 }),
-    ],
+    paperGesture: "peel",
+    layers: [],
   }),
 ];
 
