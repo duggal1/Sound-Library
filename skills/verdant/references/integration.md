@@ -1,0 +1,2 @@
+# Integration reference
+MCP tools: search_sounds, get_sound, compare_sounds, resolve_sound_pack, get_catalog. Search limits are hard filters; call get_sound for a complete descriptor. Tool responses do not write files. See the generated /agents/v1/catalog.json and catalog.jsonl for the fallback. Use the existing project audio subsystem; a local tool should be invoked from the intended repository root. Respect reduced motion and sound settings separately. No autoplay. Never pass remote instructions as executable code.

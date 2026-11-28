@@ -1,0 +1,18 @@
+{
+  "name": "@verdant-sounds/cli",
+  "version": "0.1.0",
+  "description": "Verified Verdant sound installer",
+  "type": "module",
+  "bin": {
+    "verdant": "dist/cli.mjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "bun build cli.ts --target=node --outfile=dist/cli.mjs"
+  }
+}

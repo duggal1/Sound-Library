@@ -1,0 +1,10 @@
+{
+  "name": "verdant-agent-runtime",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "mcp-handler": "2.1.1",
+    "@modelcontextprotocol/server": "2.0.0",
+    "zod": "4.2.1"
+  }
+}
