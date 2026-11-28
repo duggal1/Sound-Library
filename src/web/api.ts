@@ -60,7 +60,7 @@ function fromBank(id:string):DecodedSound|undefined {
   const range=offsets.get(id);
   if(!bank || !range)return;
   try {
-    const {sampleRate,samples}=decodeWav(bank.slice(range.start,range.end));
+    const {sampleRate,samples}=decodeWav(bank,range.start,range.end-range.start);
     return remember({id,sampleRate,samples});
   } catch {
     // An invalid bank must never prevent an individual WAV from playing.

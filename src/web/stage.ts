@@ -84,6 +84,8 @@ export class StageRenderer {
   private raf = 0;
   private last = 0;
   private destroyed = false;
+  private waveformPaths: {peaks:Path2D;energy:Path2D}|null=null;
+  private morphDirty=true;
 
   constructor(
     private readonly canvas: HTMLCanvasElement,
@@ -104,6 +106,7 @@ export class StageRenderer {
 
   setSound(pcm: Float32Array | null, sampleRate: number): void {
     this.pcm = pcm;
+    this.morphDirty=true;this.waveformPaths=null;
     this.duration = pcm ? pcm.length / sampleRate : 0;
     let peak = 0;
     if (pcm) {
@@ -159,7 +162,9 @@ export class StageRenderer {
     const dt = this.last ? Math.min(0.05, (now - this.last) / 1000) : 1 / 60;
     this.last = now;
 
-    const morphing = this.step(dt);
+    const morphing = this.morphDirty && this.step(dt);
+    if(this.morphDirty)this.waveformPaths=null;
+    this.morphDirty=morphing;
     const live = this.engine.isActive(this.mode === "scope" ? SCOPE_TAIL : 0.12) || this.engine.progress() !== null;
     this.draw();
 
@@ -180,6 +185,7 @@ export class StageRenderer {
     this.canvas.width = Math.round(w * dpr);
     this.canvas.height = Math.round(h * dpr);
     this.rebuild();
+    this.morphDirty=true;this.waveformPaths=null;
     this.requestFrame();
   }
 
@@ -299,15 +305,19 @@ export class StageRenderer {
     if (!this.pcm) return;
     const progress = this.engine.progress();
     const reach = (p.bottom - p.top) * 0.42;
-    const peaks = new Path2D(), energy = new Path2D();
-    for (let c = 0; c < p.cols; c++) {
+    if(!this.waveformPaths){
+      const peaks = new Path2D(), energy = new Path2D();
+      for (let c = 0; c < p.cols; c++) {
       const x = p.left + (c + .5) * PITCH;
       const hi = this.shownMax[c] * reach, lo = -this.shownMin[c] * reach;
       const rms = this.shownRms[c] * reach;
       peaks.moveTo(x,p.mid-hi);peaks.lineTo(x,p.mid+lo);
       // Inner ink encodes actual RMS, clamped within the measured extrema.
       energy.moveTo(x,p.mid-Math.min(hi,rms));energy.lineTo(x,p.mid+Math.min(lo,rms));
+      }
+      this.waveformPaths={peaks,energy};
     }
+    const {peaks,energy}=this.waveformPaths;
     ctx.save();
     ctx.lineCap = "round";
     const drawInk = (played:boolean) => {
