@@ -1,0 +1,39 @@
+name: Verdant agent verification
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run agents:install
+      - run: bun run typecheck
+      - run: bun test
+      - run: bun run build
+      - run: bun tools/agent-runtime/smoke.mjs
+      - run: bun run agents:package
+      - name: Verify generated artifacts and quarantine
+        run: |
+          test -f dist/agents/v1/SKILL.md
+          cmp skills/verdant/SKILL.md dist/agents/v1/SKILL.md
+          test -f dist/agents/v1/plugin.zip
+          test -f dist/agents/v1/verdant.mjs
+          test ! -e dist/sounds/catalog
+          unzip -t dist/agents/v1/plugin.zip
+      - name: Install browser for agent page verification
+        working-directory: tools/agent-runtime
+        run: bunx playwright install --with-deps chromium
+      - run: bun tools/agent-runtime/browser-smoke.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: verdant-agent-page-screenshots
+          path: .agent-screenshots/
+          include-hidden-files: true

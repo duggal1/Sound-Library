@@ -19,6 +19,8 @@ const byId = new Map(baseline.sounds.map(sound => [sound.id,sound]));
 await rm(output,{recursive:true,force:true});
 await cp(source,output,{recursive:true});
 const directory = join(output,"sounds");
+// Unverified/personal-use preview packs are not licensed for public hosting.
+await rm(join(directory,"catalog"),{recursive:true,force:true});
 const entries: ZipEntry[] = [];
 const sounds: SoundSummary[] = [];
 await mkdir(join(directory, "preview"), {recursive: true});

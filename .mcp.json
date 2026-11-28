@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "verdant": {
+      "type": "http",
+      "url": "https://sound-library-zeta.vercel.app/api/mcp"
+    }
+  }
+}

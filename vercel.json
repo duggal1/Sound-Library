@@ -28,6 +28,42 @@
           "value": "public, s-maxage=31536000, immutable"
         }
       ]
+    },
+    {
+      "source": "/agents/v1/audio/:file",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/agents/v1/releases/:path*",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/agents/v1/catalog.json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/agents/v1/catalog.jsonl",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
     }
   ],
   "rewrites": [
@@ -55,5 +91,12 @@
       "source": "/effects/:id",
       "destination": "/effects/:id.html"
     }
-  ]
+  ],
+  "installCommand": "bun install --frozen-lockfile && bun run agents:install",
+  "functions": {
+    "api/mcp.js": {
+      "includeFiles": ".generated-public/agents/v1/catalog.json",
+      "maxDuration": 10
+    }
+  }
 }

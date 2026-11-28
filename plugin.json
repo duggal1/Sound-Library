@@ -1,0 +1,8 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "verdant",
+  "version": "0.1.0",
+  "description": "Find and integrate reviewed interface sounds.",
+  "repository": "https://github.com/duggal1/Sound-Library",
+  "homepage": "https://sound-library-zeta.vercel.app/agents"
+}

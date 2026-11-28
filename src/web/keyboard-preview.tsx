@@ -16,7 +16,7 @@ const THEMES=[{id:"modern",label:"Modern · realistic"},{id:"classic",label:"Cla
 
 export function ThemePicker({theme,onTheme}:{theme:KeyboardTheme;onTheme:(theme:KeyboardTheme)=>void}){
  return <div className="device-theme-options" role="group" aria-label="Keyboard sound themes">
-  {THEMES.map(t=><button type="button" key={t.id} aria-pressed={theme===t.id} onClick={()=>onTheme(t.id)}><i aria-hidden="true"/>{t.label}</button>)}
+  {THEMES.map(t=><button type="button" key={t.id} disabled={t.id==="modern"} title={t.id==="modern"?"Distribution permission pending":undefined} aria-pressed={theme===t.id} onClick={()=>onTheme(t.id)}><i aria-hidden="true"/>{t.label}</button>)}
  </div>;
 }
 
@@ -157,7 +157,7 @@ function PreviewBody({device,sounds,effectiveTheme,fire,mouseId}:{device:Device;
 export function DevicePreview(props:Props){
  const {sounds,engine,theme,effectiveTheme,themeStatus,onTheme,device,onDevice}=props;
  const [expanded,setExpanded]=useState(false);
- const mouseVariants=useMemo(()=>sounds.filter(s=>s.importedMouse),[sounds]);
+ const mouseVariants=useMemo(()=>sounds.filter(s=>s.category==="pointer"&&s.source?.license==="CC0-1.0"&&["mouse-down","click-dry","click-light","click-weighted"].includes(s.id)),[sounds]);
  const [preferredMouse,setPreferredMouse]=useState(()=>{try{return localStorage.getItem("verdant.mouse-theme")??"mouse-click-modern";}catch{return "mouse-click-modern";}});
  const mouseId=mouseVariants.find(s=>s.id===preferredMouse)?.id??mouseVariants[0]?.id??"mouse-down";
  const mousePicker=<div className="device-theme-options" role="group" aria-label="Mouse click variants">{mouseVariants.map(s=><button type="button" key={s.id} aria-pressed={s.id===mouseId} onClick={()=>{setPreferredMouse(s.id);try{localStorage.setItem("verdant.mouse-theme",s.id);}catch{}fire(s);}}><i aria-hidden="true"/>{s.name.replace(/ click$/,"")}</button>)}</div>;

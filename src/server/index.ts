@@ -22,6 +22,9 @@ const server = Bun.serve({
     "/": page, "/library": () => htmlPage("library"), "/studio": () => htmlPage("studio"), "/saved": () => htmlPage("saved"),
     "/agents": () => htmlPage("agents"),
     "/agents/catalog.json": () => serve("agents/catalog.json"),
+    "/agents/v1/:file": req => ["catalog.json","catalog.jsonl","latest.json","SKILL.md","plugin.zip","verdant.mjs"].includes(req.params.file)?serve("agents/v1/"+req.params.file):notFound(),
+    "/agents/v1/audio/:file": async req=>{const file=req.params.file;if(!/^[a-f0-9]{64}\.wav$/.test(file))return notFound();const path="agents/v1/audio/"+file;return await Bun.file(join(output,path)).exists()?serve(path,immutable):notFound();},
+    "/agents/v1/releases/:id/:file": async req=>{const {id,file}=req.params;if(!/^[a-f0-9]{64}$/.test(id)||!["catalog.json","catalog.jsonl","pack.zip"].includes(file))return notFound();const path="agents/v1/releases/"+id+"/"+file;return await Bun.file(join(output,path)).exists()?serve(path,immutable):notFound();},
     "/llms.txt": () => serve("llms.txt"), "/robots.txt": () => serve("robots.txt"), "/sitemap.xml": () => serve("sitemap.xml"), "/social-card.png": () => serve("social-card.png"),
     "/effects/category/:category": req => /^[a-z0-9-]+$/.test(req.params.category)?htmlPage("effects/category/"+req.params.category):notFound(),
     "/effects/:id": req => /^[a-z0-9-]+$/.test(req.params.id)?htmlPage("effects/"+req.params.id):notFound(),
@@ -38,8 +41,6 @@ const server = Bun.serve({
       const {file} = req.params;
       return assets.has(file) || ["catalog.json", "pack.zip", "credits.md", "trazo-MIT.txt"].includes(file) ? serve("sounds/" + file) : notFound();
     },
-    "/sounds/catalog/:file": req => ["config.json","audio.ogg"].includes(req.params.file) ? serve("sounds/catalog/"+req.params.file) : notFound(),
-    "/sounds/catalog/mouse/collection/:folder/:file": req => {const {folder,file}=req.params;if(!/^sound-[1-4]$/.test(folder)||!(/^(config\.json|[1-5]\.mp3|audio\.(mp3|ogg)|concatenated_audio\.wav)$/.test(file)))return notFound();return serve("sounds/catalog/mouse/collection/"+folder+"/"+file);},
     "/sounds/preview/:file": req => previews.has(req.params.file) ? serve("sounds/preview/" + req.params.file, immutable) : notFound(),
     "/assets/:file": async req => {
       const {file} = req.params;
