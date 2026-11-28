@@ -9,6 +9,7 @@ import { decodeWav, encodeWav } from "../core/wav";
 import { encodeWaveform } from "../core/waveform";
 import { KEY_CODES, keySoundId } from "../core/keyboard";
 import { createZip, type ZipEntry } from "../core/zip";
+import {publicBase,releaseId} from "../storage/release";
 
 const rejected = new Set(["drag", "hover", "send", "dismiss", "swipe", "close", "open"]);
 const source = resolve("public");
@@ -99,9 +100,17 @@ const [credits, trazoLicense] = await Promise.all([
   readFile(resolve("licenses/trazo-MIT.txt")),
 ]);
 entries.push({name: "Sound credits.md", data: credits}, {name: "trazo-MIT.txt", data: trazoLicense});
+const pack=createZip(entries,new Date(1980,0,1));
+const canonical=JSON.stringify(result);
+const release=releaseId(canonical,pack,credits,trazoLicense);
+const pin=process.env.SOUND_RELEASE_ID;
+const base=process.env.SOUND_CDN_BASE_URL||process.env.SOUND_PUBLIC_BASE_URL;
+// No credentials or automatic remote writes in Vite builds. Only exact verified pins opt in.
+const published:CatalogResponse=pin===release&&base?{...result,storage:{releaseId:release,publicBase:publicBase(base),packKey:"releases/"+release+"/pack.zip"}}:result;
+if(pin&&pin!==release)console.warn("Storage pin does not match generated catalog; local fallback remains active.");
 await Promise.all([
-  writeFile(join(directory, "catalog.json"), JSON.stringify(result)),
-  writeFile(join(directory, "pack.zip"), createZip(entries, new Date(1980, 0, 1))),
+  writeFile(join(directory, "catalog.json"), JSON.stringify(published)),
+  writeFile(join(directory, "pack.zip"), pack),
   writeFile(join(directory, "credits.md"), credits),
   writeFile(join(directory, "trazo-MIT.txt"), trazoLicense),
 ]);

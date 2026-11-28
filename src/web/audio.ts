@@ -24,7 +24,9 @@ export class AudioEngine {
   private publish(id: string | null): void { for(const listener of this.listeners) listener(id); }
   stop(): void { this.stopTransients(); const source = this.activeSource; this.activeSource = null; if(source) source.stop(); this.duration = 0; this.offset = 0; this.publish(null); }
   private duration = 0;
-  private readonly buffers = new WeakMap<Float32Array, AudioBuffer>();
+  private readonly buffers = new Map<Float32Array, AudioBuffer>();
+  private bufferBytes=0;
+  private readonly bufferBudget=768*1024;
 
   /** Taps the signal before the volume knob, so the scope doesn't shrink when you turn it down. */
   get analyser(): AnalyserNode | null {
@@ -119,8 +121,16 @@ export class AudioEngine {
     if (!buffer) {
       buffer = ctx.createBuffer(1, sound.samples.length, sound.sampleRate);
       buffer.getChannelData(0).set(sound.samples);
-      this.buffers.set(sound.samples, buffer);
-    }
+      // Account for both the copied native PCM and the strong sample key.
+      const cost=sound.samples.byteLength+buffer.length*buffer.numberOfChannels*4;
+      if(cost<=this.bufferBudget){
+        while(this.bufferBytes+cost>this.bufferBudget&&this.buffers.size){
+          const key=this.buffers.keys().next().value!;const old=this.buffers.get(key)!;
+          this.bufferBytes-=key.byteLength+old.length*old.numberOfChannels*4;this.buffers.delete(key);
+        }
+        this.buffers.set(sound.samples,buffer);this.bufferBytes+=cost;
+      }
+    }else{this.buffers.delete(sound.samples);this.buffers.set(sound.samples,buffer);}
     return buffer;
   }
 

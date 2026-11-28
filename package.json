@@ -9,7 +9,11 @@
     "generate": "bun src/cli/generate.ts",
     "typecheck": "tsc --noEmit",
     "test": "bun test",
-    "prepare:assets": "bun src/cli/prepare-assets.ts"
+    "prepare:assets": "bun src/cli/prepare-assets.ts",
+    "assets:plan": "bun run prepare:assets && bun tools/storage/publish.ts plan",
+    "assets:install": "bun install --cwd tools/storage",
+    "assets:publish": "bun run prepare:assets && bun tools/storage/publish.ts publish",
+    "assets:verify": "bun run prepare:assets && bun tools/storage/publish.ts verify"
   },
   "dependencies": {
     "react": "^19.0.0",

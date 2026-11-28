@@ -366,11 +366,8 @@ export class StageRenderer {
     ctx.font = LABEL_FONT;
     const w = ctx.measureText(text).width + 20;
     const bx = Math.min(p.right - w, Math.max(p.left, x - w / 2));
-    ctx.fillStyle = "rgba(0,0,0,.84)";
-    ctx.beginPath();
-    ctx.roundRect(bx, p.top + 4, w, 26, 13);
-    ctx.fill();
-    ctx.fillStyle = "#fff";
+    // Keep the measurement, not the intrusive black floating pill.
+    ctx.fillStyle = palette.quiet;
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
     ctx.fillText(text, bx + 10, p.top + 17);

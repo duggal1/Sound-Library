@@ -1,0 +1,8 @@
+{
+  "name": "verdant-storage-publisher",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.1178.0"
+  }
+}
