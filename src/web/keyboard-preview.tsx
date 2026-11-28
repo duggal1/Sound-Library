@@ -88,7 +88,7 @@ function MacKeyboard({sounds,theme,fire}:{sounds:readonly SoundSummary[];theme:K
  </div>;
 }
 
-function MousePreview({sounds,fire}:{sounds:readonly SoundSummary[];fire:(sound:SoundSummary|undefined)=>void}){
+function MousePreview({sounds,fire,mouseId}:{sounds:readonly SoundSummary[];fire:(sound:SoundSummary|undefined)=>void;mouseId:string}){
  const byId=useMemo(()=>new Map(sounds.map(s=>[s.id,s])),[sounds]);
  const lastWheel=useRef(0);
  const wheel=useRef<HTMLButtonElement>(null);
@@ -98,26 +98,30 @@ function MousePreview({sounds,fire}:{sounds:readonly SoundSummary[];fire:(sound:
   const onWheel=(e:WheelEvent)=>{e.preventDefault();const now=performance.now();if(now-lastWheel.current<36)return;lastWheel.current=now;play("wheel-step");if(!matchMedia("(prefers-reduced-motion: reduce)").matches)node.animate([{transform:"translateY(2px)"},{transform:"translateY(0)"}],{duration:120,easing:getComputedStyle(document.documentElement).getPropertyValue("--liquid").trim()||"cubic-bezier(.16,1,.3,1)"});};
   node.addEventListener("wheel",onWheel,{passive:false});return()=>node.removeEventListener("wheel",onWheel);
  },[byId,fire]);
- const down=(e:PointerEvent<HTMLButtonElement>)=>{if(e.button!==0&&e.button!==2)return;e.preventDefault();e.currentTarget.focus({preventScroll:true});e.currentTarget.setPointerCapture(e.pointerId);e.currentTarget.dataset.pressed="true";play("mouse-down");};
- const up=(e:PointerEvent<HTMLButtonElement>)=>{if(e.currentTarget.dataset.pressed!=="true")return;e.currentTarget.dataset.pressed="false";play("mouse-up");};
+ const down=(e:PointerEvent<HTMLButtonElement>)=>{if(e.button!==0&&e.button!==2)return;e.preventDefault();e.currentTarget.focus({preventScroll:true});e.currentTarget.setPointerCapture(e.pointerId);e.currentTarget.dataset.pressed="true";play(mouseId);};
+ const up=(e:PointerEvent<HTMLButtonElement>)=>{if(e.currentTarget.dataset.pressed!=="true")return;e.currentTarget.dataset.pressed="false";};
  return <div className="device-mouse-space">
   <div className="device-mouse" role="group" aria-label="Interactive mouse">
    <div className="device-mouse-top">
-    <button type="button" className="mouse-left" aria-label="Left mouse button" onPointerDown={down} onPointerUp={up} onPointerCancel={e=>{e.currentTarget.dataset.pressed="false";}} onLostPointerCapture={e=>{e.currentTarget.dataset.pressed="false";}} onClick={e=>{if(e.detail===0)play("mouse-down");}}/>
+    <button type="button" className="mouse-left" aria-label="Left mouse button" onPointerDown={down} onPointerUp={up} onPointerCancel={e=>{e.currentTarget.dataset.pressed="false";}} onLostPointerCapture={e=>{e.currentTarget.dataset.pressed="false";}} onClick={e=>{if(e.detail===0)play(mouseId);}}/>
     <button type="button" className="mouse-wheel" ref={wheel} aria-label="Scroll wheel; click or scroll" onClick={()=>play("wheel-step")}><span/></button>
-    <button type="button" className="mouse-right" aria-label="Right mouse button" onContextMenu={e=>e.preventDefault()} onPointerDown={down} onPointerUp={up} onPointerCancel={e=>{e.currentTarget.dataset.pressed="false";}} onLostPointerCapture={e=>{e.currentTarget.dataset.pressed="false";}} onClick={e=>{if(e.detail===0)play("mouse-down");}}/>
+    <button type="button" className="mouse-right" aria-label="Right mouse button" onContextMenu={e=>e.preventDefault()} onPointerDown={down} onPointerUp={up} onPointerCancel={e=>{e.currentTarget.dataset.pressed="false";}} onLostPointerCapture={e=>{e.currentTarget.dataset.pressed="false";}} onClick={e=>{if(e.detail===0)play(mouseId);}}/>
    </div><div className="mouse-palm" aria-hidden="true"><i/></div>
   </div>
-  <div className="device-mouse-actions"><span>Left / right click</span><span>Scroll the wheel</span></div>
+  <div className="device-mouse-actions"><span>Either button auditions the selected click</span><span>Scroll the wheel</span></div>
  </div>;
 }
 
-function PreviewBody({device,sounds,effectiveTheme,fire}:{device:Device;sounds:readonly SoundSummary[];effectiveTheme:KeyboardTheme;fire:(sound:SoundSummary|undefined)=>void}){
- return device==="keyboard"?<MacKeyboard sounds={sounds} theme={effectiveTheme} fire={fire}/>:<MousePreview sounds={sounds} fire={fire}/>;
+function PreviewBody({device,sounds,effectiveTheme,fire,mouseId}:{device:Device;sounds:readonly SoundSummary[];effectiveTheme:KeyboardTheme;fire:(sound:SoundSummary|undefined)=>void;mouseId:string}){
+ return device==="keyboard"?<MacKeyboard sounds={sounds} theme={effectiveTheme} fire={fire}/>:<MousePreview sounds={sounds} fire={fire} mouseId={mouseId}/>;
 }
 export function DevicePreview(props:Props){
  const {sounds,engine,theme,effectiveTheme,themeStatus,onTheme,device,onDevice}=props;
  const [expanded,setExpanded]=useState(false);
+ const mouseVariants=useMemo(()=>sounds.filter(s=>s.importedMouse),[sounds]);
+ const [preferredMouse,setPreferredMouse]=useState(()=>{try{return localStorage.getItem("verdant.mouse-theme")??"mouse-click-modern";}catch{return "mouse-click-modern";}});
+ const mouseId=mouseVariants.find(s=>s.id===preferredMouse)?.id??mouseVariants[0]?.id??"mouse-down";
+ const mousePicker=<div className="device-theme-options" role="group" aria-label="Mouse click variants">{mouseVariants.map(s=><button type="button" key={s.id} aria-pressed={s.id===mouseId} onClick={()=>{setPreferredMouse(s.id);try{localStorage.setItem("verdant.mouse-theme",s.id);}catch{}fire(s);}}><i aria-hidden="true"/>{s.name.replace(/ click$/,"")}</button>)}</div>;
  const dialog=useRef<HTMLDialogElement>(null),trigger=useRef<HTMLButtonElement>(null);
  const {fire,error}=useTransient(engine,sounds);
  useEffect(()=>{
@@ -137,13 +141,13 @@ export function DevicePreview(props:Props){
    </div>
    <button ref={trigger} type="button" className="pill device-expand" onClick={()=>setExpanded(true)} aria-label="Expand device preview"><ArrowIcon/> Expand</button>
   </div>
-  {device==="keyboard"&&<ThemePicker theme={theme} onTheme={onTheme}/>}
-  <PreviewBody device={device} sounds={sounds} effectiveTheme={effectiveTheme} fire={fire}/>
+  {device==="keyboard"?<ThemePicker theme={theme} onTheme={onTheme}/>:mousePicker}
+  <PreviewBody device={device} sounds={sounds} effectiveTheme={effectiveTheme} fire={fire} mouseId={mouseId}/>
   <p className="device-caption" role="status">{error||((device==="keyboard"&&themeStatus)|| (device==="keyboard"?"Click a key or focus the keyboard and type.":"Click either button or scroll the wheel."))}</p>
   {expanded&&createPortal(<dialog ref={dialog} className="device-dialog" aria-label="Expanded device preview" onClick={e=>{if(e.target===e.currentTarget&&e.clientX!==0){const rect=e.currentTarget.getBoundingClientRect();if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)e.currentTarget.close();}}}>
    <div className="device-dialog-top"><div><span className="device-dialog-kicker">Sound test</span><h2>{device==="keyboard"?"Play the keyboard":"Play the mouse"}</h2></div><button type="button" className="pill icon-button" aria-label="Close preview" onClick={()=>dialog.current?.close()}><ClearIcon/></button></div>
-   {device==="keyboard"&&<ThemePicker theme={theme} onTheme={onTheme}/>}
-   <div className="device-expanded-body"><PreviewBody device={device} sounds={sounds} effectiveTheme={effectiveTheme} fire={fire}/></div>
+   {device==="keyboard"?<ThemePicker theme={theme} onTheme={onTheme}/>:mousePicker}
+   <div className="device-expanded-body"><PreviewBody device={device} sounds={sounds} effectiveTheme={effectiveTheme} fire={fire} mouseId={mouseId}/></div>
    <p className="device-caption" role="status">{error||((device==="keyboard"&&themeStatus)||(device==="keyboard"?"Focus the keyboard and type. Every supported key plays its mapped recording.":"Click and scroll to hear recorded mouse sounds."))}</p>
    {device==="keyboard"&&<p className="device-source">{effectiveTheme==="modern"?"Custom Keyboard by remains · shared recorded clips · preview only":"Classic · recorded key strikes with explicit fallback for additional MacBook keys"}</p>}
   </dialog>,document.body)}

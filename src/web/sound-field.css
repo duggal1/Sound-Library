@@ -32,8 +32,8 @@
 .field-sound:focus-visible .field-action,.field-sound[aria-pressed=true] .field-action{opacity:1}
 @media(hover:hover){.field-sound:hover .field-action{opacity:1}.field-sound:hover .field-name{text-decoration:underline dotted;text-underline-offset:3px}}
 .field-wave{position:absolute;bottom:-12px;width:96px;height:24px;opacity:0;transition:opacity 180ms var(--liquid);pointer-events:none}
-.field-wave svg{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:#86efac;stroke-width:2.6;stroke-linecap:round;overflow:visible}
-.field-wave svg.field-wave-played{stroke:#16a34a;clip-path:inset(0 100% 0 0)}
+.field-wave svg{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round;overflow:visible;color:#22c55e}
+.field-wave svg.field-wave-played{color:#15803d;clip-path:inset(0 100% 0 0)}
 .field-object[data-held=true] .field-wave{opacity:0}
 .field-sound[aria-pressed=true] .field-wave{opacity:1}
 .field-name{font-size:13px;font-weight:450;color:#000;max-width:132px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
@@ -67,3 +67,5 @@
 .field-dock .field-play-all{min-width:118px}
 .field-dock .field-play-all svg{width:15px;height:15px}
 .field-sound,.field-paper,.field-art,.field-art img{-webkit-user-drag:none;user-select:none}
+
+.field-wave circle{fill:currentColor;stroke:none}

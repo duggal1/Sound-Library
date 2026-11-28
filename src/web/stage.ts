@@ -4,8 +4,8 @@ import { fmtMs } from "./format";
 
 export type StageMode = "waveform" | "scope";
 
-const PITCH = 3.6; // optical spacing, independent of device pixel ratio
-const CELL = 2.3;
+const PITCH = 4; // optical spacing, independent of device pixel ratio
+const CELL = 2.8;
 const GUTTER_L = 8;
 const GUTTER_R = 8;
 const PAD_T = 22;
@@ -13,6 +13,7 @@ const GUTTER_B = 32;
 const MORPH_TAU = 0.085; // seconds; ~380 ms to settle, no overshoot
 const SCOPE_TAIL = 0.15; // keep drawing after playback so the trace settles to flat
 const LABEL_FONT = '12px "Instrument Sans", -apple-system, sans-serif';
+const WAVE_COLORS={rail:"#e7e5e4",soft:"#bbf7d0",base:"#22c55e",strong:"#16a34a",peak:"#15803d",glow:"rgba(34,197,94,.12)"} as const;
 const MINUS = "\u2212";
 
 interface Palette {
@@ -284,7 +285,7 @@ export class StageRenderer {
     const { ctx, palette } = this;
     // A quiet zero line, not an oscilloscope graticule.
     ctx.save();
-    ctx.strokeStyle = palette.grid;
+    ctx.strokeStyle = WAVE_COLORS.rail;
     ctx.lineWidth = 1;
     ctx.beginPath();
     ctx.moveTo(p.left, p.mid);
@@ -294,47 +295,45 @@ export class StageRenderer {
   }
 
   private drawWaveform(p: Plot): void {
-    const { ctx, palette } = this;
+    const { ctx } = this;
     if (!this.waveform) return;
     const progress = this.engine.progress();
     const reach = (p.bottom - p.top) * 0.42;
     if(!this.waveformPaths){
       const peaks = new Path2D(), energy = new Path2D();
-      for (let c = 0; c < p.cols; c++) {
-      const x = p.left + (c + .5) * PITCH;
-      const hi = this.shownMax[c] * reach, lo = -this.shownMin[c] * reach;
-      const rms = this.shownRms[c] * reach;
-      peaks.moveTo(x,p.mid-hi);peaks.lineTo(x,p.mid+lo);
-      // Inner ink encodes actual RMS, clamped within the measured extrema.
-      energy.moveTo(x,p.mid-Math.min(hi,rms));energy.lineTo(x,p.mid+Math.min(lo,rms));
+      for (let c=0;c<p.cols;c++){
+        const x=p.left+(c+.5)*PITCH;
+        const hi=this.shownMax[c]*reach,lo=-this.shownMin[c]*reach,rms=this.shownRms[c]*reach;
+        const cap=(path:Path2D,upper:number,lower:number,width:number)=>{
+          const height=upper+lower;
+          if(height<1.2){path.moveTo(x+width/2,p.mid);path.arc(x,p.mid,width/2,0,Math.PI*2);}
+          else path.roundRect(x-width/2,p.mid-upper-width/2,width,height+width,width/2);
+        };
+        cap(peaks,hi,lo,3.1);
+        cap(energy,Math.min(hi,rms),Math.min(lo,rms),2.45);
       }
       this.waveformPaths={peaks,energy};
     }
     const {peaks,energy}=this.waveformPaths;
     ctx.save();
     ctx.lineCap = "round";
-    const drawInk = (played:boolean) => {
-      ctx.strokeStyle = played ? palette.accent : palette.soft;
-      ctx.globalAlpha = played ? .42 : .65;
-      ctx.lineWidth = 1.5;
-      ctx.stroke(peaks);
-      ctx.globalAlpha = 1;
-      ctx.lineWidth = 2.5;
-      ctx.stroke(energy);
+    const drawInk=(played:boolean)=>{
+      ctx.fillStyle=played?"#4ade80":WAVE_COLORS.soft;ctx.fill(peaks);
+      ctx.fillStyle=played?WAVE_COLORS.peak:WAVE_COLORS.base;ctx.fill(energy);
     };
-    drawInk(progress === null);
+    drawInk(false);
     if(progress !== null){ctx.save();ctx.beginPath();ctx.rect(p.left,p.top,p.gridW*progress,p.bottom-p.top);ctx.clip();drawInk(true);ctx.restore();}
     if (progress !== null) {
       const x = p.left + progress * p.gridW;
-      ctx.strokeStyle = palette.accent;
+      ctx.strokeStyle = WAVE_COLORS.strong;
       ctx.lineWidth = 1;
       ctx.beginPath();
       ctx.moveTo(x, p.top + 4);
       ctx.lineTo(x, p.bottom - 4);
       ctx.stroke();
-      ctx.fillStyle = palette.accent;
+      ctx.fillStyle = WAVE_COLORS.strong;
       ctx.beginPath();
-      ctx.arc(x, p.top + 3, 3, 0, Math.PI * 2);
+      ctx.arc(x,p.top+3,3,0,Math.PI*2);
       ctx.fill();
     }
     ctx.restore();
@@ -398,11 +397,10 @@ export class StageRenderer {
       if (i === 0) ctx.moveTo(x,y);
       else ctx.lineTo(x,y);
     }
-    ctx.strokeStyle = palette.accent;
-    ctx.lineWidth = 1.25;
-    ctx.lineJoin = "round";
-    ctx.lineCap = "round";
-    ctx.stroke();
+    ctx.lineJoin="round";ctx.lineCap="round";
+    ctx.strokeStyle=WAVE_COLORS.glow;ctx.lineWidth=4.5;ctx.stroke();
+    ctx.strokeStyle=WAVE_COLORS.base;ctx.lineWidth=2;ctx.stroke();
+    ctx.strokeStyle=WAVE_COLORS.strong;ctx.lineWidth=.85;ctx.stroke();
     ctx.restore();
   }
 

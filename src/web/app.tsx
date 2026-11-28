@@ -356,7 +356,7 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
               <button className="pill primary dock-play" type="button" disabled={!selected} onClick={replay}>{playing || busy ? <StopIcon /> : <PlayIcon />}<span>{playing || busy ? "Stop" : "Play"}</span></button>
               <button className="pill icon-button" type="button" aria-label="Next sound" disabled={!filtered.length || currentIndex === filtered.length - 1} onClick={() => step(1)}><NextIcon /></button>
             </nav>
-            {selected && !isModern(selected) && <a className="pill icon-button current-download" aria-label="Download selected sound" href={downloadUrl(selected.id)} download><DownloadIcon /></a>}
+            {selected && !isModern(selected) && !selected.importedMouse && <a className="pill icon-button current-download" aria-label="Download selected sound" href={downloadUrl(selected.id)} download><DownloadIcon /></a>}
             <VolumeControl engine={engine} />
           </div>
           <section className="details" aria-label="Source signal metrics">
@@ -364,7 +364,7 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
               <div><dt>Peak</dt><dd>{selected ? <AnimatedNumber value={selected.peakDb} format={fmtDb} /> : "—"}</dd></div>
               <div><dt>RMS</dt><dd>{selected ? <AnimatedNumber value={selected.rmsDb} format={fmtDb} /> : "—"}</dd></div>
               <div><dt>Samples</dt><dd>{selected ? fmtCount(selected.samples) : "—"}</dd></div>
-              <div><dt>{isModern(selected)?"Decoded PCM":"File size"}</dt><dd>{selected ? fmtBytes(selected.bytes) : "—"}</dd></div>
+              <div><dt>{(isModern(selected)||selected?.importedMouse)?"Decoded PCM":"File size"}</dt><dd>{selected ? fmtBytes(selected.bytes) : "—"}</dd></div>
             </dl>
           </section>
           {!studio && selected && <div className="asset-details">
@@ -381,12 +381,14 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
             {copyError && <span role="status">Clipboard unavailable</span>}
             <code>{selected.id}</code>
             {isModern(selected)&&<span>Custom Keyboard by remains · preview only</span>}
+            {selected.importedMouse&&<span>{selected.importedMouse.author} · {selected.importedMouse.license==="personal-use-only"?"Personal use only":"License unverified"} · Preview only</span>}
             {selected.source && <a href={selected.source.url}>{selected.source.author} · {selected.source.license}</a>}
             {selected.review && <span>Listening review pending</span>}
           </div>}
         </section>
         <section className="library" aria-label="Sound library">
           <div className="library-head">
+            {catalog.previewWarning&&<p className="imported-warning" role="status">{catalog.previewWarning}</p>}
             <div className="library-title"><h2>{savedOnly ? "Saved sounds" : studio ? "Sounds" : category === "all" ? "All sounds" : category === "pointer" ? "Mouse" : category === "toggle" ? "Controls" : categoryLabel.get(category)} <span className="library-count">{fmtCount(filtered.length)}</span></h2><button type="button" className="pill saved-filter" aria-pressed={savedOnly} onClick={()=>setSavedOnly(v=>!v)}><BookmarkIcon filled={savedOnly}/><span>Saved</span><small>{bookmarks.size}</small></button></div>
             <div className="filters">
               <div className="search"><SearchIcon /><input ref={searchRef} type="search" placeholder="Search sounds" aria-label="Search sounds" value={query} onChange={e => {setQuery(e.target.value);}} />{query && <button type="button" className="clear-search" aria-label="Clear search" onClick={() => {setQuery("");searchRef.current?.focus();}}><ClearIcon /></button>}</div>
@@ -424,7 +426,7 @@ const SoundRow=memo(function SoundRow({sound,selected,active,loading,saved,categ
                     <div className="duration"><MicroBar ratio={sound.duration / maxDuration} /><span>{fmtMs(sound.duration)}</span></div>
                     <span className="peak">{fmtDb(sound.peakDb)}</span>
                     <button type="button" className="pill icon-button row-bookmark" aria-label={`${saved?"Remove bookmark from":"Bookmark"} ${sound.name}`} aria-pressed={saved} onClick={()=>toggleBookmark(sound.id)}><BookmarkIcon filled={saved}/></button>
-                    {isModern(sound)?<span className="pill icon-button device-download-disabled" title="Modern recording is preview only" aria-label="Preview only"><DownloadIcon/></span>:<a className="pill icon-button" href={downloadUrl(sound.id)} download aria-label={`Download ${sound.name}`}><DownloadIcon /></a>}
+                    {(isModern(sound)||sound.importedMouse)?<span className="pill icon-button device-download-disabled" title="Imported recording is preview only" aria-label="Preview only"><DownloadIcon/></span>:<a className="pill icon-button" href={downloadUrl(sound.id)} download aria-label={`Download ${sound.name}`}><DownloadIcon /></a>}
                   </div>;
 });
 

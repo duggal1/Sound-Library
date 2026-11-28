@@ -65,3 +65,5 @@
 .device-download-disabled{opacity:.35;display:grid;place-items:center;cursor:var(--cursor-default)}
 @media(max-width:850px){.device-preview{gap:5px;padding-top:2px}.device-keyboard.key-board{gap:3px}.device-key{height:23px}.device-key-row[data-function=true] .device-key{height:17px}.device-key-face{font-size:9px}.device-key[data-wide=true] .device-key-face{font-size:7px}.device-mouse-space{min-height:100px}.device-mouse{width:68px;height:96px}}
 @media(prefers-reduced-motion:reduce){.device-key-face,.device-mouse-top button{transition:none}.device-mouse{transform:none}}
+
+.device-mouse-actions{max-width:180px;line-height:1.4}

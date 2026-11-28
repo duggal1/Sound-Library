@@ -286,6 +286,6 @@ export function MicroBar({ ratio }: { ratio: number }) {
   const end=2+amount*60;
   return <span className="mb" aria-hidden="true"><svg viewBox="0 0 64 8" preserveAspectRatio="none">
     <path className="duration-guide" d="M2 4H62"/>
-    {amount>0&&<><path className="duration-ink" d={`M2 4H${end}`}/><rect className="duration-end" x={end-1.5} y="2.5" width="3" height="3"/></>}
+    {amount>0&&<><path className="duration-ink" d={`M2 4H${end}`}/><circle className="duration-end" cx={end} cy="4" r="1.5"/></>}
   </svg></span>;
 }

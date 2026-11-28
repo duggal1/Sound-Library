@@ -21,3 +21,7 @@ The existing Trazo-inspired procedural gestures are covered by [the Trazo notice
 ## Modern keyboard preview
 
 User-provided `public/sounds/catalog/config.json` and `audio.ogg` identify the pack as **Custom Keyboard** by **remains**. The timing definitions reuse ten shared recorded clips across keys; they are not unique per-key recordings. No license is declared in the supplied config. The Modern theme is preview-only and is not included in the existing WAV ZIP. Verify distribution rights before public release.
+
+## Imported mouse click previews
+
+The four user-provided Mechvibes packs in `public/sounds/catalog/mouse/collection` are auditioned using their original left-button timing definitions. Theme labels are editorial. Sound 1: Zen Zen; sound 2: for websim; sound 3: kauantutoriais (explicit personal-use-only license); sound 4: Angel Lozano. The other three have no declared license in their config. These recordings are excluded from the distributable WAV archive. Public redistribution requires rights verification. The old synthesized click, press and release are retired; existing CC0 recordings and unrelated gestures are retained.

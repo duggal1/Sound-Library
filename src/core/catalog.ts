@@ -36,18 +36,6 @@ const ECHO = { time: 0.12, gain: 0.2, taps: 2 } as const;
 /* ------------------------------------------------------------------ */
 const pointer: SynthSoundDef[] = [
   synth({
-    id: "click",
-    name: "Click",
-    category: "pointer",
-    description: "Dry wooden tick for primary buttons.",
-    level: 0.5,
-    layers: [
-      modal({ mode: "wood", freq: 1250, decay: 0.016, damping: 0.7 }),
-      noise({ mode: "bandpass", freq: 3200, q: 1.2, attack: 0.0002, decay: 0.0025, gain: 0.5 }),
-      tone({ freq: 190, to: 130, glide: 0.01, decay: 0.014, gain: 0.35 }),
-    ],
-  }),
-  synth({
     id: "tap",
     name: "Tap",
     category: "pointer",
@@ -66,29 +54,6 @@ const pointer: SynthSoundDef[] = [
     level: 0.12,
     paperGesture: "touch",
     layers: [],
-  }),
-  synth({
-    id: "press",
-    name: "Press",
-    category: "pointer",
-    description: "Low thunk on pointer down.",
-    level: 0.5,
-    layers: [
-      tone({ freq: 520, to: 300, glide: 0.012, decay: 0.03 }),
-      modal({ mode: "wood", freq: 800, decay: 0.012, damping: 0.8, gain: 0.5 }),
-      noise({ mode: "bandpass", freq: 2400, q: 1, attack: 0.0002, decay: 0.003, gain: 0.3 }),
-    ],
-  }),
-  synth({
-    id: "release",
-    name: "Release",
-    category: "pointer",
-    description: "Lighter lift on pointer up.",
-    level: 0.34,
-    layers: [
-      tone({ freq: 380, to: 620, glide: 0.01, decay: 0.02 }),
-      noise({ mode: "bandpass", freq: 4200, q: 1.1, attack: 0.0002, decay: 0.003, gain: 0.3 }),
-    ],
   }),
   synth({
     id: "drag",

@@ -2,7 +2,7 @@
   "sampleRate": 48000,
   "bitDepth": 16,
   "channels": 1,
-  "totalBytes": 1690476,
+  "totalBytes": 1646430,
   "categories": [
     {
       "id": "pointer",
@@ -35,19 +35,6 @@
   ],
   "sounds": [
     {
-      "id": "click",
-      "name": "Click",
-      "category": "pointer",
-      "description": "Dry wooden tick for primary buttons.",
-      "bytes": 10682,
-      "duration": 0.1108125,
-      "samples": 5319,
-      "peak": 0.5,
-      "rms": 0.046939521675793475,
-      "peakDb": -6.020599913279624,
-      "rmsDb": -26.569226805452352
-    },
-    {
       "id": "tap",
       "name": "Tap",
       "category": "pointer",
@@ -72,32 +59,6 @@
       "rms": 0.024165159330216294,
       "peakDb": -14.89454989793388,
       "rmsDb": -32.336206740892564
-    },
-    {
-      "id": "press",
-      "name": "Press",
-      "category": "pointer",
-      "description": "Low thunk on pointer down.",
-      "bytes": 19994,
-      "duration": 0.2078125,
-      "samples": 9975,
-      "peak": 0.5,
-      "rms": 0.07729624963336987,
-      "peakDb": -6.020599913279624,
-      "rmsDb": -22.236831545448574
-    },
-    {
-      "id": "release",
-      "name": "Release",
-      "category": "pointer",
-      "description": "Lighter lift on pointer up.",
-      "bytes": 13370,
-      "duration": 0.1388125,
-      "samples": 6663,
-      "peak": 0.34,
-      "rms": 0.053083030166188115,
-      "peakDb": -9.370421659154896,
-      "rmsDb": -25.500885880849285
     },
     {
       "id": "drag",

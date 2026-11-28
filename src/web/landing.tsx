@@ -14,7 +14,7 @@ import "./sound-field.css";
 // One hero: a sound sheet that lets people hear the library before entering it.
 // Ink controls, green measured signal, no cards or circular carousel.
 // App owns loading/empty/error; this view owns audition error and reversible local moves.
-const FEATURED=["click","key-space","wheel-step","switch-latch","drop-soft","key-enter","hover","control-back","toggle-engage","mouse-down","key-a","slider-step","drop-snap","confirm-choice"];
+const FEATURED=["mouse-click-modern","mouse-click-retro","mouse-click-classic","mouse-click-soft","key-space","wheel-step","switch-latch","drop-soft","key-enter","hover","control-back","toggle-engage","mouse-down","key-a","slider-step","drop-snap","confirm-choice"];
 
 const SoundObject=memo(function SoundObject({sound,active,pending,onPlay,engine}:{sound:SoundSummary;active:boolean;pending:boolean;onPlay:(sound:SoundSummary)=>void;engine:AudioEngine}){
   const bars=useMemo(()=>waveformBars(sound.waveform?decodeWaveform(sound.waveform):new Float32Array()),[sound.waveform]);
@@ -33,8 +33,8 @@ const SoundObject=memo(function SoundObject({sound,active,pending,onPlay,engine}
         <span className="field-name">{sound.name}</span>
         <span className="field-duration">{pending?"Loading…":active?"Playing":fmtMs(sound.duration)}</span>
         <span className="field-wave" aria-hidden="true">
- <svg viewBox="0 0 96 36">{bars.map((b,i)=><line key={i} x1={b.x} x2={b.x} y1={b.y1} y2={b.y2===b.y1?b.y2+.01:b.y2}/>)}</svg>
- <svg ref={progress} className="field-wave-played" viewBox="0 0 96 36">{bars.map((b,i)=><line key={i} x1={b.x} x2={b.x} y1={b.y1} y2={b.y2===b.y1?b.y2+.01:b.y2}/>)}</svg>
+ <svg viewBox="0 0 96 36">{bars.map((b,i)=>b.quiet?<circle key={i} cx={b.x} cy={18} r={1.35}/>:<line key={i} x1={b.x} x2={b.x} y1={b.y1} y2={b.y2}/>)}</svg>
+ <svg ref={progress} className="field-wave-played" viewBox="0 0 96 36">{bars.map((b,i)=>b.quiet?<circle key={i} cx={b.x} cy={18} r={1.35}/>:<line key={i} x1={b.x} x2={b.x} y1={b.y1} y2={b.y2}/>)}</svg>
  </span>
       </span>
     </button>
@@ -99,7 +99,7 @@ export function Landing({catalog,engine}:{catalog:CatalogResponse;engine:AudioEn
           <p>A playful collection of tactile sounds for the interfaces you build. Grab a sound, hear it, and make it part of your next project.</p>
           <div className="field-hero-actions">
             <a href="/library" className="pill primary">Explore the library <ArrowIcon/></a>
-            <a href="/sounds/pack.zip" className="field-download" download="verdant-sounds.zip">Download all</a>
+            <a href="/sounds/pack.zip" className="field-download" download="verdant-sounds.zip">Download WAV pack</a>
           </div>
         </section>
         {ordered.map(sound=><SoundObject key={sound.id} sound={sound} active={playingId===sound.id} pending={pendingId===sound.id} onPlay={audition} engine={engine}/>)}

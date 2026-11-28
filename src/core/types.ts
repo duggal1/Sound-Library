@@ -130,6 +130,7 @@ export interface SoundSummary extends SoundMetrics {
   readonly source?: { readonly name: string; readonly author: string; readonly url: string; readonly license: "CC0-1.0"; readonly take: string };
   readonly review?: "pending";
   readonly keyCode?: string;
+  readonly importedMouse?: {readonly pack:string;readonly author:string;readonly license:"personal-use-only"|"unverified"};
   readonly keyboardTheme?: "modern" | "classic";
 }
 
@@ -140,6 +141,7 @@ export interface CatalogResponse {
   readonly totalBytes: number;
   /** Immutable, contiguous WAV bank in catalog order; optional for legacy catalogs. */
   readonly previewBank?: string;
+  readonly previewWarning?: string;
   readonly categories: readonly CategoryInfo[];
   readonly sounds: readonly SoundSummary[];
 }
