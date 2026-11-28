@@ -131,6 +131,7 @@ export interface SoundSummary extends SoundMetrics {
   readonly review?: "pending";
   readonly keyCode?: string;
   readonly importedMouse?: {readonly pack:string;readonly author:string;readonly license:"personal-use-only"|"unverified"};
+  readonly keyboardTheme?: "modern" | "classic";
 }
 
 export interface CatalogResponse {

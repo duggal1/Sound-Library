@@ -24,7 +24,9 @@ import { SAMPLE_RATE } from "../core/types";
 import { fetchCatalog } from "./api";
 import { useAudition } from "./use-audition";
 import { Landing } from "./landing";
-import { KeyboardPreview } from "./keyboard-preview";
+import { DevicePreview, ThemePicker } from "./keyboard-preview";
+import { loadModernKeyboard,isModern } from "./keyboard-theme";
+import type { KeyboardTheme } from "../core/keyboard-themes";
 import { AudioEngine } from "./audio";
 import { AnimatedNumber, Dropdown, MicroBar, Segmented, type DropdownOption, type SegmentedOption } from "./controls";
 import { fmtBytes, fmtCount, fmtDb, fmtMs } from "./format";
@@ -35,6 +37,7 @@ import {
   ChevronIcon,
   ClearIcon,
   BrandMark,
+  GitHubIcon,
   DownloadIcon,
   NextIcon,
   PlayIcon,
@@ -174,7 +177,15 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
   initialCategory: CategoryFilter;
   initialSaved: boolean;
 }) {
-  const { sounds, categories } = catalog;
+  const { sounds:baseSounds, categories } = catalog;
+  const [theme,setTheme]=useState<KeyboardTheme>(()=>{try{return localStorage.getItem("verdant.keyboard-theme")==="classic"?"classic":"modern";}catch{return "modern";}});
+  const [modern,setModern]=useState<readonly SoundSummary[]|null>(null);
+  const [themeError,setThemeError]=useState(false);
+  const [device,setDevice]=useState<"keyboard"|"mouse">(initialCategory==="pointer"?"mouse":"keyboard");
+  useEffect(()=>{if(theme!=="modern"||modern)return;let current=true;setThemeError(false);void loadModernKeyboard(baseSounds).then(value=>{if(current)setModern(value);}).catch(()=>{if(current)setThemeError(true);});return()=>{current=false;};},[theme,modern,baseSounds]);
+  const effectiveTheme:KeyboardTheme=theme==="modern"&&modern?"modern":"classic";
+  const themeStatus=theme==="modern"&&!modern?(themeError?"Modern unavailable · Classic remains playable":"Loading Modern · Classic remains playable"):effectiveTheme==="modern"?"Modern · shared recorded clips":"Classic · recorded key strikes";
+  const sounds=useMemo(()=>effectiveTheme==="modern"&&modern?[...baseSounds.filter(s=>s.category!=="keyboard"),...modern]:baseSounds,[effectiveTheme,modern,baseSounds]);
 
   const [bookmarks, setBookmarks] = useState(readBookmarks);
   const [selectedId, setSelectedId] = useState<string | null>(() => sounds.find(sound => (
@@ -193,7 +204,9 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
   useEffect(()=>{try{localStorage.setItem("verdant.bookmarks.v1",JSON.stringify([...bookmarks]));}catch{}},[bookmarks]);
   const [mode, setMode] = useState<StageMode>("waveform");
   const {playingId, pendingId, error: previewError, play, stop} = useAudition(engine);
+  useEffect(()=>{stop();},[effectiveTheme,stop]);
   const [expanded, setExpanded] = useState(false);
+  const chooseTheme=useCallback((next:KeyboardTheme)=>{stop();setTheme(next);try{localStorage.setItem("verdant.keyboard-theme",next);}catch{}},[stop]);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [copyError, setCopyError] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
@@ -203,6 +216,7 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
   const maxDuration = useMemo(() => Math.max(0.001, ...sounds.map((s) => s.duration)), [sounds]);
   const byId = useMemo(() => new Map(sounds.map(sound => [sound.id, sound])), [sounds]);
   const selected = selectedId ? byId.get(selectedId) ?? null : null;
+  useEffect(()=>{if(selectedId&&!byId.has(selectedId))setSelectedId(sounds.find(s=>s.category==="keyboard")?.id??sounds[0]?.id??null);},[selectedId,byId,sounds]);
   const searchIndex = useMemo(() => new Map(sounds.map(sound => [
     sound.id, `${sound.name} ${sound.id} ${sound.description} ${categoryLabel.get(sound.category) ?? ""}`.toLowerCase(),
   ])), [sounds, categoryLabel]);
@@ -250,11 +264,12 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
   // Keyboard: / search, Esc clear, ↑ ↓ browse, space replay.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (e.defaultPrevented || e.metaKey || e.ctrlKey || e.altKey) return;
       const target = e.target as HTMLElement | null;
       const typing =
         target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement || !!target?.isContentEditable;
 
+      if(target?.closest(".device-preview, .device-dialog"))return;
       if (e.key === "/" && !typing) {
         e.preventDefault();
         searchRef.current?.focus();
@@ -284,6 +299,7 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
 
   const changeCategory = (value: CategoryFilter) => {
     setCategory(value);
+    if(value==="pointer")setDevice("mouse");else if(value==="keyboard")setDevice("keyboard");
     const url = new URL(location.href);
     if (value === "all") url.searchParams.delete("category");
     else url.searchParams.set("category", value);
@@ -306,7 +322,7 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
   const playing = selectedId !== null && playingId === selectedId;
   const currentIndex = filtered.findIndex(sound => sound.id === selectedId);
   return (
-    <Shell current={studio ? "studio" : "library"} context={`${fmtCount(sounds.length)} sounds · ${SAMPLE_RATE / 1000} kHz · ${catalog.bitDepth}-bit · mono`}
+    <Shell current={studio ? "studio" : "library"} context={`${fmtCount(baseSounds.length)} downloadable WAVs · ${SAMPLE_RATE / 1000} kHz · mono`}
       pack={<a className="pill pack" href="/sounds/pack.zip" download="verdant-sounds.zip"><DownloadIcon /><span>Download WAV pack</span><small>{fmtBytes(catalog.totalBytes)}</small></a>}>
       <div className="workspace" data-layout={studio ? "studio" : "dashboard"}>
         {!studio && <aside className="dashboard-sidebar" aria-label="Library navigation">
@@ -318,6 +334,7 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
               <SoundIcon kind={option.value as CategoryId} /><span>{option.value === "pointer" ? "Mouse" : option.value === "toggle" ? "Controls" : option.label}</span><small>{option.hint}</small>
             </button>)}
           </nav>
+          <div className="dashboard-themes"><span>Keyboard themes</span><ThemePicker theme={theme} onTheme={next=>{chooseTheme(next);changeCategory("keyboard");}}/></div>
           <a className="dashboard-credits" href="/sounds/credits.md">Sound credits <ArrowIcon /></a>
         </aside>}
         <section className="preview" aria-label="Audio inspector" data-expanded={expanded}>
@@ -339,7 +356,7 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
               <button className="pill primary dock-play" type="button" disabled={!selected} onClick={replay}>{playing || busy ? <StopIcon /> : <PlayIcon />}<span>{playing || busy ? "Stop" : "Play"}</span></button>
               <button className="pill icon-button" type="button" aria-label="Next sound" disabled={!filtered.length || currentIndex === filtered.length - 1} onClick={() => step(1)}><NextIcon /></button>
             </nav>
-            {selected && !selected.importedMouse && <a className="pill icon-button current-download" aria-label="Download selected sound" href={downloadUrl(selected.id)} download><DownloadIcon /></a>}
+            {selected && !isModern(selected) && !selected.importedMouse && <a className="pill icon-button current-download" aria-label="Download selected sound" href={downloadUrl(selected.id)} download><DownloadIcon /></a>}
             <VolumeControl engine={engine} />
           </div>
           <section className="details" aria-label="Source signal metrics">
@@ -347,7 +364,7 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
               <div><dt>Peak</dt><dd>{selected ? <AnimatedNumber value={selected.peakDb} format={fmtDb} /> : "—"}</dd></div>
               <div><dt>RMS</dt><dd>{selected ? <AnimatedNumber value={selected.rmsDb} format={fmtDb} /> : "—"}</dd></div>
               <div><dt>Samples</dt><dd>{selected ? fmtCount(selected.samples) : "—"}</dd></div>
-              <div><dt>{selected?.importedMouse?"Decoded PCM":"File size"}</dt><dd>{selected ? fmtBytes(selected.bytes) : "—"}</dd></div>
+              <div><dt>{(isModern(selected)||selected?.importedMouse)?"Decoded PCM":"File size"}</dt><dd>{selected ? fmtBytes(selected.bytes) : "—"}</dd></div>
             </dl>
           </section>
           {!studio && selected && <div className="asset-details">
@@ -363,6 +380,7 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
             }}>{copiedId === selected.id ? "Copied ID" : "Copy asset ID"}</button>
             {copyError && <span role="status">Clipboard unavailable</span>}
             <code>{selected.id}</code>
+            {isModern(selected)&&<span>Custom Keyboard by remains · preview only</span>}
             {selected.importedMouse&&<span>{selected.importedMouse.author} · {selected.importedMouse.license==="personal-use-only"?"Personal use only":"License unverified"} · Preview only</span>}
             {selected.source && <a href={selected.source.url}>{selected.source.author} · {selected.source.license}</a>}
             {selected.review && <span>Listening review pending</span>}
@@ -376,7 +394,7 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
               <div className="search"><SearchIcon /><input ref={searchRef} type="search" placeholder="Search sounds" aria-label="Search sounds" value={query} onChange={e => {setQuery(e.target.value);}} />{query && <button type="button" className="clear-search" aria-label="Clear search" onClick={() => {setQuery("");searchRef.current?.focus();}}><ClearIcon /></button>}</div>
               <Dropdown label="Sound category" value={category} options={categoryOptions} onChange={changeCategory} />
             </div>
-            {category === "keyboard" && <KeyboardPreview sounds={sounds} active={pendingId ?? playingId} audition={audition} />}
+            {(category==="all"||category==="keyboard"||category==="pointer")&&!savedOnly&&<DevicePreview sounds={sounds} engine={engine} theme={theme} effectiveTheme={effectiveTheme} themeStatus={themeStatus} onTheme={chooseTheme} device={device} onDevice={setDevice}/> }
           </div>
           <div className="list-header" aria-hidden="true"><span>Name</span><span>Duration</span><span>Peak</span><span /><span /></div>
           <SoundListViewport studio={studio} viewportRef={libraryRef}>
@@ -408,7 +426,7 @@ const SoundRow=memo(function SoundRow({sound,selected,active,loading,saved,categ
                     <div className="duration"><MicroBar ratio={sound.duration / maxDuration} /><span>{fmtMs(sound.duration)}</span></div>
                     <span className="peak">{fmtDb(sound.peakDb)}</span>
                     <button type="button" className="pill icon-button row-bookmark" aria-label={`${saved?"Remove bookmark from":"Bookmark"} ${sound.name}`} aria-pressed={saved} onClick={()=>toggleBookmark(sound.id)}><BookmarkIcon filled={saved}/></button>
-                    {sound.importedMouse?<span className="pill icon-button imported-preview-only" title="Preview only · not included in WAV pack" aria-label="Preview only"><DownloadIcon/></span>:<a className="pill icon-button" href={downloadUrl(sound.id)} download aria-label={`Download ${sound.name}`}><DownloadIcon /></a>}
+                    {(isModern(sound)||sound.importedMouse)?<span className="pill icon-button device-download-disabled" title="Imported recording is preview only" aria-label="Preview only"><DownloadIcon/></span>:<a className="pill icon-button" href={downloadUrl(sound.id)} download aria-label={`Download ${sound.name}`}><DownloadIcon /></a>}
                   </div>;
 });
 
@@ -445,7 +463,7 @@ function Shell({children, context, pack, current}: {children: ReactNode; context
       </nav>
       {context && <span className="context">{context}</span>}
       {pack}
-      {current === "home" && <a className="home-repo" href="https://github.com/duggal1/Sound-Library">GitHub <ArrowIcon /></a>}
+      {current === "home" && <a className="home-repo" href="https://github.com/duggal1/Sound-Library"><GitHubIcon /> GitHub</a>}
     </header>
     <main id="page-main" tabIndex={-1}>{children}</main>
   </div>;
