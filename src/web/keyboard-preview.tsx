@@ -7,6 +7,7 @@ import type {KeyboardTheme} from "../core/keyboard-themes";
 import {loadSound,peekSound,prefetchSound} from "./api";
 import type {AudioEngine} from "./audio";
 import {SoundIcon,ClearIcon,ArrowIcon} from "./icons";
+import {KeySymbol} from "./key-symbol";
 import "./device-preview.css";
 
 type Device="keyboard"|"mouse";
@@ -95,12 +96,12 @@ function MacKeyboard({sounds,theme,fire}:{sounds:readonly SoundSummary[];theme:K
      const sound=lookup(key.code),mapped=sound&&sound.keyCode!==key.code;
      const style={left:key.x/BOARD_WIDTH*100+"%",top:key.y/BOARD_HEIGHT*100+"%",width:key.width/BOARD_WIDTH*100+"%",height:key.height/BOARD_HEIGHT*100+"%"} as CSSProperties;
      return <button type="button" key={key.code} className="device-key" data-code={key.code} data-function={!!key.functionLabel} data-modifier={key.width>120} disabled={!sound}
-       aria-label={key.code==="Space"?"Space":key.label||key.code} title={mapped?"Classic fallback: "+sound.name:sound?.name} style={style}
+       aria-label={key.code==="Space"?"Space":key.functionLabel?key.label+" "+key.functionLabel:key.label||key.code} title={mapped?"Classic fallback: "+sound.name:sound?.name} style={style}
        onPointerEnter={()=>{if(sound)prefetchSound(sound);}} onPointerDown={e=>pointerDown(e,key.code)} onPointerUp={pointerEnd} onPointerCancel={pointerEnd} onLostPointerCapture={pointerEnd}
        onClick={e=>{if(e.detail===0){press(key.code);settle(key.code);}}}>
       <span className="device-key-face">
-       {(key.functionLabel||key.secondary)&&<span className="key-secondary">{key.functionLabel||key.secondary}</span>}
-       <span className="key-legend">{key.label}</span>
+       {key.functionLabel?<KeySymbol code={key.code}/>:key.secondary&&<span className="key-secondary">{key.secondary}</span>}
+       {key.code.startsWith("Arrow")?<KeySymbol code={key.code}/>:<span className="key-legend">{key.label}</span>}
        {key.code==="CapsLock"&&<i aria-hidden="true"/>}
       </span>
      </button>;
@@ -112,26 +113,18 @@ function MacKeyboard({sounds,theme,fire}:{sounds:readonly SoundSummary[];theme:K
 
 function MousePreview({sounds,fire,mouseId}:{sounds:readonly SoundSummary[];fire:(sound:SoundSummary|undefined)=>void;mouseId:string}){
  const byId=useMemo(()=>new Map(sounds.map(s=>[s.id,s])),[sounds]);
- const lastWheel=useRef(-Infinity),surface=useRef<HTMLDivElement>(null);
  const prefix=useId().replace(/:/g,"");
- const scrollSound=byId.get("wheel-step");
  const clickSound=byId.get(mouseId);
- const scroll=useCallback(()=>{const now=performance.now();if(now-lastWheel.current<36)return;lastWheel.current=now;fire(scrollSound);},[fire,scrollSound]);
- useEffect(()=>{
-  const node=surface.current;if(!node)return;
-  const onWheel=(e:WheelEvent)=>{if(e.ctrlKey||e.metaKey)return;e.preventDefault();scroll();};
-  node.addEventListener("wheel",onWheel,{passive:false});return()=>node.removeEventListener("wheel",onWheel);
- },[scroll]);
  const down=(e:PointerEvent<HTMLButtonElement>)=>{
-  if(e.button!==0&&e.button!==2&&e.button!==1)return;
+  if(e.button!==0&&e.button!==2)return;
   e.preventDefault();e.currentTarget.focus({preventScroll:true});e.currentTarget.setPointerCapture(e.pointerId);
-  e.currentTarget.dataset.pressed="true";if(e.button===1||e.currentTarget.dataset.zone==="middle")scroll();else fire(clickSound);
+  e.currentTarget.dataset.pressed="true";fire(clickSound);
  };
  const up=(e:PointerEvent<HTMLButtonElement>)=>{e.currentTarget.dataset.pressed="false";};
- const click=(e:MouseEvent<HTMLButtonElement>)=>{if(e.detail===0){if(e.currentTarget.dataset.zone==="middle")scroll();else fire(clickSound);}};
+ const click=(e:MouseEvent<HTMLButtonElement>)=>{if(e.detail===0)fire(clickSound);};
  return <div className="magic-stage magic-mouse-stage">
   <div className="magic-mouse-frame">
-   <div className="device-mouse magic-mouse" ref={surface} role="group" aria-label="Magic Mouse-inspired touch surface. Left click, right click, and center scroll audition.">
+   <div className="device-mouse magic-mouse" role="group" aria-label="Magic Mouse-inspired preview. Left and right click.">
     <svg className="magic-mouse-material" viewBox="0 0 156 286" aria-hidden="true">
      <defs>
       <linearGradient id={prefix+"metal"} x1="0" y1="0" x2="1" y2="0"><stop stopColor="#d1d2d5"/><stop offset=".16" stopColor="#e8e9eb"/><stop offset=".51" stopColor="#f4f4f5"/><stop offset=".86" stopColor="#dedfe2"/><stop offset="1" stopColor="#c6c8cb"/></linearGradient>
@@ -144,19 +137,15 @@ function MousePreview({sounds,fire,mouseId}:{sounds:readonly SoundSummary[];fire
       <path d="M78 3C33 3 9 27 6 76L6 194C7 245 27 272 78 273C129 272 149 245 150 194L150 76C147 27 123 3 78 3Z" fill={"url(#"+prefix+"shell)"} stroke={"url(#"+prefix+"rim)"} strokeWidth="1.15"/>
       <path d="M16 81C17 38 38 13 78 12C118 13 139 38 140 81" stroke="#fff" strokeWidth="1.2" strokeLinecap="round" fill="none"/>
       <path d="M78 18V105" stroke={"url(#"+prefix+"center)"} strokeWidth=".85" strokeLinecap="round"/>
-      <rect x="74.75" y="48" width="6.5" height="25" rx="3.25" fill="#d9dbde" stroke="#c9ccd0" strokeWidth=".45"/>
-      <path d="M77 51V70" stroke="#fafafa" strokeWidth=".8" strokeLinecap="round"/>
       <path d="M18 202C21 242 38 261 78 263C118 261 135 242 138 202" stroke="#fff" strokeOpacity=".78" strokeWidth="1" strokeLinecap="round" fill="none"/>
      </g>
     </svg>
     <div className="magic-mouse-hit-area">
      <button type="button" className="mouse-left" aria-label="Left click" disabled={!clickSound} onPointerDown={down} onPointerUp={up} onPointerCancel={up} onLostPointerCapture={up} onContextMenu={e=>e.preventDefault()} onClick={click}/>
-     <button type="button" className="mouse-middle" data-zone="middle" aria-label="Center scroll sound" disabled={!scrollSound} onPointerDown={down} onPointerUp={up} onPointerCancel={up} onLostPointerCapture={up} onContextMenu={e=>e.preventDefault()} onClick={click}/>
      <button type="button" className="mouse-right" aria-label="Right click" disabled={!clickSound} onPointerDown={down} onPointerUp={up} onPointerCancel={up} onLostPointerCapture={up} onContextMenu={e=>e.preventDefault()} onClick={click}/>
     </div>
    </div>
   </div>
-  <div className="magic-mouse-instructions"><span>Click or scroll</span><button type="button" className="magic-scroll-tick" disabled={!scrollSound} onClick={scroll}>Scroll sound <span aria-hidden="true">↕</span></button></div>
  </div>;
 }
 
@@ -191,12 +180,12 @@ export function DevicePreview(props:Props){
   </div>
   {device==="keyboard"?<ThemePicker theme={theme} onTheme={onTheme}/>:mousePicker}
   <PreviewBody device={device} sounds={sounds} effectiveTheme={effectiveTheme} fire={fire} mouseId={mouseId}/>
-  <p className="device-caption" role="status">{error||((device==="keyboard"&&themeStatus)|| (device==="keyboard"?"Click a key or focus the keyboard and type.":"Click either side or the center scroll zone."))}</p>
+  <p className="device-caption" role="status">{error||((device==="keyboard"&&themeStatus)|| (device==="keyboard"?"Click a key or focus the keyboard and type.":"Click either side to audition."))}</p>
   {expanded&&createPortal(<dialog ref={dialog} className="device-dialog" aria-label="Expanded device preview" onClick={e=>{if(e.target===e.currentTarget&&e.clientX!==0){const rect=e.currentTarget.getBoundingClientRect();if(e.clientX<rect.left||e.clientX>rect.right||e.clientY<rect.top||e.clientY>rect.bottom)e.currentTarget.close();}}}>
    <div className="device-dialog-top"><div><span className="device-dialog-kicker">Sound test</span><h2>{device==="keyboard"?"Play the keyboard":"Play the mouse"}</h2></div><button type="button" className="pill icon-button" aria-label="Close preview" onClick={()=>dialog.current?.close()}><ClearIcon/></button></div>
    {device==="keyboard"?<ThemePicker theme={theme} onTheme={onTheme}/>:mousePicker}
    <div className="device-expanded-body"><PreviewBody device={device} sounds={sounds} effectiveTheme={effectiveTheme} fire={fire} mouseId={mouseId}/></div>
-   <p className="device-caption" role="status">{error||((device==="keyboard"&&themeStatus)||(device==="keyboard"?"Focus the keyboard and type. Every supported key plays its mapped recording.":"Click either side or the center scroll zone."))}</p>
+   <p className="device-caption" role="status">{error||((device==="keyboard"&&themeStatus)||(device==="keyboard"?"Focus the keyboard and type. Every supported key plays its mapped recording.":"Click either side to audition."))}</p>
    {device==="keyboard"&&<p className="device-source">{effectiveTheme==="modern"?"Custom Keyboard by remains · shared recorded clips · preview only":"Classic · recorded key strikes with explicit fallback for additional MacBook keys"}</p>}
   </dialog>,document.body)}
  </section>;
