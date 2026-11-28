@@ -29,7 +29,7 @@ Volume state is local to its control; pointer capture preserves the grab offset,
 
 ## Landing and catalog dashboard
 
-The landing page has a 360-degree sound cylinder. Drag the surface to turn it, drag a tile to move it, and tap a tile or release a drag to audition. The tiles use measured envelope strips and a shared SVG glyph system. Reduced motion gives a static horizontal strip with native scrolling and the same playable sounds.
+The landing is a borderless spatial sound sheet inspired by Trazo's free-panning canvas, not a ring or carousel. Its centered editorial hero is surrounded by individually draggable sound objects with measured green waveform glyphs. All catalog entries are placed on the sheet. Drag empty paper, use a trackpad or arrow keys to pan; drag a sound to reposition and audition on release. A reset restores the authored layout. Direct manipulation preserves pointer offset; velocity-dependent 3D lift and bounded exponential coast settle without bounce. Reduced motion disables coast and lift. White canvas, Instrument Sans controls, restrained italic display heading, black pills and green signal only. No changes to Studio's cylindrical rail.
 
 The dashboard uses a flat catalog and a stationary inspector. Studio keeps the left waveform and right cylindrical rail. Both share one audio engine, persistent saved IDs and the original download URLs. Keyboard auditions are scoped to the focused keyboard pad, while the on-screen keys also support click and touch.
 

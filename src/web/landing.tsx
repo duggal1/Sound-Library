@@ -1,114 +1,83 @@
-import { useEffect, useMemo, useRef } from "react";
-import type { CatalogResponse } from "../core/types";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
+import type { CatalogResponse, SoundSummary } from "../core/types";
 import { decodeWaveform } from "../core/waveform";
 import { prefetchSound } from "./api";
 import type { AudioEngine } from "./audio";
 import { fmtMs } from "./format";
-import { ArrowIcon, ChevronIcon, PlayIcon, SoundIcon, StopIcon } from "./icons";
-import { mountOrbit } from "./orbit";
+import { ArrowIcon, PlayIcon, SoundIcon, StopIcon } from "./icons";
+import { mountSoundField } from "./sound-field";
 import { useAudition } from "./use-audition";
+import "./sound-field.css";
 
-const FEATURED = [
-  "click", "key-space", "wheel-step", "switch-latch", "drop-soft", "key-enter", "hover",
-  "control-back", "toggle-engage", "mouse-down", "key-a", "slider-step", "drop-snap", "confirm-choice",
-];
+// One hero: a sound sheet that lets people hear the library before entering it.
+// Ink controls, green measured signal, no cards or circular carousel.
+// App owns loading/empty/error; this view owns audition error and reversible local moves.
+const FEATURED=["click","key-space","wheel-step","switch-latch","drop-soft","key-enter","hover","control-back","toggle-engage","mouse-down","key-a","slider-step","drop-snap","confirm-choice"];
 
-function PeakStrip({waveform}: {waveform: string | undefined}) {
-  const path = useMemo(() => {
-    if (!waveform) return "";
-    const points = decodeWaveform(waveform);
-    const bins = points.length / 3;
-    const count = 36;
-    let path = "";
-    for (let i = 0; i < count; i++) {
-      let low = 0;
-      let high = 0;
-      for (let j = Math.floor(i * bins / count); j < Math.floor((i + 1) * bins / count); j++) {
-        low = Math.max(low, points[j * 3]);
-        high = Math.max(high, points[j * 3 + 1]);
-      }
-      path += `M${i * 3 + 1} ${(14 - high * 12).toFixed(1)}V${(14 + Math.max(.07, low) * 12).toFixed(1)}`;
+const SoundObject=memo(function SoundObject({sound,active,pending,onPlay,onStop}:{sound:SoundSummary;active:boolean;pending:boolean;onPlay:(sound:SoundSummary)=>void;onStop:()=>void}){
+  const path=useMemo(()=>{
+    if(!sound.waveform)return "";
+    const points=decodeWaveform(sound.waveform),bins=points.length/3;
+    let d="";
+    for(let i=0;i<22;i++){
+      let lo=0,hi=0;
+      for(let j=Math.floor(i*bins/22);j<Math.floor((i+1)*bins/22);j++){lo=Math.max(lo,points[j*3]);hi=Math.max(hi,points[j*3+1]);}
+      d+=`M${i*4+6} ${(20-Math.max(.045,hi)*17).toFixed(2)}V${(20+Math.max(.045,lo)*17).toFixed(2)}`;
     }
-    return path;
-  }, [waveform]);
-  return <svg className="tile-wave" viewBox="0 0 108 28" aria-hidden="true"><path d={path} fill="none" stroke="currentColor" strokeWidth="1.5" /></svg>;
-}
+    return d;
+  },[sound.waveform]);
+  return <div className="field-object" data-sound-object={sound.id}>
+    <button type="button" className="field-sound" aria-label={`${active||pending?"Stop":"Preview"} ${sound.name}`} aria-pressed={active||pending}
+      onPointerDown={()=>prefetchSound(sound)} onClick={()=>active||pending?onStop():onPlay(sound)}>
+      <span className="field-paper">
+        <span className="field-glyph"><SoundIcon kind={sound.category}/><span className="field-action">{active||pending?<StopIcon/>:<PlayIcon/>}</span></span>
+        <svg className="field-wave" viewBox="0 0 96 40" aria-hidden="true"><path d={path} fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="square"/></svg>
+        <span className="field-name">{sound.name}</span>
+        <span className="field-duration">{fmtMs(sound.duration)}{pending?" · Loading":active?" · Playing":""}</span>
+      </span>
+    </button>
+  </div>;
+});
 
-export function Landing({catalog, engine}: {catalog: CatalogResponse; engine: AudioEngine}) {
-  const surface = useRef<HTMLDivElement>(null);
-  const orbit = useRef<ReturnType<typeof mountOrbit> | null>(null);
-  const {play, stop, playingId, pendingId, error} = useAudition(engine);
-  const featured = useMemo(() => {
-    const byId = new Map(catalog.sounds.map(sound => [sound.id, sound]));
-    return FEATURED.flatMap(id => {
-      const sound = byId.get(id);
-      return sound ? [sound] : [];
-    });
-  }, [catalog]);
-
-  useEffect(() => {
-    if (!surface.current) return;
-    const driver = mountOrbit(surface.current, id => {
-      const sound = featured.find(item => item.id === id);
-      if (sound) play(sound);
-    });
-    orbit.current = driver;
-    return () => {driver.dispose(); orbit.current = null;};
-  }, [featured, play]);
-
-  const counts = useMemo(() => {
-    const result = new Map<string, number>();
-    for (const sound of catalog.sounds) result.set(sound.category, (result.get(sound.category) ?? 0) + 1);
-    return result;
-  }, [catalog]);
-
-  return <div className="landing">
-    <section className="landing-intro">
-      <a className="edition-link" href="/library"><span className="signal-dot" />{catalog.sounds.length} interface sounds <ChevronIcon /></a>
-      <h1>Sound you can grab.</h1>
-      <p>Audition sounds for keys, clicks and the small things your interface does.</p>
-      <a className="pill primary landing-cta" href="/library">Browse sounds <ArrowIcon /></a>
-    </section>
-
-    <section className="orbit-section" aria-label="Interactive sound cylinder">
-      <div className="orbit-frame">
-        <div className="orbit-surface" ref={surface} tabIndex={0} aria-label="Sound cylinder. Use left and right arrows to rotate."
-          onKeyDown={event => {
-            if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
-            event.preventDefault();
-            orbit.current?.rotate(event.key === "ArrowLeft" ? -1 : 1);
-          }}>
-          <div className="orbit-guide" aria-hidden="true"><div/><div/><div/></div>
-          {featured.map((sound, index) => {
-            const active = playingId === sound.id || pendingId === sound.id;
-            return <div className="orbit-tile" key={sound.id} data-orbit-tile={sound.id} data-tone={index % 4}>
-              <button className="orbit-card" type="button" aria-label={`${active ? "Stop" : "Preview"} ${sound.name}`} aria-pressed={active}
-                onPointerDown={() => prefetchSound(sound)} onClick={() => active ? stop() : play(sound)}>
-                <span className="tile-top"><SoundIcon kind={sound.category} /><small>{fmtMs(sound.duration)}</small></span>
-                <PeakStrip waveform={sound.waveform} />
-                <span className="tile-bottom"><span>{sound.name}</span><span className="tile-play">{active ? <StopIcon /> : <PlayIcon />}</span></span>
-              </button>
-            </div>;
-          })}
-        </div>
+export function Landing({catalog,engine}:{catalog:CatalogResponse;engine:AudioEngine}){
+  const viewport=useRef<HTMLDivElement>(null),world=useRef<HTMLDivElement>(null);
+  const driver=useRef<ReturnType<typeof mountSoundField>|null>(null);
+  const [dirty,setDirty]=useState(false);
+  const {play,stop,playingId,pendingId,error}=useAudition(engine);
+  const ordered=useMemo(()=>{
+    const byId=new Map(catalog.sounds.map(sound=>[sound.id,sound]));
+    const first=FEATURED.flatMap(id=>{const sound=byId.get(id);return sound?[sound]:[]});
+    const featured=new Set(first.map(sound=>sound.id));
+    return [...first,...catalog.sounds.filter(sound=>!featured.has(sound.id))];
+  },[catalog]);
+  useEffect(()=>{
+    if(!viewport.current||!world.current)return;
+    const byId=new Map(ordered.map(sound=>[sound.id,sound]));
+    const field=mountSoundField(viewport.current,world.current,id=>{const sound=byId.get(id);if(sound)play(sound);},setDirty);
+    driver.current=field;
+    return ()=>{field.dispose();driver.current=null;};
+  },[ordered,play]);
+  return <div className="sound-landing">
+    <div className="sound-field" ref={viewport} tabIndex={0} role="region" aria-label="Sound canvas. Drag empty space or use arrow keys to explore. Click a sound to play. Escape resets.">
+      <div className="field-world" ref={world}>
+        <div className="field-grid" aria-hidden="true"/>
+        <section className="field-hero" data-no-pan="">
+          <span className="field-kicker"><i aria-hidden="true"/>{catalog.sounds.length} interface sounds</span>
+          <h1>Sound for the<br/>small things.</h1>
+          <p>Every click, key and gesture deserves a sound that feels right. Pick one up, listen, make it yours.</p>
+          <div className="field-hero-actions">
+            <a href="/library" className="pill primary">Explore sounds <ArrowIcon/></a>
+            <a href="/sounds/pack.zip" className="field-download" download="verdant-sounds.zip">Download all</a>
+          </div>
+        </section>
+        {ordered.map(sound=><SoundObject key={sound.id} sound={sound} active={playingId===sound.id} pending={pendingId===sound.id} onPlay={play} onStop={stop}/>)}
       </div>
-      <div className="orbit-controls">
-        <button className="pill icon-button orbit-prev" type="button" aria-label="Rotate left" onClick={() => orbit.current?.rotate(-1)}><ChevronIcon /></button>
-        <p className="orbit-instructions" data-error={!!error} role="status">{error || "Drag a sound to move it. Drag the space between sounds to turn."}</p>
-        <button className="pill icon-button orbit-next" type="button" aria-label="Rotate right" onClick={() => orbit.current?.rotate(1)}><ChevronIcon /></button>
-      </div>
-    </section>
-
-    <nav className="landing-categories" aria-label="Browse sound categories">
-      {(["keyboard", "pointer", "toggle", "motion"] as const).map((id) => (
-        <a key={id} href={`/library?category=${id}`}>
-          <SoundIcon kind={id}/>
-          <span>{{keyboard:"Keyboard", pointer:"Mouse", toggle:"Controls", motion:"Gestures"}[id]}</span>
-          <small>{counts.get(id) ?? 0}</small>
-          <ArrowIcon />
-        </a>
-      ))}
-    </nav>
-    <footer className="landing-footer"><a href="/sounds/credits.md">Sound credits</a><a href="https://github.com/duggal1/Sound-Library">GitHub</a></footer>
+    </div>
+    <div className="field-dock">
+      <span className="field-help" role="status">{error||"Drag the canvas to explore. Pick up any sound to play it."}</span>
+      <button type="button" className="pill field-reset" disabled={!dirty} onClick={()=>driver.current?.reset()}>Reset canvas</button>
+      {(playingId||pendingId)&&<button type="button" className="pill" onClick={stop}>Stop sound <StopIcon/></button>}
+      <a href="/sounds/credits.md">Credits</a>
+    </div>
   </div>;
 }
