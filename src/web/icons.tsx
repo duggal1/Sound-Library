@@ -15,3 +15,5 @@ export const VolumeIcon = (p:IconProps) => <svg {...base} {...p}><path d="M4 9h4
 export const ClearIcon = (p:IconProps) => <svg {...base} {...p}><path d="m6.4 5.3 5.6 5.6 5.6-5.6 1.1 1.1-5.6 5.6 5.6 5.6-1.1 1.1-5.6-5.6-5.6 5.6-1.1-1.1 5.6-5.6-5.6-5.6z"/></svg>;
 
 export const BookmarkIcon = ({filled=false,...p}:IconProps & {filled?:boolean}) => <svg {...base} {...p}>{filled?<path d="M6 3h12v18l-6-4-6 4z"/>:<path fillRule="evenodd" d="M6 3h12v18l-6-4-6 4zm1.7 1.7v13.1l4.3-2.9 4.3 2.9V4.7z"/>}</svg>;
+
+export const MuteIcon = (p:IconProps) => <svg {...base} {...p}><path d="M4 9h4l5-4v14l-5-4H4zM16.1 8.9l1.1-1.1 2.1 2.1 2.1-2.1 1.1 1.1-2.1 2.1 2.1 2.1-1.1 1.1-2.1-2.1-2.1 2.1-1.1-1.1 2.1-2.1z"/></svg>;

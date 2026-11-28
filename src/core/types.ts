@@ -85,6 +85,8 @@ export interface SynthSoundDef extends SoundBase {
   /** Final peak amplitude, 0..1. */
   readonly level: number;
   readonly layers: readonly Layer[];
+  /** Offline paper-gesture renderer adapted from Trazo, when present. */
+  readonly paperGesture?: "peel" | "touch";
   readonly echo?: EchoSpec;
 }
 

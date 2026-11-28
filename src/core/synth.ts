@@ -1,5 +1,6 @@
 import { TAIL, TAU, envelope, fadeEdges, scaleToPeak, smoothstep } from "./dsp";
 import { hashString, mulberry32 } from "./rng";
+import { renderPaperGesture } from "./gesture";
 import type { EchoSpec, Layer, ModalLayer, ModalMode, NoiseLayer, SynthSoundDef, ToneLayer } from "./types";
 
 const SINE: readonly number[] = [1];
@@ -127,6 +128,7 @@ function applyEcho(dry: Float64Array, echo: EchoSpec | undefined, rate: number):
  * output is bit-identical across server, CLI and browser.
  */
 export function renderSynth(def: SynthSoundDef, rate: number): Float64Array {
+  if(def.paperGesture)return renderPaperGesture(def.paperGesture,rate,def.level);
   const rand = mulberry32(hashString(def.id));
   const parts = def.layers.map((layer) => {
     const data = renderLayer(layer, rate, rand);

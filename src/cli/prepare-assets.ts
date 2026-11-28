@@ -1,5 +1,5 @@
 /** Build-only audio publication. The approved baseline WAVs are copied byte-for-byte.
- * Rebuild only six rejected sounds, then publish matching metadata, ZIP and a
+ * Rebuild only seven revised sounds, then publish matching metadata, ZIP and a
  * content-addressed preview bank. No runtime synthesis or server required.
  */
 import { cp, mkdir, readFile, writeFile, rm } from "node:fs/promises";
@@ -11,7 +11,7 @@ import { SAMPLE_RATE, BIT_DEPTH, type CatalogResponse, type SoundSummary } from 
 import { encodeWav } from "../core/wav";
 import { createZip, type ZipEntry } from "../core/zip";
 
-const rejected = new Set(["drag", "send", "dismiss", "swipe", "close", "open"]);
+const rejected = new Set(["drag", "hover", "send", "dismiss", "swipe", "close", "open"]);
 const source = resolve("public");
 const output = resolve(".generated-public");
 const baseline = JSON.parse(await readFile(join(source,"sounds/catalog.json"),"utf8")) as CatalogResponse;
