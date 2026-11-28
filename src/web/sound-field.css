@@ -31,7 +31,11 @@
 .field-action svg{width:13px;height:13px}
 .field-sound:focus-visible .field-action,.field-sound[aria-pressed=true] .field-action{opacity:1}
 @media(hover:hover){.field-sound:hover .field-action{opacity:1}.field-sound:hover .field-name{text-decoration:underline dotted;text-underline-offset:3px}}
-.field-wave{position:absolute;bottom:-5px;width:60px;height:16px;color:var(--accent);opacity:0;transition:opacity 180ms var(--liquid)}
+.field-wave{position:absolute;bottom:-12px;width:96px;height:24px;opacity:0;transition:opacity 180ms var(--liquid);pointer-events:none;color:#22c55e}
+.field-wave svg{position:absolute;inset:0;width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round;overflow:visible}
+.field-wave circle{fill:currentColor;stroke:none}
+.field-wave .field-wave-played{color:#15803d;clip-path:inset(0 100% 0 0)}
+.field-object[data-held=true] .field-wave{opacity:0}
 .field-sound[aria-pressed=true] .field-wave,.field-sound:focus-visible .field-wave{opacity:1}
 .field-name{font-size:13px;font-weight:450;color:#000;max-width:132px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.2}
 .field-duration{font-size:11px;color:#737373;line-height:1.2}

@@ -17,3 +17,7 @@ The existing Trazo-inspired procedural gestures are covered by [the Trazo notice
 | unicae_games_keyboard_soundpack_1.zip | `96507fc9aeec34cdff0e7c558dabb96afec4156c06532a38d7006b9acdf31f06` |
 | UI_SFX_Set.zip | `66026b9e39859b85964dbb3ee7a2d1fc46a6a406bb3e97c8b0defee0e25fb369` |
 | kenney_interfaceSounds.zip | `f2193d072726d6758a5f7871b2dcc54dcce0d5c35c6f0a62f92549b327c81232` |
+
+## Imported mouse click previews
+
+The four user-provided Mechvibes packs in `public/sounds/catalog/mouse/collection` are auditioned using their original left-button timing definitions. Theme labels are editorial. Sound 1: Zen Zen; sound 2: for websim; sound 3: kauantutoriais (explicit personal-use-only license); sound 4: Angel Lozano. The other three have no declared license in their config. These recordings are excluded from the distributable WAV archive. Public redistribution requires rights verification. The old synthesized click, press and release are retired; existing CC0 recordings and unrelated gestures are retained.

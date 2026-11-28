@@ -32,6 +32,7 @@ const server = Bun.serve({
       const {file} = req.params;
       return assets.has(file) || ["catalog.json", "pack.zip", "credits.md", "trazo-MIT.txt"].includes(file) ? serve("sounds/" + file) : notFound();
     },
+    "/sounds/catalog/mouse/collection/:folder/:file": req => {const {folder,file}=req.params;if(!/^sound-[1-4]$/.test(folder)||!(/^(config\.json|[1-5]\.mp3|audio\.(mp3|ogg)|concatenated_audio\.wav)$/.test(file)))return notFound();return serve("sounds/catalog/mouse/collection/"+folder+"/"+file);},
     "/sounds/preview/:file": req => previews.has(req.params.file) ? serve("sounds/preview/" + req.params.file, immutable) : notFound(),
     "/assets/:file": async req => {
       const {file} = req.params;

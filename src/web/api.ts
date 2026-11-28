@@ -1,4 +1,5 @@
 import type { CatalogResponse } from "../core/types";
+import {loadMouseRecordings,peekMouseRecording} from "./mouse-recordings";
 import { decodeWav } from "../core/wav";
 
 export interface DecodedSound {
@@ -16,7 +17,8 @@ export async function fetchCatalog(signal: AbortSignal): Promise<CatalogResponse
   if (!response.ok) throw new Error(`Could not load the sound catalog (${response.status}).`);
   const data = await response.json() as CatalogResponse;
   if (forced === "empty") return {...data, sounds: [], totalBytes: 0};
-  return data;
+  const imported=await loadMouseRecordings(signal);
+  return {...data,sounds:[...data.sounds.filter(s=>!["click","press","release"].includes(s.id)),...imported.sounds],previewWarning:imported.failed.length?`Mouse previews unavailable: ${imported.failed.join(", ")}.`:undefined};
 }
 
 type SoundRef = {readonly id: string; readonly previewUrl?: string};
@@ -31,6 +33,7 @@ function urlFor(sound: SoundRef): string {
 }
 
 export function peekSound(sound: SoundRef): DecodedSound | undefined {
+  const imported=peekMouseRecording(sound.previewUrl);if(imported)return imported;
   const key = sound.id + ":" + urlFor(sound);
   const cached = ready.get(key);
   if (cached) {
@@ -44,6 +47,7 @@ export function loadSound(sound: SoundRef, priority: "high" | "low" = "high"): P
   const key = sound.id + ":" + urlFor(sound);
   const cached = peekSound(sound);
   if (cached) return Promise.resolve(cached);
+  if(sound.previewUrl?.startsWith("mouse-recording:"))return Promise.reject(new Error("Mouse preview unavailable"));
   const existing = inFlight.get(key);
   if (existing) return existing;
 
@@ -67,6 +71,7 @@ export function loadSound(sound: SoundRef, priority: "high" | "low" = "high"): P
 
 /** Warm at most two likely targets following focused user interaction. */
 export function prefetchSound(sound: SoundRef): void {
+  if(peekMouseRecording(sound.previewUrl))return;
   const connection = (navigator as Navigator & {connection?: {saveData?: boolean; effectiveType?: string}}).connection;
   if (connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType ?? "")) return;
   const key = sound.id + ":" + urlFor(sound);
