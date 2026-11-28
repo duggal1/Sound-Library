@@ -1,0 +1,99 @@
+{
+  "config_version": "2",
+  "name": "Average \"Satisfying\" Click",
+  "author": "for websim",
+  "description": "This is what you hear when you play a \"satisfying\" game.",
+  "tags": [
+    "asmr",
+    "gaming",
+    "youtube",
+    "playables"
+  ],
+  "definition_method": "single",
+  "audio_file": "audio.mp3",
+  "soundpack_type": "Mouse",
+  "options": {
+    "recommended_volume": 1,
+    "random_pitch": false
+  },
+  "definitions": {
+    "MouseLeft": {
+      "timing": [
+        [
+          0,
+          36.65548780487804
+        ],
+        [
+          33.32317073170732,
+          136.625
+        ]
+      ]
+    },
+    "MouseRight": {
+      "timing": [
+        [
+          0,
+          36.65548780487804
+        ],
+        [
+          36.655487804878064,
+          136.625
+        ]
+      ]
+    },
+    "MouseMiddle": {
+      "timing": [
+        [
+          0,
+          36.65548780487804
+        ],
+        [
+          36.65548780487804,
+          136.625
+        ]
+      ]
+    },
+    "Mouse5": {
+      "timing": [
+        [
+          0,
+          36.65548780487804
+        ]
+      ]
+    },
+    "Mouse4": {
+      "timing": [
+        [
+          0,
+          36.65548780487804
+        ]
+      ]
+    },
+    "Mouse6": {
+      "timing": [
+        [
+          0,
+          36.65548780487804
+        ]
+      ]
+    },
+    "Mouse7": {
+      "timing": [
+        [
+          0,
+          36.65548780487804
+        ]
+      ]
+    },
+    "Mouse8": {
+      "timing": [
+        [
+          0,
+          36.65548780487804
+        ]
+      ]
+    }
+  },
+  "id": "mv-4a6ffe1ddfa84a56b558ac06d2196e4d",
+  "version": "1"
+}

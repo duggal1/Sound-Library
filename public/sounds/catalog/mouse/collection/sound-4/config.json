@@ -1,0 +1,74 @@
+{
+  "config_version": "2",
+  "name": "ASMR MOUSE",
+  "author": "Angel Lozano",
+  "description": "A custom sound pack created with the Mechvibes editor.",
+  "tags": [],
+  "definition_method": "single",
+  "audio_file": "audio.ogg",
+  "soundpack_type": "Mouse",
+  "options": {
+    "recommended_volume": 1,
+    "random_pitch": false
+  },
+  "definitions": {
+    "MouseLeft": {
+      "timing": [
+        [
+          0,
+          249.97916666666666
+        ]
+      ]
+    },
+    "MouseRight": {
+      "timing": [
+        [
+          249.97916666666666,
+          489.9583333333333
+        ]
+      ]
+    },
+    "Mouse4": {
+      "timing": [
+        [
+          489.9583333333333,
+          619.9375
+        ]
+      ]
+    },
+    "Mouse5": {
+      "timing": [
+        [
+          489.9583333333333,
+          619.9375
+        ]
+      ]
+    },
+    "Mouse6": {
+      "timing": [
+        [
+          489.9583333333333,
+          619.9375
+        ]
+      ]
+    },
+    "Mouse7": {
+      "timing": [
+        [
+          489.9583333333333,
+          619.9375
+        ]
+      ]
+    },
+    "Mouse8": {
+      "timing": [
+        [
+          489.9583333333333,
+          619.9375
+        ]
+      ]
+    }
+  },
+  "id": "mv-543ea636f39e4910889fa115d16b4449",
+  "version": "2"
+}

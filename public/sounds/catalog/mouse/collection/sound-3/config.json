@@ -1,0 +1,42 @@
+{
+  "audio_file": "concatenated_audio.wav",
+  "config_version": "2",
+  "author": "kauantutoriais",
+  "created_at": "2026-09-30T02:09:10.669942+00:00",
+  "definition_method": "single",
+  "definitions": {
+    "MouseLeft": {
+      "timing": [
+        [
+          0,
+          167.95918367346937
+        ]
+      ]
+    },
+    "MouseMiddle": {
+      "timing": [
+        [
+          335.91836734693874,
+          701.6326530612245
+        ]
+      ]
+    },
+    "MouseRight": {
+      "timing": [
+        [
+          167.95918367346937,
+          335.91836734693874
+        ]
+      ]
+    }
+  },
+  "name": "VXE R1 SE",
+  "options": {
+    "random_pitch": false,
+    "recommended_volume": 1
+  },
+  "id": "mv-2c705e09c19b4b07b781204bb23b1290",
+  "version": "1",
+  "description": "source: https://www.youtube.com/watch?v=ngqPvsIwvL4&t=52s\ni like this",
+  "tags": []
+}
