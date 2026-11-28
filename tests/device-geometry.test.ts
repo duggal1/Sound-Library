@@ -22,3 +22,10 @@ test("arrow cluster has half-height up/down keys and full-height left/right",()=
  expect(key("ArrowUp").height).toBe(key("ArrowDown").height);
  expect(key("ArrowLeft").height).toBeGreaterThan(key("ArrowUp").height);
 });
+
+test("wide low-profile geometry has tight even key gaps",()=>{
+ expect(BOARD_WIDTH/BOARD_HEIGHT).toBeGreaterThan(3);
+ const a=PHYSICAL_KEYS.find(k=>k.code==="KeyA")!,s=PHYSICAL_KEYS.find(k=>k.code==="KeyS")!;
+ expect(a.width/a.height).toBeGreaterThan(1.1);
+ expect(s.x-a.x-a.width).toBe(6);
+});
