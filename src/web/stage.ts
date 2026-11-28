@@ -1,4 +1,5 @@
 import type { AudioEngine } from "./audio";
+import { decodeWaveform } from "../core/waveform";
 import { fmtMs } from "./format";
 
 export type StageMode = "waveform" | "scope";
@@ -11,7 +12,7 @@ const PAD_T = 22;
 const GUTTER_B = 32;
 const MORPH_TAU = 0.085; // seconds; ~380 ms to settle, no overshoot
 const SCOPE_TAIL = 0.15; // keep drawing after playback so the trace settles to flat
-const LABEL_FONT = '12px "Inter", "Instrument Sans", -apple-system, sans-serif';
+const LABEL_FONT = '12px "Instrument Sans", -apple-system, sans-serif';
 const MINUS = "\u2212";
 
 interface Palette {
@@ -66,9 +67,9 @@ export class StageRenderer {
   private height = 0;
   private dpr = 1;
 
-  private pcm: Float32Array | null = null;
-  private peak = 1;
+  private waveform: Float32Array | null = null;
   private duration = 0;
+  private peak = 0;
   private mode: StageMode = "waveform";
 
   private cols = 0;
@@ -104,20 +105,13 @@ export class StageRenderer {
     this.resize();
   }
 
-  setSound(pcm: Float32Array | null, sampleRate: number): void {
-    this.pcm = pcm;
-    this.morphDirty=true;this.waveformPaths=null;
-    this.duration = pcm ? pcm.length / sampleRate : 0;
-    let peak = 0;
-    if (pcm) {
-      for (let i = 0; i < pcm.length; i++) {
-        const a = Math.abs(pcm[i]);
-        if (a > peak) peak = a;
-      }
-    }
-    this.peak = Math.max(peak, 1e-6);
-    // Retain previous geometry across a cold load; the UI hides it until PCM is ready.
-    if (pcm) this.computeTargets();
+  setSound(encoded: string | undefined, duration: number, peak: number): void {
+    this.waveform = encoded ? decodeWaveform(encoded) : null;
+    this.duration = duration;
+    this.peak = peak;
+    this.morphDirty = true;
+    this.waveformPaths = null;
+    this.computeTargets();
     this.pointerX = null;
     this.requestFrame();
   }
@@ -224,29 +218,28 @@ export class StageRenderer {
 
   /** Min/max per column, normalised to the sound's own peak. */
   private computeTargets(): void {
-    const pcm = this.pcm;
-    if (!pcm || pcm.length === 0) {
+    const waveform = this.waveform;
+    if (!waveform?.length) {
       this.targetMax.fill(0);
       this.targetMin.fill(0);
       this.targetRms.fill(0);
       return;
     }
-    const n = pcm.length;
+    const bins = waveform.length / 3;
     for (let c = 0; c < this.cols; c++) {
-      const from = Math.floor((c * n) / this.cols);
-      const to = Math.max(from + 1, Math.floor(((c + 1) * n) / this.cols));
-      let hi = 0;
-      let lo = 0;
-      let energy = 0, count = 0;
-      for (let i = from; i < to && i < n; i++) {
-        const v = pcm[i];
-        energy += v*v; count++;
-        if (v > hi) hi = v;
-        if (v < lo) lo = v;
+      const from = Math.floor(c * bins / this.cols);
+      const to = Math.max(from + 1, Math.floor((c + 1) * bins / this.cols));
+      let low = 0;
+      let high = 0;
+      let rms = 0;
+      for (let bin = from; bin < to; bin++) {
+        low = Math.max(low, waveform[bin * 3]);
+        high = Math.max(high, waveform[bin * 3 + 1]);
+        rms += waveform[bin * 3 + 2];
       }
-      this.targetMax[c] = hi / this.peak;
-      this.targetMin[c] = lo / this.peak;
-      this.targetRms[c] = Math.sqrt(energy / Math.max(1,count)) / this.peak;
+      this.targetMin[c] = -low;
+      this.targetMax[c] = high;
+      this.targetRms[c] = rms / (to - from);
     }
   }
 
@@ -302,7 +295,7 @@ export class StageRenderer {
 
   private drawWaveform(p: Plot): void {
     const { ctx, palette } = this;
-    if (!this.pcm) return;
+    if (!this.waveform) return;
     const progress = this.engine.progress();
     const reach = (p.bottom - p.top) * 0.42;
     if(!this.waveformPaths){
@@ -345,7 +338,7 @@ export class StageRenderer {
       ctx.fill();
     }
     ctx.restore();
-    if (this.pointerX !== null && this.pcm) this.drawHover(p);
+    if (this.pointerX !== null && this.waveform) this.drawHover(p);
   }
 
   private drawHover(p: Plot): void {
@@ -417,7 +410,7 @@ export class StageRenderer {
     const { ctx, palette } = this;
     let labels: string[];
     if (this.mode === "waveform") {
-      labels = this.pcm ? [0, 0.5, 1].map((f) => fmtMs(f * this.duration)) : ["", "", ""];
+      labels = this.waveform ? [0, 0.5, 1].map((f) => fmtMs(f * this.duration)) : ["", "", ""];
     } else {
       const windowMs = Math.round(((this.scopeBuf.length || 4096) / this.engine.sampleRate) * 1000);
       labels = [`${MINUS}${windowMs} ms`, `${MINUS}${Math.round(windowMs / 2)} ms`, "now"];

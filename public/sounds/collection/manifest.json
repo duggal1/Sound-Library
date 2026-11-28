@@ -1,0 +1,1617 @@
+[
+  {
+    "id": "key-escape",
+    "name": "Escape key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Escape in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-001.wav (48 kHz mono frames 25776–30336)"
+    },
+    "review": "pending",
+    "keyCode": "Escape"
+  },
+  {
+    "id": "key-1",
+    "name": "1 key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to 1 in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-001.wav (48 kHz mono frames 42096–46656)"
+    },
+    "review": "pending",
+    "keyCode": "Digit1"
+  },
+  {
+    "id": "key-2",
+    "name": "2 key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to 2 in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-001.wav (48 kHz mono frames 53904–58464)"
+    },
+    "review": "pending",
+    "keyCode": "Digit2"
+  },
+  {
+    "id": "key-3",
+    "name": "3 key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to 3 in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-001.wav (48 kHz mono frames 79824–84384)"
+    },
+    "review": "pending",
+    "keyCode": "Digit3"
+  },
+  {
+    "id": "key-4",
+    "name": "4 key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to 4 in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-002.wav (48 kHz mono frames 2736–7296)"
+    },
+    "review": "pending",
+    "keyCode": "Digit4"
+  },
+  {
+    "id": "key-5",
+    "name": "5 key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to 5 in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-002.wav (48 kHz mono frames 9360–13920)"
+    },
+    "review": "pending",
+    "keyCode": "Digit5"
+  },
+  {
+    "id": "key-6",
+    "name": "6 key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to 6 in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-002.wav (48 kHz mono frames 15408–19968)"
+    },
+    "review": "pending",
+    "keyCode": "Digit6"
+  },
+  {
+    "id": "key-7",
+    "name": "7 key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to 7 in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-002.wav (48 kHz mono frames 23472–28032)"
+    },
+    "review": "pending",
+    "keyCode": "Digit7"
+  },
+  {
+    "id": "key-8",
+    "name": "8 key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to 8 in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-003.wav (48 kHz mono frames 27120–31680)"
+    },
+    "review": "pending",
+    "keyCode": "Digit8"
+  },
+  {
+    "id": "key-9",
+    "name": "9 key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to 9 in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-003.wav (48 kHz mono frames 65712–70272)"
+    },
+    "review": "pending",
+    "keyCode": "Digit9"
+  },
+  {
+    "id": "key-0",
+    "name": "0 key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to 0 in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-003.wav (48 kHz mono frames 70704–75264)"
+    },
+    "review": "pending",
+    "keyCode": "Digit0"
+  },
+  {
+    "id": "key-minus",
+    "name": "Minus key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Minus in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-003.wav (48 kHz mono frames 89328–93888)"
+    },
+    "review": "pending",
+    "keyCode": "Minus"
+  },
+  {
+    "id": "key-equal",
+    "name": "Equals key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Equals in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-004.wav (48 kHz mono frames 18384–22944)"
+    },
+    "review": "pending",
+    "keyCode": "Equal"
+  },
+  {
+    "id": "key-backspace",
+    "name": "Backspace key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Backspace in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-017.wav"
+    },
+    "review": "pending",
+    "keyCode": "Backspace"
+  },
+  {
+    "id": "key-tab",
+    "name": "Tab key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Tab in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-030.wav"
+    },
+    "review": "pending",
+    "keyCode": "Tab"
+  },
+  {
+    "id": "key-q",
+    "name": "Q key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Q in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-004.wav (48 kHz mono frames 31536–36096)"
+    },
+    "review": "pending",
+    "keyCode": "KeyQ"
+  },
+  {
+    "id": "key-w",
+    "name": "W key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to W in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-004.wav (48 kHz mono frames 37584–42144)"
+    },
+    "review": "pending",
+    "keyCode": "KeyW"
+  },
+  {
+    "id": "key-e",
+    "name": "E key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to E in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-004.wav (48 kHz mono frames 43056–47616)"
+    },
+    "review": "pending",
+    "keyCode": "KeyE"
+  },
+  {
+    "id": "key-r",
+    "name": "R key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to R in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-005.wav (48 kHz mono frames 8688–13248)"
+    },
+    "review": "pending",
+    "keyCode": "KeyR"
+  },
+  {
+    "id": "key-t",
+    "name": "T key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to T in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-005.wav (48 kHz mono frames 16848–21408)"
+    },
+    "review": "pending",
+    "keyCode": "KeyT"
+  },
+  {
+    "id": "key-y",
+    "name": "Y key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Y in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-005.wav (48 kHz mono frames 35472–40032)"
+    },
+    "review": "pending",
+    "keyCode": "KeyY"
+  },
+  {
+    "id": "key-u",
+    "name": "U key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to U in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-005.wav (48 kHz mono frames 42192–46752)"
+    },
+    "review": "pending",
+    "keyCode": "KeyU"
+  },
+  {
+    "id": "key-i",
+    "name": "I key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to I in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-006.wav (48 kHz mono frames 13296–17856)"
+    },
+    "review": "pending",
+    "keyCode": "KeyI"
+  },
+  {
+    "id": "key-o",
+    "name": "O key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to O in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-006.wav (48 kHz mono frames 21168–25728)"
+    },
+    "review": "pending",
+    "keyCode": "KeyO"
+  },
+  {
+    "id": "key-p",
+    "name": "P key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to P in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-006.wav (48 kHz mono frames 35472–40032)"
+    },
+    "review": "pending",
+    "keyCode": "KeyP"
+  },
+  {
+    "id": "key-bracket-left",
+    "name": "Left bracket key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Left bracket in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-006.wav (48 kHz mono frames 42096–46656)"
+    },
+    "review": "pending",
+    "keyCode": "BracketLeft"
+  },
+  {
+    "id": "key-bracket-right",
+    "name": "Right bracket key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Right bracket in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-007.wav (48 kHz mono frames 17712–22272)"
+    },
+    "review": "pending",
+    "keyCode": "BracketRight"
+  },
+  {
+    "id": "key-backslash",
+    "name": "Backslash key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Backslash in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-001.wav"
+    },
+    "review": "pending",
+    "keyCode": "Backslash"
+  },
+  {
+    "id": "key-caps-lock",
+    "name": "Caps Lock key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Caps Lock in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-004.wav"
+    },
+    "review": "pending",
+    "keyCode": "CapsLock"
+  },
+  {
+    "id": "key-a",
+    "name": "A key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to A in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-007.wav (48 kHz mono frames 45072–49632)"
+    },
+    "review": "pending",
+    "keyCode": "KeyA"
+  },
+  {
+    "id": "key-s",
+    "name": "S key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to S in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-007.wav (48 kHz mono frames 79824–84384)"
+    },
+    "review": "pending",
+    "keyCode": "KeyS"
+  },
+  {
+    "id": "key-d",
+    "name": "D key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to D in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-007.wav (48 kHz mono frames 87024–91584)"
+    },
+    "review": "pending",
+    "keyCode": "KeyD"
+  },
+  {
+    "id": "key-f",
+    "name": "F key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to F in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Human Typing/human_vel-008.wav (48 kHz mono frames 29328–33888)"
+    },
+    "review": "pending",
+    "keyCode": "KeyF"
+  },
+  {
+    "id": "key-g",
+    "name": "G key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to G in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-008.wav"
+    },
+    "review": "pending",
+    "keyCode": "KeyG"
+  },
+  {
+    "id": "key-h",
+    "name": "H key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to H in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-032.wav"
+    },
+    "review": "pending",
+    "keyCode": "KeyH"
+  },
+  {
+    "id": "key-j",
+    "name": "J key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to J in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-024.wav"
+    },
+    "review": "pending",
+    "keyCode": "KeyJ"
+  },
+  {
+    "id": "key-k",
+    "name": "K key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to K in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-014.wav"
+    },
+    "review": "pending",
+    "keyCode": "KeyK"
+  },
+  {
+    "id": "key-l",
+    "name": "L key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to L in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-015.wav"
+    },
+    "review": "pending",
+    "keyCode": "KeyL"
+  },
+  {
+    "id": "key-semicolon",
+    "name": "Semicolon key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Semicolon in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-016.wav"
+    },
+    "review": "pending",
+    "keyCode": "Semicolon"
+  },
+  {
+    "id": "key-quote",
+    "name": "Apostrophe key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Apostrophe in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-021.wav"
+    },
+    "review": "pending",
+    "keyCode": "Quote"
+  },
+  {
+    "id": "key-enter",
+    "name": "Enter key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Enter in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-006.wav"
+    },
+    "review": "pending",
+    "keyCode": "Enter"
+  },
+  {
+    "id": "key-shift-left",
+    "name": "Left Shift key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Left Shift in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-019.wav"
+    },
+    "review": "pending",
+    "keyCode": "ShiftLeft"
+  },
+  {
+    "id": "key-z",
+    "name": "Z key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Z in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-003.wav"
+    },
+    "review": "pending",
+    "keyCode": "KeyZ"
+  },
+  {
+    "id": "key-x",
+    "name": "X key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to X in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-031.wav"
+    },
+    "review": "pending",
+    "keyCode": "KeyX"
+  },
+  {
+    "id": "key-c",
+    "name": "C key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to C in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-025.wav"
+    },
+    "review": "pending",
+    "keyCode": "KeyC"
+  },
+  {
+    "id": "key-v",
+    "name": "V key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to V in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-023.wav"
+    },
+    "review": "pending",
+    "keyCode": "KeyV"
+  },
+  {
+    "id": "key-b",
+    "name": "B key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to B in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-018.wav"
+    },
+    "review": "pending",
+    "keyCode": "KeyB"
+  },
+  {
+    "id": "key-n",
+    "name": "N key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to N in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-005.wav"
+    },
+    "review": "pending",
+    "keyCode": "KeyN"
+  },
+  {
+    "id": "key-m",
+    "name": "M key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to M in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-002.wav"
+    },
+    "review": "pending",
+    "keyCode": "KeyM"
+  },
+  {
+    "id": "key-comma",
+    "name": "Comma key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Comma in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-012.wav"
+    },
+    "review": "pending",
+    "keyCode": "Comma"
+  },
+  {
+    "id": "key-period",
+    "name": "Period key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Period in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-009.wav"
+    },
+    "review": "pending",
+    "keyCode": "Period"
+  },
+  {
+    "id": "key-slash",
+    "name": "Slash key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Slash in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-020.wav"
+    },
+    "review": "pending",
+    "keyCode": "Slash"
+  },
+  {
+    "id": "key-shift-right",
+    "name": "Right Shift key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Right Shift in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-013.wav"
+    },
+    "review": "pending",
+    "keyCode": "ShiftRight"
+  },
+  {
+    "id": "key-control-left",
+    "name": "Left Control key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Left Control in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-029.wav"
+    },
+    "review": "pending",
+    "keyCode": "ControlLeft"
+  },
+  {
+    "id": "key-meta-left",
+    "name": "Left Command key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Left Command in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-007.wav"
+    },
+    "review": "pending",
+    "keyCode": "MetaLeft"
+  },
+  {
+    "id": "key-alt-left",
+    "name": "Left Option key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Left Option in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-027.wav"
+    },
+    "review": "pending",
+    "keyCode": "AltLeft"
+  },
+  {
+    "id": "key-space",
+    "name": "Spacebar key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Spacebar in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-010.wav"
+    },
+    "review": "pending",
+    "keyCode": "Space"
+  },
+  {
+    "id": "key-alt-right",
+    "name": "Right Option key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Right Option in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-028.wav"
+    },
+    "review": "pending",
+    "keyCode": "AltRight"
+  },
+  {
+    "id": "key-meta-right",
+    "name": "Right Command key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Right Command in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-022.wav"
+    },
+    "review": "pending",
+    "keyCode": "MetaRight"
+  },
+  {
+    "id": "key-context-menu",
+    "name": "Menu key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Menu in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-026.wav"
+    },
+    "review": "pending",
+    "keyCode": "ContextMenu"
+  },
+  {
+    "id": "key-control-right",
+    "name": "Right Control key",
+    "category": "keyboard",
+    "description": "Recorded Cherry KC 1000 strike assigned to Right Control in the compact keyboard map.",
+    "source": {
+      "name": "Keyboard Soundpack #1",
+      "author": "unicaegames",
+      "url": "https://opengameart.org/content/keyboard-soundpack-1-typing-and-single-keystrokes",
+      "license": "CC0-1.0",
+      "take": "Single Keys/keypress-011.wav"
+    },
+    "review": "pending",
+    "keyCode": "ControlRight"
+  },
+  {
+    "id": "mouse-down",
+    "name": "Mouse down",
+    "category": "pointer",
+    "description": "Hardware-style mouse switch press.",
+    "source": {
+      "name": "51 UI sound effects",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/51-ui-sound-effects-buttons-switches-and-clicks",
+      "license": "CC0-1.0",
+      "take": "mouseclick1.wav"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "mouse-up",
+    "name": "Mouse up",
+    "category": "pointer",
+    "description": "Short switch release for pointer up.",
+    "source": {
+      "name": "51 UI sound effects",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/51-ui-sound-effects-buttons-switches-and-clicks",
+      "license": "CC0-1.0",
+      "take": "mouserelease1.wav"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "click-soft-contact",
+    "name": "Soft contact",
+    "category": "pointer",
+    "description": "Restrained click for a secondary pointer action.",
+    "source": {
+      "name": "51 UI sound effects",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/51-ui-sound-effects-buttons-switches-and-clicks",
+      "license": "CC0-1.0",
+      "take": "click1.wav"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "click-hard-contact",
+    "name": "Hard contact",
+    "category": "pointer",
+    "description": "More prominent contact for a committed click.",
+    "source": {
+      "name": "51 UI sound effects",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/51-ui-sound-effects-buttons-switches-and-clicks",
+      "license": "CC0-1.0",
+      "take": "click2.wav"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "click-dry",
+    "name": "Dry click",
+    "category": "pointer",
+    "description": "Brief click with little tail for repeated pointer actions.",
+    "source": {
+      "name": "51 UI sound effects",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/51-ui-sound-effects-buttons-switches-and-clicks",
+      "license": "CC0-1.0",
+      "take": "click3.wav"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "click-light",
+    "name": "Light click",
+    "category": "pointer",
+    "description": "Light contact for small hit targets.",
+    "source": {
+      "name": "51 UI sound effects",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/51-ui-sound-effects-buttons-switches-and-clicks",
+      "license": "CC0-1.0",
+      "take": "click4.wav"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "click-weighted",
+    "name": "Weighted click",
+    "category": "pointer",
+    "description": "A more pronounced click for a primary action.",
+    "source": {
+      "name": "51 UI sound effects",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/51-ui-sound-effects-buttons-switches-and-clicks",
+      "license": "CC0-1.0",
+      "take": "click5.wav"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "hover-contact",
+    "name": "Hover contact",
+    "category": "pointer",
+    "description": "Short rollover for pointer entry.",
+    "source": {
+      "name": "51 UI sound effects",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/51-ui-sound-effects-buttons-switches-and-clicks",
+      "license": "CC0-1.0",
+      "take": "rollover1.wav"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "hover-crossing",
+    "name": "Hover crossing",
+    "category": "pointer",
+    "description": "Rollover for moving between adjacent controls.",
+    "source": {
+      "name": "51 UI sound effects",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/51-ui-sound-effects-buttons-switches-and-clicks",
+      "license": "CC0-1.0",
+      "take": "rollover2.wav"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "hover-focus",
+    "name": "Hover focus",
+    "category": "pointer",
+    "description": "A distinct rollover for focus entering a control.",
+    "source": {
+      "name": "51 UI sound effects",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/51-ui-sound-effects-buttons-switches-and-clicks",
+      "license": "CC0-1.0",
+      "take": "rollover4.wav"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "hover-menu",
+    "name": "Hover menu",
+    "category": "pointer",
+    "description": "A separate rollover for menu item transitions.",
+    "source": {
+      "name": "51 UI sound effects",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/51-ui-sound-effects-buttons-switches-and-clicks",
+      "license": "CC0-1.0",
+      "take": "rollover6.wav"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "wheel-step",
+    "name": "Wheel step",
+    "category": "pointer",
+    "description": "One short scroll detent.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/scroll_001.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "wheel-light",
+    "name": "Light wheel",
+    "category": "pointer",
+    "description": "Alternate short detent for a light scroll control.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/scroll_002.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "wheel-weighted",
+    "name": "Weighted wheel",
+    "category": "pointer",
+    "description": "A fuller detent for a rotary control.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/scroll_003.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "wheel-increment",
+    "name": "Wheel increment",
+    "category": "pointer",
+    "description": "A distinct increment for stepped values.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/scroll_004.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "wheel-boundary",
+    "name": "Wheel boundary",
+    "category": "pointer",
+    "description": "Scroll cue for a section boundary.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/scroll_005.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "trackpad-tap",
+    "name": "Trackpad tap",
+    "category": "pointer",
+    "description": "Compact click for a trackpad-style interaction.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/click_002.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "pointer-select",
+    "name": "Pointer select",
+    "category": "pointer",
+    "description": "A separate click for selecting a target.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/click_004.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "switch-click",
+    "name": "Switch click",
+    "category": "toggle",
+    "description": "Short switch cue for a binary control.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/switch_001.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "switch-throw",
+    "name": "Switch throw",
+    "category": "toggle",
+    "description": "Alternate switch cue with a distinct action.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/switch_002.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "switch-return",
+    "name": "Switch return",
+    "category": "toggle",
+    "description": "A return cue for a two-state switch.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/switch_003.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "switch-latch",
+    "name": "Switch latch",
+    "category": "toggle",
+    "description": "A positive cue for a latched control.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/switch_004.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "switch-detent",
+    "name": "Switch detent",
+    "category": "toggle",
+    "description": "One switch contact for a stepped selector.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/switch_005.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "toggle-engage",
+    "name": "Toggle engage",
+    "category": "toggle",
+    "description": "Engage a switch or preference.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/toggle_001.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "toggle-disengage",
+    "name": "Toggle disengage",
+    "category": "toggle",
+    "description": "Disengage a switch or preference.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/toggle_002.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "toggle-alternate",
+    "name": "Alternate toggle",
+    "category": "toggle",
+    "description": "Distinct toggle cue for a secondary control.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/toggle_003.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "toggle-cycle",
+    "name": "Toggle cycle",
+    "category": "toggle",
+    "description": "A different cue for cycling a control.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/toggle_004.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "control-choose",
+    "name": "Control choose",
+    "category": "toggle",
+    "description": "Audible selection in a compact control.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/select_001.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "segment-change",
+    "name": "Segment change",
+    "category": "toggle",
+    "description": "Change segments in a grouped control.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/select_003.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "menu-choose",
+    "name": "Menu choose",
+    "category": "toggle",
+    "description": "Commit a menu choice.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/select_004.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "option-advance",
+    "name": "Option advance",
+    "category": "toggle",
+    "description": "Change to the next option.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/select_006.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "option-confirm",
+    "name": "Option confirm",
+    "category": "toggle",
+    "description": "Commit an explicit option selection.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/select_008.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "drop-soft",
+    "name": "Soft drop",
+    "category": "motion",
+    "description": "Release an item onto a target.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/drop_001.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "drop-slot",
+    "name": "Drop into slot",
+    "category": "motion",
+    "description": "Set an item into a defined slot.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/drop_002.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "drop-snap",
+    "name": "Drop snap",
+    "category": "motion",
+    "description": "Release an item into a snapping target.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/drop_003.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "drop-weighted",
+    "name": "Weighted drop",
+    "category": "motion",
+    "description": "A more pronounced release for a large item.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/drop_004.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "control-open",
+    "name": "Control open",
+    "category": "motion",
+    "description": "Open an auxiliary UI surface.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/open_001.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "control-close",
+    "name": "Control close",
+    "category": "motion",
+    "description": "Close an auxiliary UI surface.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/close_001.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "window-expand",
+    "name": "Window expand",
+    "category": "motion",
+    "description": "Cue a window growing into its workspace.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/maximize_001.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "window-minimize",
+    "name": "Window minimize",
+    "category": "motion",
+    "description": "Cue a window leaving its workspace.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/minimize_001.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "control-back",
+    "name": "Control back",
+    "category": "motion",
+    "description": "Return to the previous surface.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/back_002.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "menu-open",
+    "name": "Menu open",
+    "category": "motion",
+    "description": "Cue an opened menu or compact flyout.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/open_003.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "confirm-choice",
+    "name": "Confirm choice",
+    "category": "notify",
+    "description": "Confirm a committed choice.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/confirmation_001.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "confirm-action",
+    "name": "Confirm action",
+    "category": "notify",
+    "description": "Confirm completion of an explicit action.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/confirmation_003.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "control-question",
+    "name": "Control question",
+    "category": "notify",
+    "description": "A cue for an unresolved choice.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/question_002.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "control-invalid",
+    "name": "Invalid control",
+    "category": "notify",
+    "description": "Reject an unavailable control action.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/error_004.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "slider-step",
+    "name": "Slider step",
+    "category": "progress",
+    "description": "One increment on a stepped slider.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/tick_001.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "slider-notch",
+    "name": "Slider notch",
+    "category": "progress",
+    "description": "Alternate notch for a discrete control.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/tick_002.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "slider-limit",
+    "name": "Slider limit",
+    "category": "progress",
+    "description": "Cue a discrete slider endpoint.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/tick_004.ogg"
+    },
+    "review": "pending"
+  },
+  {
+    "id": "step-confirm",
+    "name": "Step confirm",
+    "category": "progress",
+    "description": "Confirm a step in a short interaction.",
+    "source": {
+      "name": "Interface Sounds",
+      "author": "Kenney",
+      "url": "https://opengameart.org/content/interface-sounds",
+      "license": "CC0-1.0",
+      "take": "Audio/select_007.ogg"
+    },
+    "review": "pending"
+  }
+]

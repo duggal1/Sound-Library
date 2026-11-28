@@ -16,10 +16,15 @@ import {
   useRef,
   useState,
   type ReactNode,
+  type RefObject,
+  type MouseEvent,
 } from "react";
 import type { CatalogResponse, CategoryId, CategoryInfo, SoundSummary } from "../core/types";
 import { SAMPLE_RATE } from "../core/types";
-import { fetchCatalog, loadSound, peekSound, prefetchSound, type DecodedSound } from "./api";
+import { fetchCatalog } from "./api";
+import { useAudition } from "./use-audition";
+import { Landing } from "./landing";
+import { KeyboardPreview } from "./keyboard-preview";
 import { AudioEngine } from "./audio";
 import { AnimatedNumber, Dropdown, MicroBar, Segmented, type DropdownOption, type SegmentedOption } from "./controls";
 import { fmtBytes, fmtCount, fmtDb, fmtMs } from "./format";
@@ -35,6 +40,7 @@ import {
   PlayIcon,
   PrevIcon,
   SearchIcon,
+  SoundIcon,
 } from "./icons";
 import type { StageMode } from "./stage";
 import { SoundStage } from "./sound-stage";
@@ -53,11 +59,37 @@ type CatalogState =
 
 type CategoryFilter = "all" | CategoryId;
 
+const ROUTES = new Set(["/", "/library", "/studio", "/saved"]);
+const currentUrl = () => location.pathname + location.search;
+
+function useNavigation() {
+  const [url, setUrl] = useState(currentUrl);
+  useEffect(() => {
+    const update = () => setUrl(currentUrl());
+    window.addEventListener("popstate", update);
+    return () => window.removeEventListener("popstate", update);
+  }, []);
+  const navigate = (event: MouseEvent<HTMLDivElement>) => {
+    if (event.defaultPrevented || event.button || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+    const link = (event.target as Element).closest("a");
+    if (!link || link.hasAttribute("download") || link.target || link.origin !== location.origin || !ROUTES.has(link.pathname)) return;
+    event.preventDefault();
+    const next = link.pathname + link.search;
+    if (next === currentUrl()) return;
+    history.pushState(null, "", next);
+    setUrl(next);
+    window.scrollTo(0, 0);
+    requestAnimationFrame(() => document.getElementById("page-main")?.focus({preventScroll: true}));
+  };
+  return {url, navigate};
+}
+
 /* ------------------------------------------------------------------ */
 /* Root                                                                 */
 /* ------------------------------------------------------------------ */
 
 export function App() {
+  const {url, navigate} = useNavigation();
   const [engine] = useState(() => new AudioEngine());
   const [attempt, setAttempt] = useState(0);
   const [state, setState] = useState<CatalogState>({ status: "loading" });
@@ -120,21 +152,37 @@ export function App() {
     );
   }
 
-  return <Workspace catalog={state.data} engine={engine} />;
+  const route = new URL(url, location.origin);
+  const isStudio = route.pathname === "/studio";
+  const isSaved = route.pathname === "/saved";
+  const initialCategory = state.data.categories.find(item => item.id === route.searchParams.get("category"))?.id ?? "all";
+  return <div onClick={navigate}>
+    {route.pathname === "/"
+      ? <Shell current="home"><Landing catalog={state.data} engine={engine} /></Shell>
+      : <Workspace key={url} catalog={state.data} engine={engine} studio={isStudio} initialCategory={initialCategory} initialSaved={isSaved} />}
+  </div>;
 }
 
 /* ------------------------------------------------------------------ */
 /* Workspace                                                            */
 /* ------------------------------------------------------------------ */
 
-function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: AudioEngine }) {
+function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
+  catalog: CatalogResponse;
+  engine: AudioEngine;
+  studio: boolean;
+  initialCategory: CategoryFilter;
+  initialSaved: boolean;
+}) {
   const { sounds, categories } = catalog;
 
-  const [selectedId, setSelectedId] = useState<string | null>(sounds[0]?.id ?? null);
-  const [category, setCategory] = useState<CategoryFilter>("all");
+  const [bookmarks, setBookmarks] = useState(readBookmarks);
+  const [selectedId, setSelectedId] = useState<string | null>(() => sounds.find(sound => (
+    (initialCategory === "all" || sound.category === initialCategory) && (!initialSaved || bookmarks.has(sound.id))
+  ))?.id ?? null);
+  const [category, setCategory] = useState<CategoryFilter>(initialCategory);
   const [query, setQuery] = useState("");
-  const [savedOnly,setSavedOnly]=useState(false);
-  const [bookmarks,setBookmarks]=useState<Set<string>>(()=>readBookmarks());
+  const [savedOnly, setSavedOnly] = useState(initialSaved);
   const toggleBookmark=useCallback((id:string)=>{
     setBookmarks(previous=>{
       const next=new Set(previous);
@@ -144,22 +192,23 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
   },[]);
   useEffect(()=>{try{localStorage.setItem("verdant.bookmarks.v1",JSON.stringify([...bookmarks]));}catch{}},[bookmarks]);
   const [mode, setMode] = useState<StageMode>("waveform");
-  const [previewError, setPreviewError] = useState("");
-  const [playingId, setPlayingId] = useState<string | null>(null);
-  const [pendingId, setPendingId] = useState<string | null>(null);
+  const {playingId, pendingId, error: previewError, play, stop} = useAudition(engine);
   const [expanded, setExpanded] = useState(false);
-  useEffect(() => { const unsubscribe = engine.subscribe(setPlayingId); return () => {unsubscribe();engine.stop();}; }, [engine]);
-  const auditionVersion = useRef(0);
-  const [decoded, setDecoded] = useState<DecodedSound | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [copyError, setCopyError] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const libraryRef = useRef<HTMLDivElement>(null);
 
   const categoryLabel = useMemo(() => new Map(categories.map((c) => [c.id, c.label])), [categories]);
   const maxDuration = useMemo(() => Math.max(0.001, ...sounds.map((s) => s.duration)), [sounds]);
-  const selected = useMemo(() => sounds.find((s) => s.id === selectedId) ?? null, [sounds, selectedId]);
+  const byId = useMemo(() => new Map(sounds.map(sound => [sound.id, sound])), [sounds]);
+  const selected = selectedId ? byId.get(selectedId) ?? null : null;
+  const searchIndex = useMemo(() => new Map(sounds.map(sound => [
+    sound.id, `${sound.name} ${sound.id} ${sound.description} ${categoryLabel.get(sound.category) ?? ""}`.toLowerCase(),
+  ])), [sounds, categoryLabel]);
   const filtered = useMemo(
-    () => filterSounds(sounds, categoryLabel, category, query).filter(sound=>!savedOnly || bookmarks.has(sound.id)),
-    [sounds, categoryLabel, category, query,savedOnly,bookmarks],
+    () => filterSounds(sounds, searchIndex, category, query).filter(sound=>!savedOnly || bookmarks.has(sound.id)),
+    [sounds, searchIndex, category, query,savedOnly,bookmarks],
   );
 
   const categoryOptions = useMemo<DropdownOption<CategoryFilter>[]>(
@@ -174,65 +223,14 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
     [sounds, categories],
   );
 
-  // Prioritize the selected sound; only warm likely next previews.
-  useEffect(() => {
-    if (!selectedId) return;
-    let cancelled = false;
-    setPreviewError("");
-    const cached = peekSound(selectedId);
-    if (cached) { setDecoded(cached); return; }
-    loadSound(selectedId).then(
-      (d) => !cancelled && setDecoded(d),
-      () => {if (!cancelled) {setDecoded(null);setPreviewError("Could not load waveform. Play to retry.");}},
-    );
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedId]);
-
-  useEffect(() => {
-    if (!selectedId) return;
-    const index = filtered.findIndex(sound => sound.id === selectedId);
-    if (index < 0) return;
-    prefetchSound(filtered[index + 1]?.id);
-    if (index > 0) prefetchSound(filtered[index - 1]?.id);
-  }, [selectedId, filtered]);
-
-
-  const audition = useCallback(
-    (id: string, fraction = 0) => {
-      const version = ++auditionVersion.current;
-      setSelectedId(id);
-      setPendingId(id);
-      engine.stop();
-      window.dispatchEvent(new Event("verdant:play"));
-      setPreviewError("");
-      try { engine.unlock(); } catch { setPendingId(null); setPreviewError("Audio is unavailable in this browser."); return; }
-      const current = () => version === auditionVersion.current;
-      const play = (d: DecodedSound) => {
-        if (!current()) return;
-        setDecoded(d);
-        // On a RAM hit, enter the audio engine synchronously in the gesture.
-        void engine.play(d, current, fraction).then(() => {
-          if (current()) { setPendingId(null); window.dispatchEvent(new Event("verdant:play")); }
-        }).catch(failed);
-      };
-      const failed = () => { if (current()) { setPendingId(null); setPreviewError("Playback failed. Try again."); } };
-      const cached = peekSound(id);
-      if (cached) play(cached);
-      else void loadSound(id).then(play, failed);
-    },
-    [engine],
-  );
-
-  const stop = useCallback(() => {
-    ++auditionVersion.current;
-    setPendingId(null);
-    engine.stop();
-    window.dispatchEvent(new Event("verdant:play"));
-  }, [engine]);
+  const audition = useCallback((id: string, fraction = 0) => {
+    const sound = byId.get(id);
+    if (!sound) return;
+    setSelectedId(id);
+    play(sound, fraction);
+  }, [byId, play]);
   const replay = useCallback(() => {
-    if (playingId === selectedId || pendingId === selectedId) stop();
+    if (selectedId && (playingId === selectedId || pendingId === selectedId)) stop();
     else if (selectedId) audition(selectedId);
   }, [audition, selectedId, playingId, pendingId, stop]);
 
@@ -244,9 +242,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
       const target = filtered[next];
       if (!target) return;
       audition(target.id);
-      requestAnimationFrame(() =>
-        revealCylinderRow(libraryRef.current, target.id),
-      );
+      requestAnimationFrame(() => revealCylinderRow(libraryRef.current, target.id));
     },
     [filtered, selectedId, audition],
   );
@@ -270,7 +266,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
         return;
       }
       // Components with their own arrow/space semantics keep them.
-      if (target?.closest("input, textarea, select, [aria-haspopup='listbox'], [role='radiogroup'], [role='slider']")) return;
+      if (target?.closest(".key-board, input, textarea, select, [aria-haspopup='listbox'], [role='radiogroup'], [role='slider']")) return;
 
       if (e.key === "ArrowDown" || e.key === "ArrowUp") {
         e.preventDefault();
@@ -286,21 +282,44 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
 
   useEffect(() => { if (libraryRef.current) libraryRef.current.scrollTop = 0; }, [query, category,savedOnly]);
 
+  const changeCategory = (value: CategoryFilter) => {
+    setCategory(value);
+    const url = new URL(location.href);
+    if (value === "all") url.searchParams.delete("category");
+    else url.searchParams.set("category", value);
+    history.replaceState(history.state, "", url);
+
+    const first = sounds.find(sound => (value === "all" || sound.category === value) && (!savedOnly || bookmarks.has(sound.id)));
+    if (first && value !== "all" && selected?.category !== value) {
+      stop();
+      setSelectedId(first.id);
+    }
+  };
+
   const clearFilters = () => {
-    setCategory("all");
+    changeCategory("all");
     setQuery("");
     setSavedOnly(false);
   };
-
-  const stageSound = decoded && decoded.id === selectedId ? decoded : null;
 
   const busy = selectedId !== null && pendingId === selectedId;
   const playing = selectedId !== null && playingId === selectedId;
   const currentIndex = filtered.findIndex(sound => sound.id === selectedId);
   return (
-    <Shell context={`${fmtCount(sounds.length)} sounds · ${SAMPLE_RATE / 1000} kHz · ${catalog.bitDepth}-bit · mono`}
+    <Shell current={studio ? "studio" : "library"} context={`${fmtCount(sounds.length)} sounds · ${SAMPLE_RATE / 1000} kHz · ${catalog.bitDepth}-bit · mono`}
       pack={<a className="pill pack" href="/sounds/pack.zip" download="verdant-sounds.zip"><DownloadIcon /><span>Download all</span><small>{fmtBytes(catalog.totalBytes)}</small></a>}>
-      <div className="workspace">
+      <div className="workspace" data-layout={studio ? "studio" : "dashboard"}>
+        {!studio && <aside className="dashboard-sidebar" aria-label="Library navigation">
+          <a className="dashboard-index" href="/library" aria-current={!initialSaved && category === "all" ? "page" : undefined}>Library <span>{fmtCount(sounds.length)}</span></a>
+          <a className="dashboard-index" href="/saved" aria-current={initialSaved ? "page" : undefined}><BookmarkIcon /> Saved <span>{bookmarks.size}</span></a>
+          <nav className="dashboard-categories" aria-label="Categories">
+            {categoryOptions.slice(1).sort((a, b) => Number(b.value === "keyboard") - Number(a.value === "keyboard")).map(option => <button key={option.value} type="button" aria-pressed={category === option.value}
+              onClick={() => changeCategory(category === option.value ? "all" : option.value)}>
+              <SoundIcon kind={option.value as CategoryId} /><span>{option.value === "pointer" ? "Mouse" : option.value === "toggle" ? "Controls" : option.label}</span><small>{option.hint}</small>
+            </button>)}
+          </nav>
+          <a className="dashboard-credits" href="/sounds/credits.md">Sound credits <ArrowIcon /></a>
+        </aside>}
         <section className="preview" aria-label="Audio inspector" data-expanded={expanded}>
           <div className="preview-top">
             <div className="preview-meta"><span>{selected ? categoryLabel.get(selected.category) : "Preview"}</span><span>{selected ? fmtMs(selected.duration) : ""}</span></div>
@@ -312,8 +331,8 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
             <p className="hero-caption">{selected?.description}</p>
           </div>
           <div className="stage-bar"><Segmented label="Visualisation" value={mode} options={MODES} onChange={setMode} /><span className="stage-label">{mode === "waveform" ? "Normalized amplitude" : "Live signal"}</span></div>
-          <SoundStage engine={engine} sound={stageSound} mode={mode} onSeek={fraction => { if (selectedId && stageSound) audition(selectedId, fraction); }} />
-          <div className="stage-footer"><span role="status">{previewError || (busy ? "Loading sound…" : playing ? "Playing" : stageSound ? "Ready" : "Loading waveform…")}</span>{previewError && <button className="pill retry" onClick={replay}>Retry</button>}</div>
+          <SoundStage engine={engine} sound={selected} mode={mode} onSeek={fraction => { if (selectedId && selected?.waveform) audition(selectedId, fraction); }} />
+          <div className="stage-footer"><span role="status">{previewError || (busy ? "Loading sound…" : playing ? "Playing" : selected ? "Ready" : "")}</span>{previewError && <button className="pill retry" onClick={replay}>Retry</button>}</div>
           <div className="transport">
             <nav className="dock" aria-label="Transport">
               <button className="pill icon-button" type="button" aria-label="Previous sound" disabled={!filtered.length || currentIndex === 0} onClick={() => step(-1)}><PrevIcon /></button>
@@ -331,17 +350,34 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
               <div><dt>File size</dt><dd>{selected ? fmtBytes(selected.bytes) : "—"}</dd></div>
             </dl>
           </section>
+          {!studio && selected && <div className="asset-details">
+            <button type="button" className="pill" onClick={async () => {
+              try {
+                await navigator.clipboard.writeText(selected.id);
+                setCopiedId(selected.id);
+                setCopyError(false);
+              } catch {
+                setCopiedId(null);
+                setCopyError(true);
+              }
+            }}>{copiedId === selected.id ? "Copied ID" : "Copy asset ID"}</button>
+            {copyError && <span role="status">Clipboard unavailable</span>}
+            <code>{selected.id}</code>
+            {selected.source && <a href={selected.source.url}>{selected.source.author} · {selected.source.license}</a>}
+            {selected.review && <span>Listening review pending</span>}
+          </div>}
         </section>
         <section className="library" aria-label="Sound library">
           <div className="library-head">
-            <div className="library-title"><h2>Sounds <span className="library-count">{fmtCount(filtered.length)}</span></h2><button type="button" className="pill saved-filter" aria-pressed={savedOnly} onClick={()=>setSavedOnly(v=>!v)}><BookmarkIcon filled={savedOnly}/><span>Saved</span><small>{bookmarks.size}</small></button></div>
+            <div className="library-title"><h2>{savedOnly ? "Saved sounds" : studio ? "Sounds" : category === "all" ? "All sounds" : category === "pointer" ? "Mouse" : category === "toggle" ? "Controls" : categoryLabel.get(category)} <span className="library-count">{fmtCount(filtered.length)}</span></h2><button type="button" className="pill saved-filter" aria-pressed={savedOnly} onClick={()=>setSavedOnly(v=>!v)}><BookmarkIcon filled={savedOnly}/><span>Saved</span><small>{bookmarks.size}</small></button></div>
             <div className="filters">
               <div className="search"><SearchIcon /><input ref={searchRef} type="search" placeholder="Search sounds" aria-label="Search sounds" value={query} onChange={e => {setQuery(e.target.value);}} />{query && <button type="button" className="clear-search" aria-label="Clear search" onClick={() => {setQuery("");searchRef.current?.focus();}}><ClearIcon /></button>}</div>
-              <Dropdown label="Sound category" value={category} options={categoryOptions} onChange={value => {setCategory(value);}} />
+              <Dropdown label="Sound category" value={category} options={categoryOptions} onChange={changeCategory} />
             </div>
+            {category === "keyboard" && <KeyboardPreview sounds={sounds} active={pendingId ?? playingId} audition={audition} />}
           </div>
           <div className="list-header" aria-hidden="true"><span>Name</span><span>Duration</span><span>Peak</span><span /><span /></div>
-          <CylinderScroll viewportRef={libraryRef}>
+          <SoundListViewport studio={studio} viewportRef={libraryRef}>
             {filtered.length === 0 ? <StatePanel kind="empty" title={savedOnly?"No saved sounds match":"No matching sounds"} text={savedOnly?"Bookmark a sound or clear the filters.":"Try a different name or category."} action={{label:"Clear filters",onClick:clearFilters}} /> :
               <div className="sound-list">
                 {filtered.map(sound=><SoundRow key={sound.id} sound={sound}
@@ -349,7 +385,7 @@ function Workspace({ catalog, engine }: { catalog: CatalogResponse; engine: Audi
                   saved={bookmarks.has(sound.id)} categoryName={categoryLabel.get(sound.category)??""}
                   maxDuration={maxDuration} audition={audition} stop={stop} toggleBookmark={toggleBookmark}/>)}
               </div>}
-          </CylinderScroll>
+          </SoundListViewport>
           <div className="library-foot"><span>{fmtCount(filtered.length)} sounds</span><span>↑ ↓ Browse · Space to play / stop</span></div>
         </section>
       </div>
@@ -362,10 +398,9 @@ const SoundRow=memo(function SoundRow({sound,selected,active,loading,saved,categ
   sound:SoundSummary;selected:boolean;active:boolean;loading:boolean;saved:boolean;categoryName:string;maxDuration:number;
   audition:(id:string)=>void;stop:()=>void;toggleBookmark:(id:string)=>void;
 }){
-  return <div className="sound-row" id={`row-${sound.id}`} key={sound.id} data-selected={selected} data-playing={active} data-loading={loading}
-                    onPointerEnter={() => prefetchSound(sound.id)}>
-                    <button className="sound-select" onFocus={() => prefetchSound(sound.id)} type="button" aria-label={`${active || loading ? "Stop" : "Play"} ${sound.name}`} aria-pressed={selected} onClick={() => active || loading ? stop() : audition(sound.id)}>
-                      <span className="row-play">{active || loading ? <StopIcon /> : <PlayIcon />}</span>
+  return <div className="sound-row" id={`row-${sound.id}`} data-selected={selected} data-playing={active} data-loading={loading}>
+                    <button className="sound-select" type="button" aria-label={`${active || loading ? "Stop" : "Play"} ${sound.name}`} aria-pressed={selected} onClick={() => active || loading ? stop() : audition(sound.id)}>
+                      <span className="row-play">{active || loading ? <StopIcon /> : <><SoundIcon className="row-glyph" kind={sound.category}/><PlayIcon className="row-trigger"/></>}</span>
                       <span className="sound-text"><span>{sound.name}</span><small>{loading ? "Loading…" : active ? "Playing" : categoryName}</small></span>
                     </button>
                     <div className="duration"><MicroBar ratio={sound.duration / maxDuration} /><span>{fmtMs(sound.duration)}</span></div>
@@ -382,14 +417,38 @@ function readBookmarks(): Set<string> {
   } catch { return new Set(); }
 }
 function downloadUrl(id: string) { return `/sounds/${encodeURIComponent(id)}.wav`; }
-function filterSounds(sounds: readonly SoundSummary[], labels: Map<CategoryId,string>, category: CategoryFilter, query: string) {
+function filterSounds(sounds: readonly SoundSummary[], index: Map<string,string>, category: CategoryFilter, query: string) {
   const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
   return sounds.filter(s => (category === "all" || s.category === category) &&
-    terms.every(term => `${s.name} ${s.id} ${s.description} ${labels.get(s.category) ?? ""}`.toLowerCase().includes(term)));
+    terms.every(term => index.get(s.id)?.includes(term)));
 }
-function Shell({children,context,pack}: {children:ReactNode;context?:string;pack?:ReactNode}) {
-  return <div className="shell"><header className="top"><div className="brand"><BrandMark /><span>Verdant</span></div><span className="context">{context ?? "Interface sounds"}</span>{pack}</header><main>{children}</main></div>;
+
+function SoundListViewport({children, studio, viewportRef}: {
+  children: ReactNode;
+  studio: boolean;
+  viewportRef: RefObject<HTMLDivElement | null>;
+}) {
+  return studio
+    ? <CylinderScroll viewportRef={viewportRef}>{children}</CylinderScroll>
+    : <div className="library-scroll" ref={viewportRef} tabIndex={0} aria-label="Browse sounds">{children}</div>;
 }
+
+function Shell({children, context, pack, current}: {children: ReactNode; context?: string; pack?: ReactNode; current?: "home" | "library" | "studio"}) {
+  return <div className={`shell ${current === "home" ? "site-home" : ""}`}>
+    <header className="top">
+      <a href="/" className="brand" aria-label="Verdant home"><BrandMark /><span>Verdant</span></a>
+      <nav className="site-nav" aria-label="Main navigation">
+        <a href="/library" aria-current={current === "library" ? "page" : undefined}>Library</a>
+        <a href="/studio" aria-current={current === "studio" ? "page" : undefined}>Studio</a>
+      </nav>
+      {context && <span className="context">{context}</span>}
+      {pack}
+      {current === "home" && <a className="home-repo" href="https://github.com/duggal1/Sound-Library">GitHub <ArrowIcon /></a>}
+    </header>
+    <main id="page-main" tabIndex={-1}>{children}</main>
+  </div>;
+}
+
 function StatePanel({kind,title,text,action,level=2}: {kind:"loading"|"empty"|"error";title:string;text:string;action?:{label:string;onClick:()=>void};level?:1|2}) {
   const Heading = level === 1 ? "h1" : "h2";
   return <div className="state" role={kind === "error" ? "alert" : "status"} aria-busy={kind === "loading"}>{kind === "loading" && <span className="loading-bar" aria-hidden="true" />}<Heading>{title}</Heading>{text && <p>{text}</p>}{action && <button className="pill primary" type="button" onClick={action.onClick}>{action.label}<ArrowIcon /></button>}</div>;
