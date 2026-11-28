@@ -16,7 +16,7 @@ describe("tactile replacements",()=>{
     const a=renderSound(def), b=renderSound(def);
     expect(a.metrics.duration).toBeLessThan(.32);
     expect(a.metrics.peak).toBeCloseTo(def.level,8);
-    expect(a.samples[0]).toBe(0);expect(a.samples[a.samples.length-1]).toBe(0);
+    expect(Math.abs(a.samples[0])).toBe(0);expect(Math.abs(a.samples[a.samples.length-1])).toBe(0);
     expect(a.samples.every(Number.isFinite)).toBe(true);
     expect(encodeWav(a.samples,a.sampleRate)).toEqual(encodeWav(b.samples,b.sampleRate));
   });

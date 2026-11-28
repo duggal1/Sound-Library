@@ -21,7 +21,7 @@ export async function fetchCatalog(signal: AbortSignal): Promise<CatalogResponse
   return catalog;
 }
 
-/** A single immutable compressed-on-wire PCM bank replaces repeated requests.
+/** A single immutable PCM bank replaces repeated requests.
  * Decode only the currently demanded sound; the small LRU remains bounded. */
 let bank: ArrayBuffer | null = null;
 let bankPath: string | undefined;
@@ -59,8 +59,14 @@ function warmBank(): void {
 function fromBank(id:string):DecodedSound|undefined {
   const range=offsets.get(id);
   if(!bank || !range)return;
-  const {sampleRate,samples}=decodeWav(bank.slice(range.start,range.end));
-  return remember({id,sampleRate,samples});
+  try {
+    const {sampleRate,samples}=decodeWav(bank.slice(range.start,range.end));
+    return remember({id,sampleRate,samples});
+  } catch {
+    // An invalid bank must never prevent an individual WAV from playing.
+    bank=null;
+    return undefined;
+  }
 }
 
 /** Session-only decoded LRU; bank bytes are retained separately. */
