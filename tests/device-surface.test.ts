@@ -8,17 +8,19 @@ test("device surfaces never track pointer position or rotate in 3D",()=>{
  expect(existsSync(new URL("../src/web/use-device-tilt.ts",import.meta.url))).toBe(false);
 });
 test("keyboard uses charcoal caps and a fixed light chassis with local press travel",()=>{
- expect(css).toContain("aspect-ratio:1540/510");
+ expect(css).toContain("aspect-ratio:1540/500");
  expect(css).toContain("#fdfdfd");
  expect(css).toContain("#232426");
  expect(css).toContain(".device-key[data-pressed=true] .device-key-face");
  expect(css).toContain("prefers-reduced-motion:reduce");
 });
-test("mouse has accessible center scroll control and keeps wheel audition",()=>{
- expect(component).toContain('data-zone="middle"');
- expect(component).toContain('aria-label="Center scroll sound"');
- expect(component).toContain('e.currentTarget.dataset.zone==="middle"');
- expect(component).toContain('addEventListener("wheel",onWheel');
+test("mouse preview only auditions left and right clicks",()=>{
+ expect(component).toContain('aria-label="Left click"');
+ expect(component).toContain('aria-label="Right click"');
+ expect(component).not.toContain("wheel-step");
+ expect(component).not.toContain("mouse-middle");
+ expect(component).not.toContain("Scroll sound");
+ expect(component).not.toContain('addEventListener("wheel"');
 });
 
 test("device header is not a nested scrollport and quick taps get visible feedback",()=>{
@@ -27,4 +29,11 @@ test("device header is not a nested scrollport and quick taps get visible feedba
  expect(component).toContain("55-(performance.now()");
  expect(component).toContain("releaseTimers.current.clear()");
  expect(component).toContain("settle(code)");
+});
+
+test("hardware legends use deterministic vectors and expanded chassis is neutral",()=>{
+ const icons=readFileSync(new URL("../src/web/key-symbol.tsx",import.meta.url),"utf8");
+ for(let i=1;i<=12;i++)expect(icons).toContain('case "F'+i+'"');
+ expect(component).toContain("<KeySymbol code={key.code}/>");
+ expect(css).toContain("background:#f5f5f5;border:0");
 });
