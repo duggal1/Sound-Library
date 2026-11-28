@@ -19,3 +19,8 @@ Run `bun run typecheck`, `bun test`, and `bun run build` to validate and compile
 ## Preview delivery
 
 Visual peaks and RMS come from the exported PCM and render immediately from catalog data. Auditions fetch individual content-addressed WAVs. Concurrent requests for the same sound share a promise, and the decoded PCM cache is capped at 768 KiB. A pointer-down on a sound tile can warm that single sample before it plays. The preview engine uses a 1.1× default gain, while WAV downloads use the original signal.
+
+
+## Object storage (Neon S3-compatible)
+
+Storage release publishing is intentionally separate from ordinary builds. The generated WAV catalog is canonical; only redistributable WAVs, license files, and the ZIP are published. Preview-only imported mouse and Modern keyboard recordings are excluded from the public release. Read [storage operations](docs/storage.md) before publishing. An explicit verified release pin enables remote-first audio, with Vercel fallback. Browser HTTP caching and bounded decoded PCM/native buffer caches share content hashes rather than logical aliases. No storage credentials enter Vite.
