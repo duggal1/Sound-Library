@@ -1,16 +1,21 @@
 # Verdant
 
-An interface sound library built with React and TypeScript. Audition deterministic synthesized glass, wood and air sounds, inspect the waveform and signal metrics, and export individual WAV files or a complete ZIP.
+An interface sound library for software, with a 360° sound cylinder, a searchable catalog, and a waveform studio. The current catalog includes 150 sounds. The new collection contains 61 recorded keyboard strikes and 50 mouse, control, and feedback effects. See [sound credits](licenses/sound-collection.md) for sources, edits, and listening review status.
 
 ```sh
 bun install
 bun run dev
 ```
 
-Open the URL printed by Vite. Build the static site with `bun run build` and preview it with `bun run start`. Regenerate the static audio assets with `bun run generate`. Run static checks with `bun run typecheck`. Vercel can deploy the resulting `dist` directory using the build script.
+- `/` — drag a tile to move it, drag the space between tiles to turn the cylinder, or click a tile to audition it.
+- `/library` — search, filter, audition and download. Open the Keyboard category to try the 61-key sound map.
+- `/saved` — bookmarks stored in this browser.
+- `/studio` — waveform, oscilloscope, volume, and cylindrical audition rail.
 
-Keyboard: / searches, up/down browses, space auditions. Inspect loading, error and empty states with ?state=loading, ?state=error or ?state=empty.
+Press `/` to focus search, ↑/↓ to browse, and Space to play or stop. On the landing page, the cylinder has left/right arrow controls and a flat reduced-motion view.
 
-## Preview latency
+Run `bun run typecheck`, `bun test`, and `bun run build` to validate and compile the release. `bun run start` serves the built site with Vite, and `bun src/server/index.ts` serves the same build with the existing API aliases. `bun run generate` is the legacy synthesis CLI.
 
-Static WAVs are served by the CDN; the browser is instructed not to persist sound responses. A 768 KiB decoded PCM LRU is held only for the current page, with at most two speculative loads (neighboring sounds or pointer/focus intent). Repeated requests share an in-flight promise, warm previews avoid fetching, and failed requests can be retried. Default preview gain is 1.1× linear (110%); exports remain untouched. Cold cache misses and first AudioContext activation still depend on the network and device.
+## Preview delivery
+
+Visual peaks and RMS come from the exported PCM and render immediately from catalog data. Auditions fetch individual content-addressed WAVs. Concurrent requests for the same sound share a promise, and the decoded PCM cache is capped at 768 KiB. A pointer-down on a sound tile can warm that single sample before it plays. The preview engine uses a 1.1× default gain, while WAV downloads use the original signal.

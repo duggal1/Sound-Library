@@ -17,6 +17,8 @@ export class AudioEngine {
   private startedAt = 0;
   private offset = 0;
   private listeners = new Set<(id: string | null) => void>();
+  get gain(): number { return this.volume; }
+
   subscribe(listener: (id: string | null) => void): () => void { this.listeners.add(listener); return () => {this.listeners.delete(listener);}; }
   private publish(id: string | null): void { for(const listener of this.listeners) listener(id); }
   stop(): void { const source = this.activeSource; this.activeSource = null; if(source) source.stop(); this.duration = 0; this.offset = 0; this.publish(null); }

@@ -1,89 +1,46 @@
-import { CATALOG, CATEGORIES } from "../core/catalog";
-import { renderSound, summarize } from "../core/render";
-import { BIT_DEPTH, SAMPLE_RATE, type CatalogResponse, type SoundSummary } from "../core/types";
-import { encodeWav } from "../core/wav";
-import { createZip } from "../core/zip";
-import index from "../web/index.html";
+import { join, resolve } from "node:path";
+import type { CatalogResponse } from "../core/types";
 
-interface LibraryEntry {
-  readonly summary: SoundSummary;
-  readonly wav: Uint8Array;
-}
+const output = resolve(import.meta.dirname, "../../dist");
+const index = Bun.file(join(output, "index.html"));
+const manifest = Bun.file(join(output, "sounds/catalog.json"));
+if (!await index.exists() || !await manifest.exists()) throw new Error("Run bun run build before starting the server.");
 
-const started = performance.now();
-
-// Render once at boot. Output is deterministic, so this is also the cache.
-const library = new Map<string, LibraryEntry>();
-for (const def of CATALOG) {
-  const rendered = renderSound(def);
-  library.set(def.id, {
-    summary: summarize(rendered),
-    wav: encodeWav(rendered.samples, SAMPLE_RATE),
-  });
-}
-
-const summaries = [...library.values()].map((entry) => entry.summary);
-const catalog: CatalogResponse = {
-  sampleRate: SAMPLE_RATE,
-  bitDepth: BIT_DEPTH,
-  channels: 1,
-  totalBytes: summaries.reduce((sum, s) => sum + s.bytes, 0),
-  categories: CATEGORIES,
-  sounds: summaries,
-};
-
-let packCache: Uint8Array | null = null;
-function pack(): Uint8Array {
-  packCache ??= createZip(
-    [...library.entries()].map(([id, entry]) => ({ name: `${id}.wav`, data: entry.wav })),
-  );
-  return packCache;
-}
-
-const notFound = () => new Response("Not found", { status: 404 });
+const catalog = await manifest.json() as CatalogResponse;
+const assets = new Set(catalog.sounds.map(sound => sound.id + ".wav"));
+const previews = new Set(catalog.sounds.map(sound => sound.previewUrl?.split("/").at(-1)));
+const revalidate = {"cache-control": "public, max-age=0, must-revalidate"};
+const immutable = {"cache-control": "public, max-age=31536000, immutable"};
+const notFound = () => new Response("Not found", {status: 404});
+const page = () => new Response(index, {headers: revalidate});
+const serve = (path: string, headers: HeadersInit = revalidate) => new Response(Bun.file(join(output, path)), {headers});
 
 const server = Bun.serve({
   port: Number(process.env.PORT ?? 3000),
-  development: process.env.NODE_ENV !== "production",
   routes: {
-    "/": index,
-
-    "/api/health": () => Response.json({ ok: true, sounds: library.size }),
-
-    "/api/sounds": () => Response.json(catalog, { headers: { "cache-control": "no-cache" } }),
-
-    "/api/sounds/:file": (req) => {
+    "/": page, "/library": page, "/studio": page, "/saved": page,
+    "/api/health": () => Response.json({ok: true, sounds: catalog.sounds.length}),
+    "/api/sounds": () => new Response(manifest, {headers: revalidate}),
+    "/api/sounds/:file": req => {
       const file = req.params.file;
-      if (!file.endsWith(".wav")) return notFound();
-      const id = file.slice(0, -4);
-      const entry = library.get(id);
-      if (!entry) return notFound();
-
-      const download = new URL(req.url).searchParams.has("download");
-      return new Response(new Uint8Array(entry.wav), {
-        headers: {
-          "content-type": "audio/wav",
-          "content-length": String(entry.wav.byteLength),
-          "content-disposition": `${download ? "attachment" : "inline"}; filename="${id}.wav"`,
-          "cache-control": "public, max-age=3600",
-        },
-      });
+      if (!assets.has(file)) return notFound();
+      const disposition = new URL(req.url).searchParams.has("download") ? "attachment" : "inline";
+      return serve("sounds/" + file, {...revalidate, "content-disposition": `${disposition}; filename="${file}"`});
     },
-
-    "/api/pack.zip": () => {
-      const bytes = pack();
-      return new Response(new Uint8Array(bytes), {
-        headers: {
-          "content-type": "application/zip",
-          "content-length": String(bytes.byteLength),
-          "content-disposition": 'attachment; filename="verdant-sounds.zip"',
-        },
-      });
+    "/api/pack.zip": () => serve("sounds/pack.zip", {...revalidate, "content-disposition": 'attachment; filename="verdant-sounds.zip"'}),
+    "/sounds/:file": req => {
+      const {file} = req.params;
+      return assets.has(file) || ["catalog.json", "pack.zip", "credits.md", "trazo-MIT.txt"].includes(file) ? serve("sounds/" + file) : notFound();
+    },
+    "/sounds/preview/:file": req => previews.has(req.params.file) ? serve("sounds/preview/" + req.params.file, immutable) : notFound(),
+    "/assets/:file": async req => {
+      const {file} = req.params;
+      if (!/^[\w-]+\.[\w]+$/.test(file)) return notFound();
+      const path = Bun.file(join(output, "assets", file));
+      return await path.exists() ? new Response(path, {headers: immutable}) : notFound();
     },
   },
   fetch: notFound,
 });
 
-console.log(
-  `verdant  ${server.url}  ·  ${library.size} sounds rendered in ${(performance.now() - started).toFixed(0)} ms`,
-);
+console.log(`Verdant available at ${server.url} with ${catalog.sounds.length} sounds.`);

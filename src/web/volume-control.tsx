@@ -7,10 +7,10 @@ const THUMB=18;
 /** Direct manipulation, not a spring that chases the cursor. One local frame
  * commit drives audio, handle, fill and value; the workspace never rerenders. */
 export function VolumeControl({engine}:{engine:AudioEngine}){
-  const [value,setValue]=useState(DEFAULT_VOLUME);
+  const [value,setValue]=useState(() => engine.gain);
   const [dragging,setDragging]=useState(false);
-  const current=useRef(DEFAULT_VOLUME);
-  const lastAudible=useRef(DEFAULT_VOLUME);
+  const current=useRef(engine.gain);
+  const lastAudible=useRef(engine.gain || DEFAULT_VOLUME);
   const pointer=useRef<{id:number;left:number;width:number;offset:number}|null>(null);
   const pending=useRef<number|null>(null);
   const raf=useRef(0);

@@ -7,6 +7,7 @@ export type CategoryId =
   | "notify"
   | "motion"
   | "typing"
+  | "keyboard"
   | "progress"
   | "classic";
 
@@ -123,6 +124,12 @@ export interface SoundSummary extends SoundMetrics {
   readonly category: CategoryId;
   readonly description: string;
   readonly bytes: number;
+  readonly waveform?: string;
+  readonly previewUrl?: string;
+  readonly sha256?: string;
+  readonly source?: { readonly name: string; readonly author: string; readonly url: string; readonly license: "CC0-1.0"; readonly take: string };
+  readonly review?: "pending";
+  readonly keyCode?: string;
 }
 
 export interface CatalogResponse {

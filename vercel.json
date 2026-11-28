@@ -4,7 +4,7 @@
   "outputDirectory": "dist",
   "headers": [
     {
-      "source": "/sounds/:path*",
+      "source": "/sounds/:file",
       "headers": [
         {
           "key": "Cache-Control",
@@ -17,7 +17,7 @@
       ]
     },
     {
-      "source": "/sounds/bank/:path*",
+      "source": "/sounds/preview/:path*",
       "headers": [
         {
           "key": "Cache-Control",
@@ -28,6 +28,20 @@
           "value": "public, s-maxage=31536000, immutable"
         }
       ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/library",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/studio",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/saved",
+      "destination": "/index.html"
     }
   ]
 }

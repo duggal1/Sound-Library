@@ -2,6 +2,13 @@
    Hero: selected sound and its measured waveform. Library is a rail, not a page.
    Only live signal/selection uses green; controls and copy are ink on paper.
    Types: 12, 14, 20, 44px. Rhythm: 4,8,12,16,24,32,48,64px. */
+@font-face {
+  font-family:"Instrument Sans";
+  src:url("./fonts/instrument-sans.woff2") format("woff2");
+  font-style:normal;
+  font-weight:400 700;
+  font-display:swap;
+}
 :root {
   --ink:#000; --muted:#525252; --quiet:#737373; --accent:#168a48; --soft:#a7cdb2; --pale:#edf7ef; --deep:#166534; --grid:#e7e7e7;
   --surface:#f5f5f5; --hover:#ececec; --rail:#fafafa;
@@ -11,7 +18,7 @@
   --cursor-pointer:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M8 13V5a2 2 0 0 1 4 0v5h1a2 2 0 0 1 3 0h1a2 2 0 0 1 3 2v4l-3 6H9L4 15a2 2 0 0 1 3-2l1 1z' fill='%23171717' stroke='white' stroke-width='1.2' stroke-linejoin='round'/%3E%3C/svg%3E") 10 4,pointer;
   --cursor-grab:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M5 12V7a1.6 1.6 0 0 1 3.2 0v4-7a1.6 1.6 0 0 1 3.2 0v7-8a1.6 1.6 0 0 1 3.2 0v8-5a1.6 1.6 0 0 1 3.2 0v8l1.6-2a1.7 1.7 0 0 1 2.5 2.2L17 21H9L4 16Z' fill='%23171717' stroke='white' stroke-width='1.2' stroke-linejoin='round'/%3E%3C/svg%3E") 12 12,grab;
   --cursor-grabbing:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath d='M5 11V8a2 2 0 0 1 4 0V6a2 2 0 0 1 4 0V7a2 2 0 0 1 4 0V9a2 2 0 0 1 4 1v6l-4 5H9l-5-6a2 2 0 0 1 1-4Z' fill='%23171717' stroke='white' stroke-width='1.2' stroke-linejoin='round'/%3E%3C/svg%3E") 12 12,grabbing;
-  font:400 14px/1.45 "Instrument Sans",Inter,-apple-system,sans-serif; letter-spacing:-.015em; font-variant-numeric:tabular-nums; font-synthesis:none; -webkit-font-smoothing:antialiased; color:var(--ink); background:#fff; color-scheme:light;
+  font:400 14px/1.45 "Instrument Sans",-apple-system,sans-serif; letter-spacing:-.015em; font-variant-numeric:tabular-nums; font-synthesis:none; -webkit-font-smoothing:antialiased; color:var(--ink); background:#fff; color-scheme:light;
 }
 *{box-sizing:border-box} body,h1,h2,p,dl,dd{margin:0} body{cursor:var(--cursor-default)}
 button,input,a{font:inherit;color:inherit} button{border:0;padding:0;background:none} a{text-decoration:none} button,a,input[type=range]{cursor:var(--cursor-pointer)} button:disabled{opacity:.4;cursor:var(--cursor-default)} input[type=search]{cursor:text} button,a{touch-action:manipulation;transition:background-color 220ms var(--liquid),color 220ms var(--liquid),opacity 220ms var(--liquid)}
@@ -21,7 +28,7 @@ svg{width:18px;height:18px;display:block;flex:none;fill:currentColor}
 .top{display:flex;align-items:center;gap:var(--s5);min-width:0}.brand{display:flex;align-items:center;gap:var(--s2);font-size:20px;font-weight:450;letter-spacing:-.055em}.brand svg{width:26px;height:26px;color:var(--accent)}.context{font-size:12px;color:var(--quiet);white-space:nowrap}.pack{margin-left:auto;white-space:nowrap}.pill.pack{background:#171717;color:#fff}.pill.pack:hover{background:#000}.pack small{font-size:12px;color:#d4d4d4}
 main{min-height:0;min-width:0}.workspace{height:100%;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:var(--s8)}
 .library{min-width:0;min-height:0;display:grid;grid-template-rows:auto auto minmax(0,1fr) auto;padding-top:var(--s5);container-type:inline-size}
-.library-head{display:grid;gap:var(--s4);padding-bottom:var(--s5)} .library-head h2{display:flex;gap:var(--s2);align-items:baseline;font-size:20px;letter-spacing:-.04em;font-weight:450}.library-count{font:400 12px/1 Inter,sans-serif;color:var(--quiet)}
+.library-head{display:grid;gap:var(--s4);padding-bottom:var(--s5)} .library-head h2{display:flex;gap:var(--s2);align-items:baseline;font-size:20px;letter-spacing:-.04em;font-weight:450}.library-count{font:400 12px/1 "Instrument Sans",sans-serif;color:var(--quiet)}
 .filters{display:flex;gap:var(--s2);align-items:center;min-width:0}.search{min-width:0;flex:1;height:36px;background:var(--surface);border-radius:var(--pill);display:flex;align-items:center;gap:var(--s2);padding:0 var(--s3);color:var(--muted);transition:background 220ms var(--liquid)}.search:hover{background:var(--hover)}.search:focus-within{outline:2px solid #000;outline-offset:2px}.search input{width:100%;min-width:0;border:0;background:none;outline:none!important}.search input::-webkit-search-cancel-button,.search input::-webkit-search-decoration{display:none}.clear-search{border-radius:var(--pill);width:24px;height:24px;flex:none;display:grid;place-items:center}.clear-search:hover{background:#ddd}.clear-search svg{width:14px;height:14px}
 .pill,.dd-trigger{height:36px;padding:4px var(--s4);border-radius:var(--pill);display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);background:var(--surface);white-space:nowrap;line-height:1.2;font-weight:450}.pill:hover:not(:disabled),.dd-trigger:hover{background:var(--hover)}.pill.primary{background:var(--ink);color:#fff}.pill.primary:hover:not(:disabled){background:#252525}.pill.icon-button{width:36px;padding:0}.pill.icon-button svg{width:18px;height:18px}
 .dd{position:relative;flex:none}.dd-trigger{font-weight:400;padding:4px var(--s3)}.dd-trigger svg{width:14px;height:14px;transform:rotate(90deg);transition:transform 380ms var(--liquid)}.dd-trigger[aria-expanded=true] svg{transform:rotate(-90deg)}.dd-menu{position:absolute;right:0;top:calc(100% + 8px);min-width:180px;max-width:calc(100vw - 32px);z-index:20;background:rgba(255,255,255,.97);backdrop-filter:blur(16px);box-shadow:0 4px 24px #00000010;border-radius:24px;list-style:none;padding:var(--s2);margin:0;animation:menu-in 280ms var(--liquid)}.dd-menu[hidden]{display:none}.dd-option{display:flex;align-items:center;gap:var(--s2);min-height:36px;border-radius:var(--pill);padding:4px var(--s3);cursor:var(--cursor-pointer)}.dd-option[data-active=true]{background:var(--hover)}.sq{width:6px;height:6px;background:transparent;flex:none}.sq[data-on=true]{background:var(--accent)}.hint{margin-left:auto;color:var(--quiet);font-size:12px}

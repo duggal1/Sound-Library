@@ -26,3 +26,11 @@ The gain control uses a single native range value, an ink capsule, an aligned wh
 
 ## Direct manipulation and rendering budget
 Volume state is local to its control; pointer capture preserves the grab offset, one frame commit updates gain and UI, and gain automation replaces the previous tail. No spring lag on direct manipulation. Saved hover uses black/white with a separate keyboard-only focus indicator. Duration is a measured linear mark with dotted guide and square endpoint, never playback progress. Memoized rows, range-based PCM decoding without byte-slice copies, and cached waveform paths avoid unnecessary work. Idle motion remains event-driven. Audio assets are unchanged.
+
+## Landing and catalog dashboard
+
+The landing page has a 360-degree sound cylinder. Drag the surface to turn it, drag a tile to move it, and tap a tile or release a drag to audition. The tiles use measured envelope strips and a shared SVG glyph system. Reduced motion gives a static horizontal strip with native scrolling and the same playable sounds.
+
+The dashboard uses a flat catalog and a stationary inspector. Studio keeps the left waveform and right cylindrical rail. Both share one audio engine, persistent saved IDs and the original download URLs. Keyboard auditions are scoped to the focused keyboard pad, while the on-screen keys also support click and touch.
+
+Waveform envelopes are built from the delivered PCM and included with the catalog. Individual immutable previews replace the full-catalog bank. Audio loads when invited, with a bounded decoded cache and a single playback source. The expanded collection has per-asset credit and listening review status.

@@ -22,7 +22,7 @@ function renderLegacy(def: LegacySoundDef, rate: number): Float64Array {
   return out;
 }
 
-export function measure(samples: Float64Array, rate: number): SoundMetrics {
+export function measure(samples: Float64Array | Float32Array, rate: number): SoundMetrics {
   let peak = 0;
   let sum = 0;
   for (let i = 0; i < samples.length; i++) {
