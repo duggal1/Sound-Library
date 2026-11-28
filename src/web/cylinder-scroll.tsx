@@ -1,23 +1,19 @@
-/**
- * Drum geometry adapted from @dorianbaffier's Wheel Picker, Kokonut UI (MIT).
- * https://github.com/kokonut-labs/kokonutui
- * Native scroll, continuous browsing, focus, rebasing and damping are Verdant adaptations.
+/** Native scrolling owns position. A planar reading band joins two curved ends.
+ * Prior wheel-picker inspiration: Dorian Baffier / Kokonut UI (MIT).
  */
 import { useLayoutEffect, type ReactNode, type RefObject } from "react";
-import { dampSpring, drumGeometry } from "./cylinder-math";
+import { dampSpring, edgeProjection, railGeometry } from "./cylinder-math";
 
-type Geometry = ReturnType<typeof drumGeometry>;
+type Geometry = ReturnType<typeof railGeometry>;
 interface Row {
   node: HTMLElement;
   index: number;
-  mounted: boolean;
-  edge: boolean;
-  anchor: number;
+  visible: boolean | null;
+  transform: string;
 }
 
 const controllers = new WeakMap<HTMLElement, DrumController>();
 const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
-const DEGREES = 180 / Math.PI;
 
 class DrumController {
   private list: HTMLElement | null = null;
@@ -31,7 +27,6 @@ class DrumController {
   private velocity = 0;
   private lag = 0;
   private lagVelocity = 0;
-  private transform = "";
   private dirty = true;
   private destroyed = false;
   private focusedKeyboard = false;
@@ -81,14 +76,14 @@ class DrumController {
     const nodes=next ? Array.from(next.querySelectorAll<HTMLElement>(":scope > .sound-row, :scope > .more")) : [];
     // Fixed layout pitch is shared with CSS, not inferred from transformed bounds.
     this.pitch=parseFloat(getComputedStyle(this.viewport).getPropertyValue("--drum-pitch")) || 64;
-    const g=drumGeometry(this.height,this.pitch,nodes.length);
-    const active=!!next && this.supported && !this.reduced.matches && this.height>=160 &&
+    const g=railGeometry(this.height,this.pitch,nodes.length);
+    const active=!!next && this.supported && !this.reduced.matches && this.height>=240 &&
       nodes.length*this.pitch>this.height && g.maxScroll>1;
     if(!active){this.clear();this.geometry=null;this.rows=[];this.resetPhysics();return;}
     const existing=new Map(this.rows.map(r=>[r.node,r]));
     this.rows=nodes.map((node,index)=>{
       const row=existing.get(node);
-      return row && row.index===index ? row : {node,index,mounted:false,edge:false,anchor:NaN};
+      return row && row.index===index ? row : {node,index,visible:null,transform:""};
     });
     this.geometry=g;
     this.viewport.dataset.drum="true";
@@ -101,8 +96,11 @@ class DrumController {
     if(prior && (oldPitch!==this.pitch || oldHeight!==this.height)){
       this.viewport.scrollTop=clamp(oldPosition/oldPitch*this.pitch-g.offset,0,g.maxScroll);
     }
-    this.transform="";
-    for(const row of this.rows){row.anchor=NaN;row.mounted=false;row.edge=false;delete row.node.dataset.drumAway;delete row.node.dataset.drumEdge;}
+    for(const row of this.rows){
+      row.visible=null;row.transform="";
+      row.node.style.removeProperty("transform");
+      delete row.node.dataset.drumAway;
+    }
     this.resetPhysics();
   }
 
@@ -110,39 +108,35 @@ class DrumController {
     for(const row of this.rows){
       row.node.style.removeProperty("transform");
       delete row.node.dataset.drumAway;
-      delete row.node.dataset.drumEdge;
     }
     if(this.list){delete this.list.dataset.cylinder;this.list.style.removeProperty("transform");}
     delete this.viewport.dataset.drum;
     this.carrier.style.removeProperty("height");
     this.stage.style.removeProperty("height");
     this.stage.style.removeProperty("perspective");
-    this.transform="";
   }
 
   private draw(scroll: number): void {
-    const g=this.geometry,list=this.list;
-    if(!g || !list)return;
-    const center=(clamp(scroll+this.lag,0,g.maxScroll)+g.offset)/this.pitch;
-    // Rebase every six rows to avoid large angles or a second turn of the drum.
-    // Parent and row angles cancel exactly across a rebase.
-    const anchor=Math.floor(center/6)*6;
+    const g=this.geometry;
+    if(!g || !this.list)return;
+    const center=clamp(scroll+this.lag,0,g.maxScroll)+g.offset;
     for(const row of this.rows){
-      const angle=(row.index-center)*g.step;
-      const visible=Math.abs(angle)<=g.visible;
-      // Offscreen controls remain in DOM/tab order. Focusin reveals them.
-      if(row.mounted!==visible || row.anchor!==anchor){
+      const distance=row.index*this.pitch-center;
+      const visible=Math.abs(distance)<=g.visibleDistance;
+      if(row.visible!==visible){
         row.node.dataset.drumAway=String(!visible);
-        if(visible)row.node.style.transform=`rotateX(${-(row.index-anchor)*g.step*DEGREES}deg) translateZ(${g.radius}px)`;
-        else row.node.style.removeProperty("transform");
-        row.mounted=visible;row.anchor=anchor;
+        row.visible=visible;
+        if(!visible){row.node.style.removeProperty("transform");row.transform="";}
       }
-      // Hysteresis keeps the optional subpixel edge blur from toggling repeatedly.
-      const edge=visible && Math.abs(angle)>(row.edge ? .65 : .72);
-      if(edge!==row.edge){row.node.dataset.drumEdge=String(edge);row.edge=edge;}
+      if(!visible)continue;
+      const p=edgeProjection(distance,g.flatHalf,g.radius);
+      // Planar rows have no rotateX or translateZ at all. No parent rotation,
+      // raster filter, or scale can distort the primary reading surface.
+      const transform=p.rotation===0
+        ? `translateY(${p.y.toFixed(3)}px)`
+        : `translate3d(0,${p.y.toFixed(3)}px,${p.z.toFixed(3)}px) rotateX(${p.rotation.toFixed(4)}deg)`;
+      if(transform!==row.transform){row.node.style.transform=transform;row.transform=transform;}
     }
-    const transform=`translateZ(${-g.radius}px) rotateX(${(center-anchor)*g.step*DEGREES}deg)`;
-    if(transform!==this.transform){list.style.transform=transform;this.transform=transform;}
   }
 
   private readonly tick = (now:number) => {
@@ -157,8 +151,8 @@ class DrumController {
     this.velocity+=(clamp(delta/dt,-3200,3200)-this.velocity)*(1-Math.exp(-dt*28));
     // OS inertia is already present. Add only a very small visual compliance,
     // not another inertial scroll engine. Never let it leave the scroll range.
-    const cap=this.coarse.matches ? 4 : 8;
-    const target=this.focusedKeyboard ? 0 : clamp(-this.velocity*.004,-cap,cap);
+    const cap=this.coarse.matches ? 2 : 4;
+    const target=this.focusedKeyboard ? 0 : clamp(-this.velocity*.002,-cap,cap);
     const next=dampSpring(this.lag,this.lagVelocity,target,dt,30);
     this.lag=clamp(next.value,-cap,cap);this.lagVelocity=next.velocity;
     if(scroll<=.5 || scroll>=g.maxScroll-.5){this.lag=0;this.lagVelocity=0;}
@@ -183,7 +177,7 @@ class DrumController {
     const center=this.viewport.scrollTop+g.offset;
     const distance=row.index*this.pitch-center;
     // Keyboard navigation guarantees a readable, fully visible target.
-    if(Math.abs(distance)>g.offset-this.pitch*.55){
+    if(Math.abs(distance)>Math.max(0,g.flatHalf-this.pitch*.5)){
       this.focusedKeyboard=true;
       this.viewport.scrollTop=clamp(row.index*this.pitch-g.offset,0,g.maxScroll);
       this.resetPhysics();this.draw(this.viewport.scrollTop);

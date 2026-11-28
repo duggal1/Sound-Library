@@ -17,19 +17,27 @@ export function dampSpring(value: number, velocity: number, target: number, dt: 
   return { value: target + (x + c * dt) * decay, velocity: (velocity - omega * c * dt) * decay };
 }
 
-/** Tangent drum geometry adapted from Dorian Baffier's MIT Wheel Picker (Kokonut UI). */
-export function drumGeometry(height: number,pitch: number,count: number) {
-  const radius = Math.max(140,height*.76);
-  const perspective = Math.max(900,height*2.8);
-  const step = 2*Math.atan(pitch/(2*radius));
-  const project = (angle: number) => radius*Math.sin(angle)*perspective/(perspective+radius*(1-Math.cos(angle)));
-  const limit = Math.min(1.12,Math.acos(radius/(radius+perspective))-.035);
-  const solve = (y: number) => {
-    let lo=0,hi=limit;
-    for(let i=0;i<30;i++){const mid=(lo+hi)/2;if(project(mid)<y)lo=mid;else hi=mid;}
-    return (lo+hi)/2;
-  };
-  const edge=solve(Math.max(0,height/2-pitch*.58));
-  const offset=edge/step*pitch;
-  return {radius,perspective,step,edge,offset,maxScroll:Math.max(0,(count-1)*pitch-2*offset),visible:Math.min(limit,solve(height/2+pitch*.65))};
+/** The central reading band is exactly planar; only the two ends bend away.
+ * Each arc meets the plane tangentially. Extend the final tangent instead of
+ * folding a hidden row back into view. Coordinates are CSS pixels. */
+export function edgeProjection(distance: number, flatHalf: number, radius: number){
+  const excess=Math.max(0,Math.abs(distance)-flatHalf);
+  if(excess===0)return {y:distance,z:0,rotation:0};
+  const angle=Math.min(.68,excess/radius);
+  const tail=excess-angle*radius;
+  const sign=Math.sign(distance);
+  return {y:sign*(flatHalf+radius*Math.sin(angle)+tail*Math.cos(angle)),z:radius*(Math.cos(angle)-1)-tail*Math.sin(angle),rotation:-sign*angle*180/Math.PI};
+}
+ 
+/** Native scroll range, perspective and endpoint inset share one projection. */
+export function railGeometry(height: number, pitch: number, count: number){
+  const half=height/2;
+  const flatHalf=half*.58;
+  const radius=Math.max(1,(half-flatHalf)/.48);
+  const perspective=Math.max(1000,height*3.6);
+  const project=(distance: number)=>{const p=edgeProjection(distance,flatHalf,radius);return p.y*perspective/(perspective-p.z)};
+  const solve=(target: number)=>{let lo=0,hi=height+pitch;for(let i=0;i<32;i++){const mid=(lo+hi)/2;if(project(mid)<target)lo=mid;else hi=mid}return (lo+hi)/2};
+  const offset=solve(Math.max(0,half-pitch*.55));
+  const visibleDistance=solve(half+pitch*.6);
+  return {flatHalf,radius,perspective,offset,visibleDistance,maxScroll:Math.max(0,(count-1)*pitch-2*offset)};
 }
