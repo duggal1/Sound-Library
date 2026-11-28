@@ -12,7 +12,7 @@ const PAD_T = 22;
 const GUTTER_B = 32;
 const MORPH_TAU = 0.085; // seconds; ~380 ms to settle, no overshoot
 const SCOPE_TAIL = 0.15; // keep drawing after playback so the trace settles to flat
-const LABEL_FONT = '12px "Instrument Sans", -apple-system, sans-serif';
+const LABEL_FONT = '12px "Open Sans", -apple-system, sans-serif';
 const WAVE_COLORS={rail:"#e7e5e4",soft:"#bbf7d0",base:"#22c55e",strong:"#16a34a",peak:"#15803d",glow:"rgba(34,197,94,.12)"} as const;
 const MINUS = "\u2212";
 
