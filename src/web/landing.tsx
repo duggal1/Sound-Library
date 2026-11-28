@@ -94,9 +94,9 @@ export function Landing({catalog,engine}:{catalog:CatalogResponse;engine:AudioEn
       <div className="field-grid" aria-hidden="true"/>
       <div className="field-world" ref={world}>
         <section className="field-hero" data-no-pan="">
-          <span className="field-kicker"><i aria-hidden="true"/>{catalog.sounds.length} interface sounds</span>
-          <h1>Make the small<br/><span>things sound good.<svg viewBox="0 0 300 13" aria-hidden="true"><path d="M3 8C70 2 166 1 296 6M47 10Q169 5 265 9" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round"/></svg></span></h1>
-          <p>A playful collection of tactile sounds for the interfaces you build. Grab a sound, hear it, and make it part of your next project.</p>
+          <span className="field-kicker"><svg className="field-sketch-dot" viewBox="0 0 12 12" aria-hidden="true"><path d="M5.8 1.1C8.1.8 10.6 3 10.5 5.8c.1 2.7-2.1 5-4.8 4.8C3 10.8.9 8.3 1.2 5.7 1 3.2 3.5 1.3 5.8 1.1Z" fill="currentColor"/><path d="M3 4.5 7.4 2.8M2.9 7.1 9 4.6M5 9 8.8 7" fill="none" stroke="#fff" strokeOpacity=".32" strokeWidth=".65" strokeLinecap="round"/></svg>{catalog.sounds.length} interface sounds</span>
+          <h1>Make the small<br/><span className="field-headline-tail">things sound good<span className="field-headline-dot">.<svg viewBox="0 0 12 12" aria-hidden="true"><path d="M5.8 1.1C8.1.8 10.6 3 10.5 5.8c.1 2.7-2.1 5-4.8 4.8C3 10.8.9 8.3 1.2 5.7 1 3.2 3.5 1.3 5.8 1.1Z" fill="currentColor"/><path d="M3 4.5 7.4 2.8M2.9 7.1 9 4.6M5 9 8.8 7" fill="none" stroke="#fff" strokeOpacity=".3" strokeWidth=".65" strokeLinecap="round"/></svg></span><svg className="field-headline-underline" viewBox="0 0 300 13" aria-hidden="true"><path d="M3 8C70 2 166 1 296 6M47 10Q169 5 265 9" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round"/></svg></span></h1>
+          <p>Discover tactile interface sounds. Grab, listen, and bring them into your next project.</p>
           <div className="field-hero-actions">
             <a href="/library" className="pill primary">Explore the library <ArrowIcon/></a>
             <a href="/sounds/pack.zip" className="field-download" download="verdant-sounds.zip">Download WAV pack</a>
