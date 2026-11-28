@@ -34,7 +34,19 @@ async function publish(record: Omit<SoundSummary, keyof ReturnType<typeof measur
   entries.push({name: record.id + ".wav", data: wav});
   sounds.push({...record, ...metrics, bytes: wav.byteLength, sha256, previewUrl, waveform: encodeWaveform(samples, metrics.peak)});
 }
+type CollectionRecord = Pick<SoundSummary, "id" | "name" | "category" | "description" | "keyCode" | "review" | "source">;
+const collection = JSON.parse(await readFile(join(directory, "collection", "manifest.json"), "utf8")) as CollectionRecord[];
+const typingAliases:Readonly<Record<string,string>>={key:"KeyA","key-alt":"KeyS",space:"Space",enter:"Enter",backspace:"Backspace"};
 for (const def of CATALOG) {
+  const code=typingAliases[def.id];
+  if(code){
+    const recording=collection.find(item=>item.category==="keyboard"&&item.keyCode===code);
+    if(!recording||recording.source?.license!=="CC0-1.0")throw new Error("Missing licensed typing recording: "+code);
+    const wav=await readFile(join(directory,"collection",recording.id+".wav"));
+    await writeFile(join(directory,def.id+".wav"),wav);
+    await publish({id:def.id,name:def.name,category:def.category,description:"Recorded keyboard strike shared with "+recording.name+".",source:recording.source,review:recording.review},wav);
+    continue;
+  }
   let wav: Uint8Array;
   let summary: SoundSummary;
   if (rejected.has(def.id)) {
@@ -54,11 +66,10 @@ for (const def of CATALOG) {
   await publish({id: summary.id, name: summary.name, category: summary.category, description: summary.description}, wav);
 }
 
-type CollectionRecord = Pick<SoundSummary, "id" | "name" | "category" | "description" | "keyCode" | "review" | "source">;
-const collection = JSON.parse(await readFile(join(directory, "collection", "manifest.json"), "utf8")) as CollectionRecord[];
 const ids = new Set(sounds.map(sound => sound.id));
 const keys = new Set<string>();
-const hashes = new Set(sounds.map(sound => sound.sha256));
+// The five intentional typing aliases share the original keyboard PCM; all collection takes remain unique.
+const hashes = new Set(sounds.filter(sound=>!typingAliases[sound.id]).map(sound => sound.sha256));
 for (const record of collection) {
   if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(record.id) || ids.has(record.id)) throw new Error("Invalid or duplicate ID: " + record.id);
   if (!record.source || record.source.license !== "CC0-1.0" || record.review !== "pending") throw new Error("Missing collection provenance: " + record.id);

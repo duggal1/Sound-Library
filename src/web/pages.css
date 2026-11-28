@@ -6,7 +6,9 @@ svg.sound-icon {fill:none;}
 }
 .site-nav {display:flex; align-items:center; gap:4px; margin-left:12px;}
 .site-nav a,.home-repo {display:inline-flex; align-items:center; gap:5px; padding:8px 13px; border-radius:var(--pill); color:var(--muted); white-space:nowrap;}
-.site-nav a:hover,.site-nav a[aria-current="page"],.home-repo:hover {background:var(--surface); color:var(--ink);}
+.site-nav a[aria-current="page"] {background:var(--surface);color:var(--ink);}
+.site-nav a:hover,.home-repo:hover {background:var(--hover);color:#fff;}
+.home-repo:hover svg{color:inherit;}
 .home-repo {margin-left:auto;}
 .home-repo svg {width:18px; height:18px; color:#171717;}
 #page-main:focus {outline:none;}
@@ -20,10 +22,12 @@ svg.sound-icon {fill:none;}
 [data-layout="dashboard"] .list-header {padding-left:48px;}
 .dashboard-sidebar {display:flex; flex-direction:column; min-height:0; overflow:auto; padding-top:24px; padding-right:3px; gap:5px;}
 .dashboard-sidebar a,.dashboard-categories button {display:flex; align-items:center; gap:9px; min-height:38px; padding:6px 10px; text-align:left; border-radius:var(--pill); white-space:nowrap;}
-.dashboard-sidebar a:hover,.dashboard-categories button:hover,.dashboard-categories button[aria-pressed="true"],.dashboard-sidebar a[aria-current="page"] {background:var(--surface);}
+.dashboard-categories button[aria-pressed="true"],.dashboard-sidebar a[aria-current="page"] {background:var(--surface);}
+.dashboard-sidebar a:hover,.dashboard-categories button:hover {background:var(--hover);color:#fff;}
+.dashboard-sidebar a:hover span,.dashboard-categories button:hover small{color:#d6d3d1;}
 .dashboard-index {font-weight:450;}
 .dashboard-index span,.dashboard-categories small {font-size:12px; margin-left:auto; color:var(--quiet);}
-.dashboard-categories {display:grid; gap:4px; padding-top:12px; margin-top:12px; border-top:1px dotted #d5d1c8;}
+.dashboard-categories {display:grid; gap:4px; padding-top:12px; margin-top:12px; border-top:1px solid var(--line);}
 .dashboard-categories button > span {overflow:hidden; text-overflow:ellipsis;}
 .dashboard-categories svg {width:19px; height:19px;}
 .asset-details {display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px; color:var(--muted); font-size:12px;}
