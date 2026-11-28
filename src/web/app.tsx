@@ -49,6 +49,7 @@ import type { StageMode } from "./stage";
 import { SoundStage } from "./sound-stage";
 import { VolumeControl } from "./volume-control";
 import { CylinderScroll, revealCylinderRow } from "./cylinder-scroll";
+import { enhanceWheelScroll } from "./smooth-scroll";
 
 const MODES: readonly SegmentedOption<StageMode>[] = [
   { value: "waveform", label: "Waveform" },
@@ -212,6 +213,7 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
   const [copyError, setCopyError] = useState(false);
   const searchRef = useRef<HTMLInputElement>(null);
   const libraryRef = useRef<HTMLDivElement>(null);
+  useEffect(()=>{const root=libraryRef.current?.closest(".workspace");return root?enhanceWheelScroll(root):undefined;},[studio]);
 
   const categoryLabel = useMemo(() => new Map(categories.map((c) => [c.id, c.label])), [categories]);
   const maxDuration = useMemo(() => Math.max(0.001, ...sounds.map((s) => s.duration)), [sounds]);
