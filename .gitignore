@@ -5,3 +5,5 @@ generated-sounds/
 .env.*
 !.env.example
 .DS_Store
+
+.generated-public/

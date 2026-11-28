@@ -3,12 +3,13 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "bun run prepare:assets && vite",
+    "build": "bun run prepare:assets && vite build",
     "start": "vite preview",
     "generate": "bun src/cli/generate.ts",
     "typecheck": "tsc --noEmit",
-    "test": "bun test"
+    "test": "bun test",
+    "prepare:assets": "bun src/cli/prepare-assets.ts"
   },
   "dependencies": {
     "react": "^19.0.0",

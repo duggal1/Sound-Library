@@ -13,3 +13,5 @@ export const NextIcon = (p:IconProps) => <svg {...base} {...p}><path d="M17.2 6H
 export const BrandMark = (p:IconProps) => <svg {...base} {...p}><path d="M3 4 12 10 21 3 15 17 10 14 3 21Z"/><path d="m3 4 7 10-7 7z" fill="#fff" opacity=".28"/></svg>;
 export const VolumeIcon = (p:IconProps) => <svg {...base} {...p}><path d="M4 9h4l5-4v14l-5-4H4zM15.5 8a5 5 0 0 1 0 8v-2a3.2 3.2 0 0 0 0-4zM18 5a9 9 0 0 1 0 14v-1.9a7 7 0 0 0 0-10.2z"/></svg>;
 export const ClearIcon = (p:IconProps) => <svg {...base} {...p}><path d="m6.4 5.3 5.6 5.6 5.6-5.6 1.1 1.1-5.6 5.6 5.6 5.6-1.1 1.1-5.6-5.6-5.6 5.6-1.1-1.1 5.6-5.6-5.6-5.6z"/></svg>;
+
+export const BookmarkIcon = ({filled=false,...p}:IconProps & {filled?:boolean}) => <svg {...base} {...p}>{filled?<path d="M6 3h12v18l-6-4-6 4z"/>:<path fillRule="evenodd" d="M6 3h12v18l-6-4-6 4zm1.7 1.7v13.1l4.3-2.9 4.3 2.9V4.7z"/>}</svg>;

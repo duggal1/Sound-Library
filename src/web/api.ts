@@ -16,10 +16,54 @@ export async function fetchCatalog(signal: AbortSignal): Promise<CatalogResponse
   const res = await fetch("/sounds/catalog.json", { signal });
   if (!res.ok) throw new Error(`The server answered ${res.status} for /sounds/catalog.json.`);
   const data = (await res.json()) as CatalogResponse;
-  return forced === "empty" ? { ...data, sounds: [], totalBytes: 0 } : data;
+  const catalog = forced === "empty" ? { ...data, sounds: [], totalBytes: 0, previewBank: undefined } : data;
+  registerBank(catalog);
+  return catalog;
 }
 
-/** Session-only LRU: no localStorage, IndexedDB, service worker or Cache API. */
+/** A single immutable compressed-on-wire PCM bank replaces repeated requests.
+ * Decode only the currently demanded sound; the small LRU remains bounded. */
+let bank: ArrayBuffer | null = null;
+let bankPath: string | undefined;
+let bankLength = 0;
+let bankPending: Promise<void> | null = null;
+let bankAttempted = false;
+const offsets = new Map<string,{start:number;end:number}>();
+function registerBank(catalog: CatalogResponse): void {
+  if (bankPath !== catalog.previewBank) {
+    bank = null; bankPending = null; bankAttempted = false;
+    ready.clear(); readyBytes = 0;
+  }
+  bankPath = catalog.previewBank;
+  offsets.clear(); bankLength = 0;
+  for (const sound of catalog.sounds) {
+    offsets.set(sound.id,{start:bankLength,end:bankLength+sound.bytes});
+    bankLength += sound.bytes;
+  }
+}
+function canWarm(): boolean {
+  const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
+  return !connection?.saveData && !/(^|-)2g$/.test(connection?.effectiveType ?? "");
+}
+function warmBank(): void {
+  const path=bankPath, length=bankLength;
+  if (!path || bank || bankPending || bankAttempted || !canWarm() || length>3*1024*1024) return;
+  bankAttempted=true;
+  bankPending=fetch(path,{priority:"low"}).then(async response=>{
+    if(!response.ok)throw new Error("Preview bank unavailable");
+    const bytes=await response.arrayBuffer();
+    if(bytes.byteLength!==length)throw new Error("Preview bank length mismatch");
+    if(bankPath===path)bank=bytes;
+  }).catch(()=>{}).finally(()=>{if(bankPath===path)bankPending=null;});
+}
+function fromBank(id:string):DecodedSound|undefined {
+  const range=offsets.get(id);
+  if(!bank || !range)return;
+  const {sampleRate,samples}=decodeWav(bank.slice(range.start,range.end));
+  return remember({id,sampleRate,samples});
+}
+
+/** Session-only decoded LRU; bank bytes are retained separately. */
 export const PREVIEW_MEMORY_BUDGET = 768 * 1024;
 const ready = new Map<string, DecodedSound>();
 const inFlight = new Map<string, Promise<DecodedSound>>();
@@ -54,7 +98,7 @@ export function peekSound(id: string): DecodedSound | undefined {
     ready.delete(id);
     ready.set(id, sound);
   }
-  return sound;
+  return sound ?? fromBank(id);
 }
 
 export function loadSound(id: string): Promise<DecodedSound> {
@@ -62,12 +106,13 @@ export function loadSound(id: string): Promise<DecodedSound> {
   if (cached) return Promise.resolve(cached);
   const existing = inFlight.get(id);
   if (existing) return existing;
-  // Default request cache mode honors the response's browser no-store policy
-  // without sending a bypass-cache directive to the CDN.
+  // Never wait for a speculative bank transfer on a cold demand load.
   const pending = fetch(`/sounds/${encodeURIComponent(id)}.wav`).then(async res => {
     if (!res.ok) throw new Error(`Could not load ${id}.wav (${res.status}).`);
     const { sampleRate, samples } = decodeWav(await res.arrayBuffer());
-    return remember({ id, sampleRate, samples });
+    const result=remember({ id, sampleRate, samples });
+    warmBank();
+    return result;
   }).finally(() => inFlight.delete(id));
   inFlight.set(id, pending);
   return pending;
@@ -76,9 +121,7 @@ export function loadSound(id: string): Promise<DecodedSound> {
 /** Best effort; demand loads are never queued behind speculative work. */
 export function prefetchSound(id: string | undefined): void {
   if (!id || ready.has(id) || inFlight.has(id) || warming >= MAX_BACKGROUND) return;
-  // Respect browsers that expose a data-saving preference.
-  const connection = (navigator as Navigator & { connection?: { saveData?: boolean; effectiveType?: string } }).connection;
-  if (connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType ?? "")) return;
+  if (!canWarm() || bank || bankPending) return;
   warming++;
   void loadSound(id).catch(() => {}).finally(() => { warming--; });
 }

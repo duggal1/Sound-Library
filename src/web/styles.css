@@ -96,3 +96,36 @@ main{min-height:0;min-width:0}.workspace{height:100%;min-height:0;display:grid;g
 @media(hover:none){
   .sound-row:hover:not([data-selected=true]):not([data-playing=true]){background:transparent}
 }
+
+/* Studio paper: a warm, low-chroma canvas and an instrument-like gain ruler.
+   Keep green reserved for the measured signal; no decorative cards. */
+:root{--paper:#f8f7f4;--surface:#efeeeb;--hover:#e8e6e1;--rail:#f3f1ed;background:var(--paper)}
+body{background:var(--paper)}
+.library-title{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.saved-filter{height:36px;padding-inline:12px;font-size:12px}
+.saved-filter svg,.row-bookmark svg,.hero-bookmark svg{width:17px;height:17px}
+.saved-filter small{font-size:12px;opacity:.65}
+.saved-filter[aria-pressed=true],.saved-filter:hover{background:var(--ink);color:white}
+.hero-bookmark{margin-left:auto;flex:none}
+.sound-row .row-bookmark[aria-pressed=true],.hero-bookmark[aria-pressed=true]{background:var(--ink);color:#fff}
+.list-header,.sound-row{grid-template-columns:minmax(0,1fr) minmax(64px,100px) 72px 32px 32px;gap:8px}
+.sound-row .icon-button{width:32px;height:32px}
+.sound-row[data-selected=true]{background:#ebe9e4}
+.sound-row:hover{background:#eae8e3}
+.sound-row[data-playing=true],.sound-row[data-playing=true]:hover{background:#e5e2dc}
+.search:focus-within{background:#fff}
+.volume{background:transparent;padding:0 4px 0 8px;gap:8px}
+.volume:hover,.volume:focus-within{background:transparent}
+.volume-slider{width:clamp(68px,10vw,132px);height:36px}
+.volume-track{inset-inline:4px;top:50%;height:22px;background:none;display:flex;justify-content:space-between;align-items:center;gap:1px;border-radius:0;overflow:visible}
+.gain-tick{width:2px;flex:0 1 2px;height:9px;background:#b9b6af;border-radius:1px;transition:background-color 140ms var(--liquid)}
+.gain-tick[data-major=true]{height:18px}
+.gain-tick[data-active=true]{background:#171717}
+.volume input::-webkit-slider-thumb{width:8px;height:24px;border-radius:2px;background:#171717;box-shadow:0 0 0 2px var(--paper)}
+.volume input::-moz-range-thumb{width:8px;height:24px;border-radius:2px;background:#171717;box-shadow:0 0 0 2px var(--paper)}
+.volume-value{font-size:12px;min-width:4ch}
+@container(max-width:500px){.list-header,.sound-row{grid-template-columns:minmax(0,1fr) 62px 32px 32px;gap:4px}}
+@media(max-width:850px){.hero-bookmark{margin-left:auto}.volume-slider{width:64px}}
+@media(max-width:480px){.volume-slider{width:44px}.saved-filter{padding-inline:8px}.sound-row .icon-button{width:32px}}
+@media(pointer:coarse){.sound-row .icon-button{height:44px;width:44px}.list-header,.sound-row{grid-template-columns:minmax(0,1fr) 56px 44px 44px;gap:4px}.volume-slider{height:44px}}
+@media(max-width:380px){.volume-slider{width:34px}.gain-tick:nth-child(2n){display:none}.saved-filter small{display:none}}

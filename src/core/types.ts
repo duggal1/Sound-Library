@@ -128,6 +128,8 @@ export interface CatalogResponse {
   readonly bitDepth: number;
   readonly channels: 1;
   readonly totalBytes: number;
+  /** Immutable, contiguous WAV bank in catalog order; optional for legacy catalogs. */
+  readonly previewBank?: string;
   readonly categories: readonly CategoryInfo[];
   readonly sounds: readonly SoundSummary[];
 }
