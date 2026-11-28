@@ -1,4 +1,5 @@
 import type { CatalogResponse } from "../core/types";
+import { modernSample } from "./keyboard-theme";
 import { decodeWav } from "../core/wav";
 
 export interface DecodedSound {
@@ -31,6 +32,7 @@ function urlFor(sound: SoundRef): string {
 }
 
 export function peekSound(sound: SoundRef): DecodedSound | undefined {
+  const modern=modernSample(sound.previewUrl);if(modern)return modern;
   const key = sound.id + ":" + urlFor(sound);
   const cached = ready.get(key);
   if (cached) {
@@ -44,6 +46,7 @@ export function loadSound(sound: SoundRef, priority: "high" | "low" = "high"): P
   const key = sound.id + ":" + urlFor(sound);
   const cached = peekSound(sound);
   if (cached) return Promise.resolve(cached);
+  if(sound.previewUrl?.startsWith("modern-keyboard:"))return Promise.reject(new Error("Modern keyboard is not ready"));
   const existing = inFlight.get(key);
   if (existing) return existing;
 
@@ -67,6 +70,7 @@ export function loadSound(sound: SoundRef, priority: "high" | "low" = "high"): P
 
 /** Warm at most two likely targets following focused user interaction. */
 export function prefetchSound(sound: SoundRef): void {
+  if(modernSample(sound.previewUrl))return;
   const connection = (navigator as Navigator & {connection?: {saveData?: boolean; effectiveType?: string}}).connection;
   if (connection?.saveData || /(^|-)2g$/.test(connection?.effectiveType ?? "")) return;
   const key = sound.id + ":" + urlFor(sound);

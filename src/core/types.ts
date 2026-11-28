@@ -130,6 +130,7 @@ export interface SoundSummary extends SoundMetrics {
   readonly source?: { readonly name: string; readonly author: string; readonly url: string; readonly license: "CC0-1.0"; readonly take: string };
   readonly review?: "pending";
   readonly keyCode?: string;
+  readonly keyboardTheme?: "modern" | "classic";
 }
 
 export interface CatalogResponse {
