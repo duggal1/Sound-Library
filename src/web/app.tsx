@@ -309,7 +309,10 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
     const url = new URL(location.href);
     if (value === "all") url.searchParams.delete("category");
     else url.searchParams.set("category", value);
-    history.replaceState(history.state, "", url);
+    if(url.pathname+url.search!==currentUrl()){
+      history.pushState(null,"",url);
+      window.dispatchEvent(new PopStateEvent("popstate"));
+    }
 
     const first = sounds.find(sound => (value === "all" || sound.category === value) && (!savedOnly || bookmarks.has(sound.id)));
     if (first && value !== "all" && selected?.category !== value) {
@@ -319,12 +322,24 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
   };
 
   const clearFilters = () => {
-    changeCategory("all");
-    setQuery("");
     if(savedOnly&&bookmarks.size===0){
       setSavedOnly(false);
-      if(location.pathname==="/saved"){history.pushState(null,"","/library");window.dispatchEvent(new PopStateEvent("popstate"));}
+      setQuery("");
+      if(location.pathname==="/saved"){
+        history.pushState(null,"","/library");
+        window.dispatchEvent(new PopStateEvent("popstate"));
+        return;
+      }
     }
+    changeCategory("all");
+    setQuery("");
+  };
+  const toggleSavedFilter=()=>{
+    if(!studio){
+      const next=savedOnly?"/library":"/saved";
+      if(currentUrl()!==next){history.pushState(null,"",next);window.dispatchEvent(new PopStateEvent("popstate"));}
+      else setSavedOnly(v=>!v);
+    }else setSavedOnly(v=>!v);
   };
 
   const busy = selectedId !== null && pendingId === selectedId;
@@ -397,7 +412,7 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
         <section className="library" aria-label="Sound library">
           <div className="library-head">
             {catalog.previewWarning&&<p className="imported-warning" role="status">{catalog.previewWarning}</p>}
-            <div className="library-title"><h2>{savedOnly ? "Saved sounds" : studio ? "Sounds" : category === "all" ? "All sounds" : category === "pointer" ? "Mouse" : category === "toggle" ? "Controls" : categoryLabel.get(category)} <span className="library-count">{fmtCount(filtered.length)}</span></h2><button type="button" className="pill saved-filter" aria-pressed={savedOnly} onClick={()=>setSavedOnly(v=>!v)}><BookmarkIcon filled={savedOnly}/><span>Saved</span><small>{bookmarks.size}</small></button></div>
+            <div className="library-title"><h2>{savedOnly ? "Saved sounds" : studio ? "Sounds" : category === "all" ? "All sounds" : category === "pointer" ? "Mouse" : category === "toggle" ? "Controls" : categoryLabel.get(category)} <span className="library-count">{fmtCount(filtered.length)}</span></h2><button type="button" className="pill saved-filter" aria-pressed={savedOnly} onClick={toggleSavedFilter}><BookmarkIcon filled={savedOnly}/><span>Saved</span><small>{bookmarks.size}</small></button></div>
             <div className="filters">
               <div className="search"><SearchIcon /><input ref={searchRef} type="search" placeholder="Search sounds" aria-label="Search sounds" value={query} onChange={e => {setQuery(e.target.value);}} />{query && <button type="button" className="clear-search" aria-label="Clear search" onClick={() => {setQuery("");searchRef.current?.focus();}}><ClearIcon /></button>}</div>
               <Dropdown label="Sound category" value={category} options={categoryOptions} onChange={changeCategory} />
