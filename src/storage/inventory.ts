@@ -2,6 +2,7 @@ import {readFile,realpath} from "node:fs/promises";
 import {resolve,join,sep} from "node:path";
 import type {CatalogResponse} from "../core/types";
 import {assetKey,releaseId,sha256,HASH} from "./release";
+import {createZip,type ZipEntry} from "../core/zip";
 
 export interface ReleaseObject {key:string;bytes:Uint8Array;hash:string;type:string;disposition?:string}
 const obj=(key:string,bytes:Uint8Array,type:string,disposition?:string):ReleaseObject=>({key,bytes,hash:sha256(bytes),type,disposition});
@@ -21,6 +22,7 @@ export async function buildInventory(root=resolve(".generated-public/sounds")){
  const canonical=JSON.stringify(catalog),release=releaseId(canonical,pack,credits,license);
  const unique=new Map<string,ReleaseObject>(),ids=new Set<string>(),records=[];
  let logicalBytes=0;
+ const zipEntries:ZipEntry[]=[];
  for(const sound of catalog.sounds){
   if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(sound.id)||ids.has(sound.id)||!sound.sha256||!HASH.test(sound.sha256)||sound.importedMouse||sound.keyboardTheme==="modern")throw new Error("Invalid or preview-only catalog entry");
   if(sound.source&&sound.source.license!=="CC0-1.0")throw new Error("Non-redistributable source");
@@ -28,11 +30,14 @@ export async function buildInventory(root=resolve(".generated-public/sounds")){
   const bytes=await safeRead(sound.id+".wav");
   if(bytes.byteLength!==sound.bytes||sha256(bytes)!==sound.sha256)throw new Error("WAV checksum mismatch: "+sound.id);
   logicalBytes+=bytes.byteLength;
+  zipEntries.push({name:sound.id+".wav",data:bytes});
   const key=assetKey(sound.sha256);
   if(!unique.has(key))unique.set(key,obj(key,bytes,"audio/wav"));
   records.push({...sound,assetKey:key,previewUrl:key,downloadUrl:key,filename:sound.id+".wav",sampleRate:48000,channels:1,mimeType:"audio/wav"});
  }
  if(logicalBytes!==catalog.totalBytes)throw new Error("Catalog byte count mismatch");
+ zipEntries.push({name:"Sound credits.md",data:credits},{name:"trazo-MIT.txt",data:license});
+ if(sha256(createZip(zipEntries,new Date(1980,0,1)))!==sha256(pack))throw new Error("ZIP contents do not match catalog");
  const prefix="releases/"+release+"/";
  const packKey=prefix+"pack.zip";
  const files=[...unique.values()];

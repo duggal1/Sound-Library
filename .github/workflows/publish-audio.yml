@@ -1,0 +1,45 @@
+name: Verify or publish audio release
+on:
+  workflow_dispatch:
+    inputs:
+      operation:
+        description: "Storage operation"
+        required: true
+        type: choice
+        options: [verify, publish]
+        default: verify
+permissions:
+  contents: read
+concurrency:
+  group: verdant-storage-production
+  cancel-in-progress: false
+jobs:
+  storage:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    environment: storage-production
+    timeout-minutes: 20
+    env:
+      AWS_ENDPOINT_URL_S3: ${{ secrets.AWS_ENDPOINT_URL_S3 }}
+      AWS_REGION: ${{ vars.AWS_REGION }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      SOUND_BUCKET: ${{ vars.SOUND_BUCKET }}
+      SOUND_PUBLISH_CONFIRM: ${{ vars.SOUND_BUCKET }}
+      SOUND_CREDENTIAL_ROTATED: ${{ vars.SOUND_CREDENTIAL_ROTATED }}
+      SOUND_BROWSER_ORIGIN: ${{ vars.SOUND_BROWSER_ORIGIN }}
+      SOUND_PUBLIC_BASE_URL: ${{ vars.SOUND_PUBLIC_BASE_URL }}
+      SOUND_CDN_BASE_URL: ${{ vars.SOUND_CDN_BASE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck && bun test
+      - run: bun run assets:install
+      - run: bun run assets:plan
+      - run: bun run assets:${{ inputs.operation }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: storage-receipt
+          path: .storage-receipt.json
+          include-hidden-files: true

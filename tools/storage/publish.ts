@@ -19,8 +19,6 @@ try{
  const corsOrigin=new URL(env("SOUND_BROWSER_ORIGIN")).origin;
  const sdk=await import("@aws-sdk/client-s3");
  const client=new sdk.S3Client({endpoint,region:env("AWS_REGION"),credentials:{accessKeyId:env("AWS_ACCESS_KEY_ID"),secretAccessKey:env("AWS_SECRET_ACCESS_KEY")},forcePathStyle:true,maxAttempts:3,requestChecksumCalculation:"WHEN_REQUIRED",responseChecksumValidation:"WHEN_REQUIRED"});
- const send=<T>(command:T)=>client.send(command as any,{abortSignal:AbortSignal.timeout(20000)});
- // Typed command calls below use their concrete response type.
  await client.send(new sdk.HeadBucketCommand({Bucket:bucket}),{abortSignal:AbortSignal.timeout(10000)});
  let uploaded=0,skipped=0,verified=0,uploadedBytes=0;
  const cache="public, max-age=31536000, immutable";
@@ -51,7 +49,10 @@ try{
   const results=await Promise.allSettled(workers);if(results.some(r=>r.status==="rejected"))throw new Error("Upload or verification failed; release not activated");
  }
  // A single publisher must own this dedicated bucket; Neon does not document conditional PUT.
- await pool(plan.files);await pool(plan.metadata);
+ await pool(plan.files);
+ const catalog=plan.metadata.find(item=>item.key.endsWith("/catalog.json"))!;
+ await pool(plan.metadata.filter(item=>item!==catalog));
+ await one(catalog);
  const receipt={...summary,bucket,publicBase:base,uploaded,skipped,verified,uploadedBytes,activation:"not activated; pin only after deployment checks"};
  await writeFile(".storage-receipt.json",JSON.stringify(receipt,null,2));console.log(JSON.stringify(receipt,null,2));
  client.destroy();
