@@ -63,7 +63,7 @@
 .device-download-disabled{opacity:.35;display:grid;place-items:center;cursor:var(--cursor-default)}
 /* The header is not a scroll container. Reserve list space by fitting the
    device to the available library height, not by cropping its contents. */
-.library{container-type:size}
+.workspace .library{container-type:size}
 .library-head:has(.device-preview){max-height:none;overflow:visible;gap:10px;padding:4px 2px 8px;min-height:0}
 .library .magic-keyboard-frame{width:min(100%,1040px,max(200px,calc((100cqh - 285px)*3.0196)))}
 .library .magic-mouse-frame{width:min(122px,max(48px,calc((100cqh - 320px)*.545)))}
