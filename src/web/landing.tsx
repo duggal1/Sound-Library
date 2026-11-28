@@ -31,7 +31,7 @@ const SoundObject=memo(function SoundObject({sound,active,pending,onPlay,onStop}
     <button type="button" className="field-sound" aria-label={`${active||pending?"Stop":"Preview"} ${sound.name}`} aria-pressed={active||pending}
       onPointerDown={()=>prefetchSound(sound)} onClick={()=>active||pending?onStop():onPlay(sound)}>
       <span className="field-paper">
-        <span className="field-art"><img src={sketchSource(sound.id,sound.category)} alt="" draggable={false} decoding="async"/><span className="field-action">{active||pending?<StopIcon/>:<PlayIcon/>}</span></span>
+        <span className="field-art"><img src={sketchSource(sound.id,sound.category)} alt="" draggable={false} decoding="async" loading="lazy"/><span className="field-action">{active||pending?<StopIcon/>:<PlayIcon/>}</span></span>
         <span className="field-name">{sound.name}</span>
         <span className="field-duration">{pending?"Loading…":active?"Playing":fmtMs(sound.duration)}</span>
         <svg className="field-wave" viewBox="0 0 96 40" aria-hidden="true"><path d={path} fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="square"/></svg>

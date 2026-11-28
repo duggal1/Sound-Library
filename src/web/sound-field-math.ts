@@ -6,8 +6,8 @@ export function wrap(value:number,period:number){return ((value+period/2)%period
 export function sheetLayout(count:number,width:number,height:number):Sheet {
   const compact=width<670,cols=Math.max(15,Math.ceil(Math.sqrt(count+9)/1.05)|1),rows=Math.max(11,Math.ceil((count+9)/cols)|1);
   // The period is aligned to the 22px paper-dot texture.
-  const sx=22*Math.ceil(Math.max(compact?132:176,(width+360)/cols)/22);
-  const sy=22*Math.ceil(Math.max(compact?132:154,(height+360)/rows)/22);
+  const sx=22*Math.ceil(Math.max(compact?132:176,(width+520)/cols)/22);
+  const sy=22*Math.ceil(Math.max(compact?132:154,(height+420)/rows)/22);
   const cells:Placement[]=[];
   for(let row=-(rows-1)/2;row<=(rows-1)/2;row++)for(let col=-(cols-1)/2;col<=(cols-1)/2;col++){
     if(Math.abs(row)<=1&&Math.abs(col)<=1)continue;

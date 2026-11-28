@@ -1,4 +1,5 @@
 import {describe,expect,test} from "bun:test";
+import {readFileSync} from "node:fs";
 import {sheetLayout,wrap,coast} from "../src/web/sound-field-math";
 import {sketchSource} from "../src/web/sound-sketches";
 describe("endless sound sheet",()=>{
@@ -24,7 +25,7 @@ describe("endless sound sheet",()=>{
   });
   test("every category resolves to real SVG and distinct painted subjects",()=>{
     const sources=["pointer","keyboard","typing","toggle","notify","motion","progress","classic"].map(c=>sketchSource(c,c));
-    for(const s of sources){expect(s.startsWith("data:image/svg+xml,")).toBe(true);expect(decodeURIComponent(s).includes("<path")).toBe(true);}
+    for(const s of sources){expect(s.endsWith(".svg")).toBe(true);expect(readFileSync(new URL(s),"utf8").includes("<path")).toBe(true);}
     expect(new Set(sources).size).toBeGreaterThan(5);
   });
 });
