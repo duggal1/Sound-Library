@@ -19,7 +19,9 @@ export function loadModernKeyboard(base:readonly SoundSummary[]):Promise<readonl
   if(!configRes.ok||!audioRes.ok)throw new Error("Modern keyboard source unavailable");
   const [config,bytes]=await Promise.all([configRes.json(),audioRes.arrayBuffer()]);
   // One 48kHz decode, no audio context playback side effects or 61 duplicate buffers.
-  const ctx=new OfflineAudioContext(1,1,SAMPLE_RATE);
+  const Offline=window.OfflineAudioContext??(window as unknown as {webkitOfflineAudioContext:typeof OfflineAudioContext}).webkitOfflineAudioContext;
+  if(!Offline)throw new Error("Offline audio decoding unavailable");
+  const ctx=new Offline(1,1,SAMPLE_RATE);
   const decoded=await ctx.decodeAudioData(bytes);
   const pcm=new Float32Array(decoded.length);
   for(let c=0;c<decoded.numberOfChannels;c++){

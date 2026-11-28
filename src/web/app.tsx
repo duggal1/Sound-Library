@@ -203,6 +203,7 @@ function Workspace({catalog, engine, studio, initialCategory, initialSaved}: {
   useEffect(()=>{try{localStorage.setItem("verdant.bookmarks.v1",JSON.stringify([...bookmarks]));}catch{}},[bookmarks]);
   const [mode, setMode] = useState<StageMode>("waveform");
   const {playingId, pendingId, error: previewError, play, stop} = useAudition(engine);
+  useEffect(()=>{stop();},[effectiveTheme,stop]);
   const [expanded, setExpanded] = useState(false);
   const chooseTheme=useCallback((next:KeyboardTheme)=>{stop();setTheme(next);try{localStorage.setItem("verdant.keyboard-theme",next);}catch{}},[stop]);
   const [copiedId, setCopiedId] = useState<string | null>(null);

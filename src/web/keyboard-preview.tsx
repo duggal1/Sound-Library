@@ -53,7 +53,8 @@ function MacKeyboard({sounds,theme,fire}:{sounds:readonly SoundSummary[];theme:K
  const release=(code:string)=>{held.current.delete(code);if(!Array.from(pointers.current.values()).includes(code))setPressed(code,false);};
  const press=(code:string)=>{setPressed(code,true);fire(lookup(code));};
  function keyDown(e:KeyboardEvent<HTMLDivElement>){
-  if(e.key==="Escape"||e.isComposing)return;
+  if(e.nativeEvent.isComposing)return;
+  if(e.key==="Escape"){if(!e.repeat)fire(lookup(e.code));return;}
   if((e.metaKey||e.ctrlKey||e.altKey)&&!/^Meta|^Control|^Alt/.test(e.code))return;
   if(!lookup(e.code))return;
   // Tab continues normal focus navigation. Browser shortcuts remain untouched.
@@ -94,7 +95,7 @@ function MousePreview({sounds,fire}:{sounds:readonly SoundSummary[];fire:(sound:
  const play=(id:string)=>fire(byId.get(id));
  useEffect(()=>{
   const node=wheel.current;if(!node)return;
-  const onWheel=(e:WheelEvent)=>{e.preventDefault();const now=performance.now();if(now-lastWheel.current<36)return;lastWheel.current=now;play("wheel-step");node.animate([{transform:"translateY(2px)"},{transform:"translateY(0)"}],{duration:120,easing:"ease-out"});};
+  const onWheel=(e:WheelEvent)=>{e.preventDefault();const now=performance.now();if(now-lastWheel.current<36)return;lastWheel.current=now;play("wheel-step");if(!matchMedia("(prefers-reduced-motion: reduce)").matches)node.animate([{transform:"translateY(2px)"},{transform:"translateY(0)"}],{duration:120,easing:getComputedStyle(document.documentElement).getPropertyValue("--liquid").trim()||"cubic-bezier(.16,1,.3,1)"});};
   node.addEventListener("wheel",onWheel,{passive:false});return()=>node.removeEventListener("wheel",onWheel);
  },[byId,fire]);
  const down=(e:PointerEvent<HTMLButtonElement>)=>{if(e.button!==0&&e.button!==2)return;e.preventDefault();e.currentTarget.focus({preventScroll:true});e.currentTarget.setPointerCapture(e.pointerId);e.currentTarget.dataset.pressed="true";play("mouse-down");};
@@ -123,6 +124,7 @@ export function DevicePreview(props:Props){
   if(!expanded)return;
   const node=dialog.current;if(!node)return;
   node.showModal();
+  node.querySelector<HTMLElement>(".device-keyboard, .mouse-left")?.focus({preventScroll:true});
   const close=()=>setExpanded(false);
   node.addEventListener("close",close);
   return()=>{node.removeEventListener("close",close);if(node.open)node.close();trigger.current?.focus({preventScroll:true});};
