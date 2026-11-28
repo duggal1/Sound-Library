@@ -21,7 +21,20 @@ export function soundPlacements(count: number, width: number): Placement[] {
   // Prefer the viewport's aspect ratio, not an artificial circular orbit.
   const aspect = clamp(width / 760, .68, 1.8);
   cells.sort((a,b) => Math.hypot(a.x / aspect, a.y) - Math.hypot(b.x / aspect,b.y) || a.y-b.y || a.x-b.x);
-  return cells.slice(0,count);
+  // The first screen is composed, rather than sorted into a perfect grid.
+  // Subsequent candidates fill the surrounding field without touching the hero or one another.
+  const first: Placement[] = [];
+  const anchors = compact
+    ? [[-130,-244],[0,-254],[132,-234],[-128,239],[4,253],[136,236],[-264,-110],[264,84],[-268,115],[269,-128]]
+    : [[-405,-164],[368,-200],[-160,-260],[115,-267],[-463,35],[427,-27],[-340,137],[343,159],[-185,268],[15,264],[205,267],[-590,-72],[591,82],[-569,162]];
+  const minX=compact?108:130,minY=compact?94:112;
+  const fits=(p:Placement)=>!(Math.abs(p.x)<clearX&&Math.abs(p.y)<clearY)&&first.every(a=>Math.abs(a.x-p.x)>=minX||Math.abs(a.y-p.y)>=minY);
+  for(const [i,[x,y]] of anchors.entries()){
+    const p={x:x!,y:y!,angle:((i*7)%15-7)*.65};
+    if(fits(p))first.push(p);
+  }
+  for(const p of cells){if(first.length>=count)break;if(fits(p))first.push(p);}
+  return first.slice(0,count);
 }
 
 export function cameraBounds(points: readonly Placement[], width: number, height: number) {

@@ -59,8 +59,8 @@ export function Landing({catalog,engine}:{catalog:CatalogResponse;engine:AudioEn
   },[ordered,play]);
   return <div className="sound-landing">
     <div className="sound-field" ref={viewport} tabIndex={0} role="region" aria-label="Sound canvas. Drag empty space or use arrow keys to explore. Click a sound to play. Escape resets.">
+      <div className="field-grid" aria-hidden="true"/>
       <div className="field-world" ref={world}>
-        <div className="field-grid" aria-hidden="true"/>
         <section className="field-hero" data-no-pan="">
           <span className="field-kicker"><i aria-hidden="true"/>{catalog.sounds.length} interface sounds</span>
           <h1>Sound for the<br/>small things.</h1>

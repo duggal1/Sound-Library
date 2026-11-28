@@ -6,12 +6,13 @@ type Gesture = {pointer:number; tile?:Tile; start:Point; last:Point; origin:Poin
 
 export function mountSoundField(viewport: HTMLElement, world: HTMLElement, onDrop: (id:string)=>void, onChange:(dirty:boolean)=>void) {
   const motion = matchMedia("(prefers-reduced-motion: reduce)");
+  const grid=viewport.querySelector<HTMLElement>(".field-grid");
   const tiles: Tile[] = Array.from(world.querySelectorAll<HTMLElement>("[data-sound-object]"),node=>({node,base:{x:0,y:0,angle:0},offset:{x:0,y:0},z:0}));
   let camera:Point={x:0,y:0}, velocity:Point={x:0,y:0}, bounds={x:0,y:0};
   let gesture:Gesture|undefined, frame=0, last=0, order=0, dirty=false, suppressUntil=0;
   let disposed=false;
   const setDirty=(value:boolean)=>{if(dirty!==value){dirty=value;onChange(value)}};
-  const drawCamera=()=>{world.style.transform=`translate3d(${camera.x.toFixed(2)}px,${camera.y.toFixed(2)}px,0)`};
+  const drawCamera=()=>{if(grid)grid.style.transform=`translate3d(${camera.x%24}px,${camera.y%24}px,0)`;world.style.transform=`translate3d(${camera.x.toFixed(2)}px,${camera.y.toFixed(2)}px,0)`};
   function drawTile(tile:Tile) {
     const x=tile.base.x+tile.offset.x, y=tile.base.y+tile.offset.y;
     tile.node.style.transform=`translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) translate(-50%,-50%) rotate(${motion.matches?0:tile.base.angle}deg)`;
@@ -105,6 +106,7 @@ export function mountSoundField(viewport: HTMLElement, world: HTMLElement, onDro
     }
   }
   function reset() {
+    if(gesture){const active=gesture;gesture=undefined;delete viewport.dataset.grabbing;if(active.tile){delete active.tile.node.dataset.held;active.tile.node.style.removeProperty("--lift-tilt");active.tile.node.style.removeProperty("--lift-pitch");}if(viewport.hasPointerCapture(active.pointer))viewport.releasePointerCapture(active.pointer);}
     stop();camera={x:0,y:0};order=0;
     for(const tile of tiles){tile.offset={x:0,y:0};tile.z=0;drawTile(tile);}
     drawCamera();setDirty(false);
