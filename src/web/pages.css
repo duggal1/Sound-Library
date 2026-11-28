@@ -11,7 +11,7 @@ svg.sound-icon {fill:none;}
 .home-repo svg {width:18px; height:18px; color:#171717;}
 #page-main:focus {outline:none;}
 
-
+.asset-details a:hover {text-decoration:underline dotted; text-underline-offset:4px;}
 
 .workspace[data-layout="dashboard"] {grid-template-columns:152px minmax(0,1.36fr) minmax(300px,1fr); grid-template-rows:minmax(0,1fr); gap:clamp(19px,3vw,44px);}
 [data-layout="dashboard"] .library {grid-column:2; grid-row:1;}
@@ -26,8 +26,6 @@ svg.sound-icon {fill:none;}
 .dashboard-categories {display:grid; gap:4px; padding-top:12px; margin-top:12px; border-top:1px dotted #d5d1c8;}
 .dashboard-categories button > span {overflow:hidden; text-overflow:ellipsis;}
 .dashboard-categories svg {width:19px; height:19px;}
-
-
 .asset-details {display:flex; align-items:center; flex-wrap:wrap; gap:8px 12px; color:var(--muted); font-size:12px;}
 .asset-details code {overflow-wrap:anywhere;}
 .asset-details .pill {font-size:12px; height:30px;}
