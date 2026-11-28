@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import {readFile,mkdir,lstat,realpath,writeFile,open,link,unlink,rename} from "node:fs/promises";
-import {resolve,join,dirname,basename} from "node:path";
+import {join} from "node:path";
 import {createHash,randomUUID} from "node:crypto";
 import {validateRelease,searchSounds,getSound,catalogInfo,soundId,type Asset} from "../../src/agent/service.ts";
 const origin="https://sound-library-zeta.vercel.app";
@@ -23,7 +23,7 @@ async function readLock(path:string):Promise<Lock>{const st=await exists(path);i
 async function install(id:string,dry:boolean){const r=await catalog(),a=getSound(r,id).asset;if(!a||!r.releaseId)throw Error("Sound is not in an approved release");const relative="verdant-assets/"+a.sha256+".wav";if(dry)return {id,path:relative,releaseId:r.releaseId,sha256:a.sha256,bytes:a.bytes,dryRun:true};
  const root=await realpath(process.cwd()),assets=join(root,"verdant-assets");await dir(assets);
  const lease=join(root,".verdant-install.lock"),guard=await open(lease,"wx",0o600);
- try{const lockPath=join(root,"verdant.lock.json"),lock=await readLock(lockPath),old=lock.assets[id];if(old&&old.sha256!==a.sha256)throw Error("Revision changed; explicit update required");
+ try{const lockPath=join(root,"verdant.lock.json"),lock=await readLock(lockPath),old=Object.hasOwn(lock.assets,id)?lock.assets[id]:undefined;if(old&&old.sha256!==a.sha256)throw Error("Revision changed; explicit update required");
  const target=join(root,relative),st=await exists(target);
  if(st&&!await verifyFile(target,a))throw Error("Refusing to overwrite mismatched file");
  if(!st){const bytes=await download(a),temp=join(assets,"."+randomUUID()+".tmp");try{await writeFile(temp,bytes,{flag:"wx",mode:0o644});await link(temp,target)}finally{await unlink(temp).catch(()=>{})}}

@@ -15,7 +15,8 @@ if(!origin.startsWith("https://"))throw Error("Agent release needs HTTPS origin"
 await rm(folder,{recursive:true,force:true});await mkdir(join(folder,"audio"),{recursive:true});
 const sounds:Asset[]=[],entries:ZipEntry[]=[];
 for(const s of catalog.sounds){
- const a=ledger.approvals[s.id];if(!a)continue;
+ const a=Object.hasOwn(ledger.approvals,s.id)?ledger.approvals[s.id]:undefined;if(!a)continue;
+ if(!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s.id))throw Error("Unsafe approved ID");
  if(s.importedMouse||s.keyboardTheme==="modern"||!s.sha256||!HASH.test(s.sha256)||a.sha256!==s.sha256||!a.rightsEvidence?.trim()||!a.reviewEvidence?.trim())throw Error("Invalid approval: "+s.id);
  if(s.source&&a.license!==s.source.license)throw Error("Conflicting rights: "+s.id);
  const bytes=await readFile(join(root,"sounds",s.id+".wav"));
@@ -38,6 +39,7 @@ if(sounds.length){
 const prefix=origin+"/agents/v1";
 const release:Release=validateRelease({schemaVersion:1,status:sounds.length?"ready":"awaiting-review",releaseId,sounds,catalogUrl:prefix+"/catalog.json",jsonlUrl:prefix+"/catalog.jsonl",packUrl,packSha256});
 const json=JSON.stringify(release);
+await writeFile(join(folder,"latest.json"),JSON.stringify({schemaVersion:1,status:release.status,releaseId:release.releaseId,catalogUrl:release.catalogUrl,packUrl:release.packUrl}));
 await writeFile(join(folder,"catalog.json"),json);await writeFile(join(folder,"catalog.jsonl"),sounds.map(s=>JSON.stringify(s)).join("\n")+(sounds.length?"\n":""));
 if(releaseId){const dir=join(folder,"releases",releaseId);await writeFile(join(dir,"catalog.json"),json);await writeFile(join(dir,"catalog.jsonl"),sounds.map(s=>JSON.stringify(s)).join("\n")+"\n");}
 console.log("Agent release: "+release.status+" ("+sounds.length+" approved sounds)");

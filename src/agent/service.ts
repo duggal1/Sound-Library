@@ -71,7 +71,7 @@ export function resolvePack(release:Release,slots:unknown,style?:string[]){
  if(!Array.isArray(slots)||slots.length<1||slots.length>12)throw Error("Provide 1–12 slots");
  const used=new Set<string>(),names=new Set<string>();let family:string|undefined;
  const items=slots.map(slot=>{const s=record(slot),name=soundId(s.name);if(names.has(name))throw Error("Duplicate slot");names.add(name);
- const query=parseSearch(s.search);const hit=searchSounds(release,{...query,style:unique([...(style??[]),...(query.style??[])]),limit:1},used,family).matches[0];
+ const query=parseSearch(s.search);const hit=searchSounds(release,{...query,style:unique([...(style??[]),...(query.style??[])]),limit:20},used,family).matches.find(x=>!used.has(x.asset.sha256));
  if(hit){used.add(hit.asset.sha256);family??=hit.asset.family;}
  return {name,asset:hit?.asset??null,reason:hit?.reason??"No eligible match"};});
  return {releaseId:release.releaseId,complete:items.every(x=>x.asset!==null),items};
