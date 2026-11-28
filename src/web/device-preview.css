@@ -12,35 +12,35 @@
 .device-theme-options button[aria-pressed=true] i{background:#16a34a}
 .device-expand{height:32px!important;font-size:12px;white-space:nowrap}
 .device-expand svg{width:13px;height:13px;transform:rotate(-40deg)}
-.magic-stage{min-width:0;width:100%;display:grid;justify-items:center;align-items:center;padding:clamp(12px,3cqw,26px) clamp(8px,3cqw,24px) clamp(15px,3.8cqw,28px);perspective:1400px;isolation:isolate}
-.magic-keyboard-tilt{width:min(100%,900px);min-width:0;container-type:inline-size;transform:rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg));transition:transform 260ms var(--liquid);transform-origin:center}
-.magic-keyboard{position:relative;width:100%;aspect-ratio:1540/606;background:linear-gradient(145deg,#edeef0 0%,#d6d8db 46%,#e8e9eb 80%,#c6c9cd 100%);border-radius:1.65cqw;box-shadow:inset 0 1px 0 #fff,inset 0 -1px 0 #bfc2c6,0 .38cqw 0 #c7c9cc,0 .7cqw 1.5cqw #65676a18,0 2cqw 4cqw #30343a0e;user-select:none;touch-action:manipulation}
-.magic-keyboard:focus-visible{outline:none;box-shadow:inset 0 1px 0 #fff,inset 0 -1px 0 #bfc2c6,0 .38cqw 0 #c7c9cc,0 0 0 3px #a7cdb26b,0 2cqw 4cqw #30343a0e}
-.device-key{position:absolute;border:0;padding:0;background:#c7c9cc;border-radius:.68cqw;box-shadow:0 .13cqw .16cqw #55595f24;cursor:var(--cursor-pointer);touch-action:none;-webkit-tap-highlight-color:transparent;overflow:visible}
-.device-key-face{position:absolute;inset:0 0 .25cqw;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:.14cqw;border-radius:.58cqw;background:linear-gradient(158deg,#fff 0%,#fafafa 76%,#f2f3f4 100%);color:#71767c;box-shadow:inset 0 1px 0 #fff,inset 0 -1px 0 #e6e7e9;transform:translateY(-.12cqw);transition:transform 145ms var(--liquid),background 145ms var(--liquid),box-shadow 145ms var(--liquid);pointer-events:none;font-weight:400;line-height:1.04;letter-spacing:normal}
-.key-legend{font-size:clamp(5px,2.05cqw,18px);white-space:nowrap}
-.key-secondary{font-size:clamp(4px,1.45cqw,13px);color:#85898e;white-space:nowrap}
-.device-key[data-function=true] .key-legend{font-size:clamp(4px,1.2cqw,11px)}
-.device-key[data-function=true] .key-secondary{font-size:clamp(5px,1.85cqw,17px)}
-.device-key[data-modifier=true] .key-legend{font-size:clamp(4px,1.45cqw,13px)}
-.device-key[data-code=CapsLock] .device-key-face i{position:absolute;left:12%;top:13%;width:.4cqw;height:.4cqw;border-radius:50%;background:#c9cdcf}
-.device-key:not(:disabled):hover .device-key-face{background:#f0f2f2;color:#454b50}
-.device-key[data-pressed=true] .device-key-face{transform:translateY(.23cqw);background:#e8eae9;box-shadow:inset 0 1px 2px #73777a20;transition-duration:25ms;color:#414745}
+/* Fixed, orthographic industrial-design surfaces. Only physical press travel moves. */
+.magic-stage{min-width:0;width:100%;display:grid;justify-items:center;align-items:center;padding:clamp(14px,3cqw,28px) clamp(4px,1.2cqw,12px) clamp(18px,3.8cqw,32px);isolation:isolate}
+.magic-keyboard-frame{width:min(100%,900px);min-width:0;container-type:inline-size}
+.magic-keyboard{position:relative;width:100%;aspect-ratio:1540/606;background:linear-gradient(180deg,#fdfdfd 0%,#f7f7f7 48%,#f0f0f1 100%);border-radius:1.05cqw;box-shadow:inset 0 1px 0 #fff,inset 0 0 0 1px #a7a9ad40,0 .22cqw 0 #d9dadd,0 .45cqw .65cqw #25272c12,0 1.1cqw 2.6cqw #25272c09;user-select:none;touch-action:manipulation}
+.magic-keyboard:focus-visible{outline:none;box-shadow:inset 0 1px 0 #fff,inset 0 0 0 1px #a7a9ad40,0 .22cqw 0 #d9dadd,0 0 0 2px #a7cdb2,0 1.1cqw 2.6cqw #25272c09}
+.device-key{position:absolute;border:0;padding:0;background:#17181a;border-radius:.46cqw;box-shadow:0 .09cqw .12cqw #16181b26;cursor:var(--cursor-pointer);touch-action:none;-webkit-tap-highlight-color:transparent;overflow:visible;transition:none}
+.device-key-face{position:absolute;inset:0 0 .14cqw;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:.16cqw;border-radius:.42cqw;background:linear-gradient(175deg,#333538 0%,#27292c 35%,#232426 100%);color:#f2f2f3;box-shadow:inset 0 .085cqw 0 #ffffff22,inset 0 -.07cqw 0 #00000038;transform:translateY(-.09cqw);transition:transform 115ms cubic-bezier(.18,.78,.26,1),background-color 115ms ease,box-shadow 115ms ease;pointer-events:none;font-weight:400;line-height:1.04;letter-spacing:normal;-webkit-font-smoothing:antialiased}
+.key-legend{font-size:clamp(5px,1.73cqw,15px);white-space:nowrap}
+.key-secondary{font-size:clamp(4px,1.26cqw,11px);color:#b8babd;white-space:nowrap}
+.device-key[data-function=true] .key-legend{font-size:clamp(4px,1.05cqw,9px)}
+.device-key[data-function=true] .key-secondary{font-size:clamp(5px,1.5cqw,13px)}
+.device-key[data-modifier=true] .key-legend{font-size:clamp(4px,1.22cqw,11px)}
+.device-key[data-code=CapsLock] .device-key-face i{position:absolute;left:10%;top:12%;width:.34cqw;height:.34cqw;border-radius:50%;background:#85878a}
+.device-key[data-pressed=true] .device-key-face,.device-key:not(:disabled):active .device-key-face{transform:translateY(.13cqw);background:#1d1e20;box-shadow:inset 0 .1cqw .2cqw #00000070;transition-duration:28ms;color:#fff}
 .device-key[data-pressed=true][data-code=CapsLock] i{background:#22c55e}
 .device-key:disabled{opacity:.62;cursor:var(--cursor-default)}
-.device-key:focus-visible{outline:none;box-shadow:0 0 0 2px #8cb89b;z-index:2}
+.device-key:focus-visible{outline:none;box-shadow:0 0 0 1.5px #a7cdb2;z-index:2}
 .device-caption,.device-source{font-size:11px;color:#737373;margin:0;line-height:1.5;font-weight:400}
-.magic-mouse-stage{padding-block:12px 18px;gap:12px}
-.magic-mouse-tilt{width:clamp(68px,19cqw,106px);transform:rotateX(var(--tilt-x,0deg)) rotateY(var(--tilt-y,0deg));transition:transform 260ms var(--liquid)}
-.magic-mouse{position:relative;width:100%;aspect-ratio:156/286;filter:drop-shadow(0 3px 2px #282d341b) drop-shadow(0 10px 12px #282d3411)}
-.magic-mouse-material{width:100%;height:100%;display:block;overflow:visible;pointer-events:none}
-.magic-mouse-shell{transform-origin:center bottom;transition:transform 145ms var(--liquid)}
-.magic-mouse:has([data-pressed=true]) .magic-mouse-shell{transform:translateY(2px);transition-duration:25ms}
-.magic-mouse-hit-area{position:absolute;inset:2% 4.5% 6%;display:flex;border-radius:44% 44% 42% 42% / 26% 26% 22% 22%;overflow:hidden;touch-action:none}
-.magic-mouse-hit-area button{flex:1;min-width:0;background:transparent;touch-action:none;border-radius:0}
-.magic-mouse-hit-area button:hover:not(:disabled){background:#8c939a08}
-.magic-mouse-hit-area button[data-pressed=true]{background:#8c939a12}
+.magic-mouse-stage{padding-block:14px 18px;gap:12px}
+.magic-mouse-frame{width:clamp(80px,22cqw,122px)}
+.magic-mouse{position:relative;width:100%;aspect-ratio:156/286}
+.magic-mouse-material{width:100%;height:100%;display:block;overflow:visible;pointer-events:none;filter:drop-shadow(0 2px 2px #20242b12) drop-shadow(0 7px 12px #20242b0b)}
+.magic-mouse-shell{transition:transform 115ms cubic-bezier(.18,.78,.26,1)}
+.magic-mouse:has([data-pressed=true],button:not(:disabled):active) .magic-mouse-shell{transform:translateY(1.4px);transition-duration:28ms}
+.magic-mouse-hit-area{position:absolute;inset:2% 4.5% 6%;display:grid;grid-template-columns:1fr 24% 1fr;border-radius:44% 44% 42% 42% / 26% 26% 22% 22%;overflow:hidden;touch-action:none}
+.magic-mouse-hit-area button{min-width:0;background:transparent;touch-action:none;border-radius:0;transition:background-color 100ms ease}
+.magic-mouse-hit-area button[data-pressed=true],.magic-mouse-hit-area button:not(:disabled):active{background:#7479800e}
 .magic-mouse-hit-area button:focus-visible{outline:none;background:#a7cdb225;box-shadow:inset 0 0 0 2px #8cb89b}
+.magic-mouse-hit-area .mouse-middle{cursor:var(--cursor-pointer)}
 .magic-mouse-instructions{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;font-size:11px;color:#737373}
 .magic-scroll-tick{padding:5px 9px;background:#f5f5f4;border-radius:999px;color:#525252;white-space:nowrap}
 .magic-scroll-tick:hover{background:#eceeec}
@@ -51,7 +51,7 @@
 .device-dialog-kicker{font-size:12px;color:#737373}
 .device-expanded-body{margin-block:16px;min-width:0}
 .device-expanded-body .magic-keyboard-stage{padding:clamp(10px,3cqw,30px) clamp(5px,2cqw,20px) clamp(18px,4cqw,40px)}
-.device-expanded-body .magic-mouse-tilt{width:clamp(104px,23cqw,170px)}
+.device-expanded-body .magic-mouse-frame{width:clamp(116px,23cqw,176px)}
 .device-expanded-body .magic-mouse-stage{padding-block:24px 30px;gap:20px}
 .device-dialog .device-caption{font-size:13px}
 .device-source{margin-top:8px}
@@ -65,4 +65,4 @@
    clipping the hardware or consuming the whole sound-list track. */
 .library-head:has(.device-preview){max-height:57dvh;overflow:auto;scrollbar-width:thin;scrollbar-color:#dedfdd transparent;padding:4px 4px var(--s4);min-height:0;overscroll-behavior:contain}
 @media(max-width:850px){.library-head:has(.device-preview){max-height:40dvh}.device-preview{gap:7px}.magic-stage{padding-block:10px 17px}}
-@media(prefers-reduced-motion:reduce){.magic-keyboard-tilt,.magic-mouse-tilt{transform:none;transition:none}.device-key-face,.magic-mouse-shell{transition:none}}
+@media(prefers-reduced-motion:reduce){.device-key-face,.magic-mouse-shell,.magic-mouse-hit-area button{transition:none}.device-key[data-pressed=true] .device-key-face,.device-key:not(:disabled):active .device-key-face,.magic-mouse:has([data-pressed=true],button:not(:disabled):active) .magic-mouse-shell{transform:none}}
