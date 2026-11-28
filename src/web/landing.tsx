@@ -4,9 +4,10 @@ import { decodeWaveform } from "../core/waveform";
 import { prefetchSound } from "./api";
 import type { AudioEngine } from "./audio";
 import { fmtMs } from "./format";
-import { ArrowIcon, PlayIcon, SoundIcon, StopIcon } from "./icons";
+import { ArrowIcon, PlayIcon, StopIcon } from "./icons";
 import { mountSoundField } from "./sound-field";
 import { useAudition } from "./use-audition";
+import { sketchSource } from "./sound-sketches";
 import "./sound-field.css";
 
 // One hero: a sound sheet that lets people hear the library before entering it.
@@ -30,10 +31,10 @@ const SoundObject=memo(function SoundObject({sound,active,pending,onPlay,onStop}
     <button type="button" className="field-sound" aria-label={`${active||pending?"Stop":"Preview"} ${sound.name}`} aria-pressed={active||pending}
       onPointerDown={()=>prefetchSound(sound)} onClick={()=>active||pending?onStop():onPlay(sound)}>
       <span className="field-paper">
-        <span className="field-glyph"><SoundIcon kind={sound.category}/><span className="field-action">{active||pending?<StopIcon/>:<PlayIcon/>}</span></span>
-        <svg className="field-wave" viewBox="0 0 96 40" aria-hidden="true"><path d={path} fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="square"/></svg>
+        <span className="field-art"><img src={sketchSource(sound.id,sound.category)} alt="" draggable={false} decoding="async"/><span className="field-action">{active||pending?<StopIcon/>:<PlayIcon/>}</span></span>
         <span className="field-name">{sound.name}</span>
-        <span className="field-duration">{fmtMs(sound.duration)}{pending?" · Loading":active?" · Playing":""}</span>
+        <span className="field-duration">{pending?"Loading…":active?"Playing":fmtMs(sound.duration)}</span>
+        <svg className="field-wave" viewBox="0 0 96 40" aria-hidden="true"><path d={path} fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="square"/></svg>
       </span>
     </button>
   </div>;
@@ -48,7 +49,10 @@ export function Landing({catalog,engine}:{catalog:CatalogResponse;engine:AudioEn
     const byId=new Map(catalog.sounds.map(sound=>[sound.id,sound]));
     const first=FEATURED.flatMap(id=>{const sound=byId.get(id);return sound?[sound]:[]});
     const featured=new Set(first.map(sound=>sound.id));
-    return [...first,...catalog.sounds.filter(sound=>!featured.has(sound.id))];
+    const groups=new Map<string,SoundSummary[]>();
+    for(const sound of catalog.sounds){if(featured.has(sound.id))continue;const group=groups.get(sound.category)??[];group.push(sound);groups.set(sound.category,group);}
+    while(true){let added=false;for(const group of groups.values()){const sound=group.shift();if(sound){first.push(sound);added=true;}}if(!added)break;}
+    return first;
   },[catalog]);
   useEffect(()=>{
     if(!viewport.current||!world.current)return;
@@ -58,26 +62,26 @@ export function Landing({catalog,engine}:{catalog:CatalogResponse;engine:AudioEn
     return ()=>{field.dispose();driver.current=null;};
   },[ordered,play]);
   return <div className="sound-landing">
-    <div className="sound-field" ref={viewport} tabIndex={0} role="region" aria-label="Sound canvas. Drag empty space or use arrow keys to explore. Click a sound to play. Escape resets.">
+    <div className="sound-field" ref={viewport} tabIndex={0} role="region" aria-label="Endless sound canvas. Drag empty space or use arrow keys to explore. Click a sound to play. Escape resets.">
       <div className="field-grid" aria-hidden="true"/>
       <div className="field-world" ref={world}>
         <section className="field-hero" data-no-pan="">
           <span className="field-kicker"><i aria-hidden="true"/>{catalog.sounds.length} interface sounds</span>
-          <h1>Sound for the<br/>small things.</h1>
-          <p>Every click, key and gesture deserves a sound that feels right. Pick one up, listen, make it yours.</p>
+          <h1>Make the small<br/><span>things sound good.<svg viewBox="0 0 300 13" aria-hidden="true"><path d="M3 8C70 2 166 1 296 6M47 10Q169 5 265 9" fill="none" stroke="#16a34a" strokeWidth="2.5" strokeLinecap="round"/></svg></span></h1>
+          <p>A playful collection of tactile sounds for the interfaces you build. Grab a sound, hear it, and make it part of your next project.</p>
           <div className="field-hero-actions">
-            <a href="/library" className="pill primary">Explore sounds <ArrowIcon/></a>
+            <a href="/library" className="pill primary">Explore the library <ArrowIcon/></a>
             <a href="/sounds/pack.zip" className="field-download" download="verdant-sounds.zip">Download all</a>
           </div>
         </section>
         {ordered.map(sound=><SoundObject key={sound.id} sound={sound} active={playingId===sound.id} pending={pendingId===sound.id} onPlay={play} onStop={stop}/>)}
       </div>
     </div>
-    <div className="field-dock">
-      <span className="field-help" role="status">{error||"Drag the canvas to explore. Pick up any sound to play it."}</span>
-      <button type="button" className="pill field-reset" disabled={!dirty} onClick={()=>driver.current?.reset()}>Reset canvas</button>
-      {(playingId||pendingId)&&<button type="button" className="pill" onClick={stop}>Stop sound <StopIcon/></button>}
+    <div className="field-dock"><div className="field-dock-inner">
+      <span className="field-help" role="status">{error||"Drag to wander · Tap to listen"}</span>
+      <button type="button" className="pill field-reset" disabled={!dirty} onClick={()=>driver.current?.reset()}>Back to center</button>
+      <button type="button" className="pill" disabled={!playingId&&!pendingId} onClick={stop}>Stop <StopIcon/></button>
       <a href="/sounds/credits.md">Credits</a>
-    </div>
+    </div></div>
   </div>;
 }

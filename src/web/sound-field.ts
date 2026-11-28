@@ -1,33 +1,42 @@
-import {cameraBounds, clamp, coast, soundPlacements, type Placement} from "./sound-field-math";
+import {clamp, coast, sheetLayout, wrap, type Placement} from "./sound-field-math";
 
 type Point = {x:number;y:number};
-type Tile = {node: HTMLElement; base:Placement; offset:Point; z:number};
+type Tile = {node: HTMLElement; base:Placement; offset:Point; z:number; transform:string};
 type Gesture = {pointer:number; tile?:Tile; start:Point; last:Point; origin:Point; time:number; velocity:Point; moved:boolean};
 
 export function mountSoundField(viewport: HTMLElement, world: HTMLElement, onDrop: (id:string)=>void, onChange:(dirty:boolean)=>void) {
   const motion = matchMedia("(prefers-reduced-motion: reduce)");
   const grid=viewport.querySelector<HTMLElement>(".field-grid");
-  const tiles: Tile[] = Array.from(world.querySelectorAll<HTMLElement>("[data-sound-object]"),node=>({node,base:{x:0,y:0,angle:0},offset:{x:0,y:0},z:0}));
-  let camera:Point={x:0,y:0}, velocity:Point={x:0,y:0}, bounds={x:0,y:0};
+  const hero=world.querySelector<HTMLElement>(".field-hero");
+  let heroTransform="";
+  const tiles: Tile[] = Array.from(world.querySelectorAll<HTMLElement>("[data-sound-object]"),node=>({node,base:{x:0,y:0,angle:0,size:1},offset:{x:0,y:0},z:0,transform:""}));
+  let camera:Point={x:0,y:0}, velocity:Point={x:0,y:0}, period={x:2200,y:1800};
   let gesture:Gesture|undefined, frame=0, last=0, order=0, dirty=false, suppressUntil=0;
   let disposed=false;
   const setDirty=(value:boolean)=>{if(dirty!==value){dirty=value;onChange(value)}};
-  const drawCamera=()=>{if(grid)grid.style.transform=`translate3d(${camera.x%24}px,${camera.y%24}px,0)`;world.style.transform=`translate3d(${camera.x.toFixed(2)}px,${camera.y.toFixed(2)}px,0)`};
   function drawTile(tile:Tile) {
-    const x=tile.base.x+tile.offset.x, y=tile.base.y+tile.offset.y;
-    tile.node.style.transform=`translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) translate(-50%,-50%) rotate(${motion.matches?0:tile.base.angle}deg)`;
-    tile.node.style.zIndex=String(tile.z);
+    const x=wrap(tile.base.x+tile.offset.x+camera.x,period.x)-camera.x;
+    const y=wrap(tile.base.y+tile.offset.y+camera.y,period.y)-camera.y;
+    const transform=`translate3d(${x.toFixed(2)}px,${y.toFixed(2)}px,0) translate(-50%,-50%) rotate(${motion.matches?0:tile.base.angle}deg)`;
+    if(tile.transform!==transform){tile.node.style.transform=transform;tile.transform=transform;}
+  }
+  function drawCamera(){
+    if(grid)grid.style.transform=`translate3d(${camera.x%22}px,${camera.y%22}px,0)`;
+    world.style.transform=`translate3d(${camera.x.toFixed(2)}px,${camera.y.toFixed(2)}px,0)`;
+    for(const tile of tiles)drawTile(tile);
+    const h=`translate3d(${wrap(camera.x,period.x)-camera.x}px,${wrap(camera.y,period.y)-camera.y}px,0) translate(-50%,-50%)`;
+    if(hero&&h!==heroTransform){hero.style.transform=h;heroTransform=h;}
   }
   function stop() {cancelAnimationFrame(frame);frame=0;last=0;velocity={x:0,y:0};}
   function setCamera(x:number,y:number) {
-    camera={x:clamp(x,-bounds.x,bounds.x),y:clamp(y,-bounds.y,bounds.y)};
+    camera={x:wrap(x,period.x),y:wrap(y,period.y)};
     drawCamera();
     if(Math.abs(camera.x)+Math.abs(camera.y)>1)setDirty(true);
   }
   function measure() {
-    const points=soundPlacements(tiles.length,viewport.clientWidth);
-    tiles.forEach((tile,i)=>{tile.base=points[i]!;drawTile(tile)});
-    bounds=cameraBounds(points,viewport.clientWidth,viewport.clientHeight);
+    const sheet=sheetLayout(tiles.length,viewport.clientWidth,viewport.clientHeight);
+    period={x:sheet.width,y:sheet.height};
+    tiles.forEach((tile,i)=>{tile.base=sheet.points[i]!;tile.node.style.setProperty("--sticker-size",String(tile.base.size));tile.node.style.zIndex=String(tile.z);});
     setCamera(camera.x,camera.y);
     viewport.dataset.ready="true";
   }
@@ -37,7 +46,7 @@ export function mountSoundField(viewport: HTMLElement, world: HTMLElement, onDro
     frame=0;
     if(disposed||document.hidden||motion.matches)return;
     const dt=last?clamp((now-last)/1000,.001,.05):1/60;last=now;
-    const x=coast(camera.x,velocity.x,dt,bounds.x), y=coast(camera.y,velocity.y,dt,bounds.y);
+    const x=coast(camera.x,velocity.x,dt), y=coast(camera.y,velocity.y,dt);
     velocity={x:x.velocity,y:y.velocity};setCamera(x.position,y.position);
     if(Math.hypot(velocity.x,velocity.y)>8)frame=requestAnimationFrame(tick);else stop();
   }
@@ -57,7 +66,7 @@ export function mountSoundField(viewport: HTMLElement, world: HTMLElement, onDro
     if(!g.moved){
       g.moved=true;viewport.setPointerCapture(event.pointerId);
       viewport.dataset.grabbing=g.tile?"sound":"paper";
-      if(g.tile){g.tile.node.dataset.held="true";g.tile.z=++order;}
+      if(g.tile){g.tile.node.dataset.held="true";g.tile.z=++order;g.tile.node.style.zIndex=String(g.tile.z);}
     }
     const elapsed=Math.max(8,event.timeStamp-g.time);
     const vx=clamp((event.clientX-g.last.x)*1000/elapsed,-2200,2200),vy=clamp((event.clientY-g.last.y)*1000/elapsed,-2200,2200);
@@ -65,7 +74,7 @@ export function mountSoundField(viewport: HTMLElement, world: HTMLElement, onDro
     g.last={x:event.clientX,y:event.clientY};g.time=event.timeStamp;
     if(g.tile){
       const tile=g.tile;
-      tile.offset={x:clamp(g.origin.x+dx,-bounds.x-tile.base.x,bounds.x-tile.base.x),y:clamp(g.origin.y+dy,-bounds.y-tile.base.y,bounds.y-tile.base.y)};
+      tile.offset={x:wrap(g.origin.x+dx,period.x),y:wrap(g.origin.y+dy,period.y)};
       tile.node.style.setProperty("--lift-tilt",`${clamp(g.velocity.x/180,-8,8)}deg`);
       tile.node.style.setProperty("--lift-pitch",`${clamp(-g.velocity.y/180,-7,7)}deg`);
       drawTile(tile);setDirty(true);
@@ -92,15 +101,16 @@ export function mountSoundField(viewport: HTMLElement, world: HTMLElement, onDro
     if(event.detail!==0&&performance.now()<suppressUntil){event.preventDefault();event.stopPropagation();}
   }
   function wheel(event:WheelEvent) {
-    if(event.ctrlKey||(event.target as HTMLElement).closest("[data-no-pan]"))return;
+    if(event.ctrlKey||gesture)return;
     event.preventDefault();stop();
     const multiplier=event.deltaMode===1?16:event.deltaMode===2?viewport.clientHeight:1;
     setCamera(camera.x-event.deltaX*multiplier,camera.y-event.deltaY*multiplier);
   }
   function focus(event:FocusEvent) {
     const target=event.target as HTMLElement;if(!target.matches(":focus-visible"))return;
+    if(hero?.contains(target)){stop();setCamera(0,0);return;}
     const tile=tiles.find(t=>t.node.contains(target));if(!tile)return;
-    const x=tile.base.x+tile.offset.x+camera.x,y=tile.base.y+tile.offset.y+camera.y;
+    const x=wrap(tile.base.x+tile.offset.x+camera.x,period.x),y=wrap(tile.base.y+tile.offset.y+camera.y,period.y);
     if(Math.abs(x)>viewport.clientWidth/2-65||Math.abs(y)>viewport.clientHeight/2-55){
       stop();setCamera(-tile.base.x-tile.offset.x,-tile.base.y-tile.offset.y);
     }
@@ -108,7 +118,7 @@ export function mountSoundField(viewport: HTMLElement, world: HTMLElement, onDro
   function reset() {
     if(gesture){const active=gesture;gesture=undefined;delete viewport.dataset.grabbing;if(active.tile){delete active.tile.node.dataset.held;active.tile.node.style.removeProperty("--lift-tilt");active.tile.node.style.removeProperty("--lift-pitch");}if(viewport.hasPointerCapture(active.pointer))viewport.releasePointerCapture(active.pointer);}
     stop();camera={x:0,y:0};order=0;
-    for(const tile of tiles){tile.offset={x:0,y:0};tile.z=0;drawTile(tile);}
+    for(const tile of tiles){tile.offset={x:0,y:0};tile.z=0;tile.node.style.zIndex="0";drawTile(tile);}
     drawCamera();setDirty(false);
   }
   function key(event:KeyboardEvent) {
